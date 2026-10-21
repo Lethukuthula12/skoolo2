@@ -37,3 +37,44 @@ Append-only. Newest at the bottom.
   confirmation emails need a custom SMTP provider (for example Resend's free tier) before parents
   use it. Alternative: disable email confirmation for the pilot via `supabase config push`.
 - Hosting account for the two web apps (Vercel or Netlify, free tier, connected to GitHub).
+
+## 2026-10-21 — Day 2: parent application flow
+
+Built and verified in the browser against the live Supabase project, on a phone-sized viewport:
+
+- Sign-up creates the auth user and profile; the guard returns the parent to the school they tapped.
+- Three-step application: learner (grade dropdown from live availability, SA ID validated client
+  and server side, date of birth and gender prefilled from the ID), address and optional transport
+  question, review with POPIA consent. Submit created the learner and application, the trigger
+  generated reference `ENR-E5D24T`, wrote the status history row, posted the "Application received"
+  inbox message, and Grade 00 dropped from 20 to 19 places.
+- Documents: three required uploads landed in the private bucket under the application's folder
+  and were recorded; the Continue button unlocks only when all three exist.
+- Payment: fee, reference and bank details from the `get_payment_instructions` RPC; "I have paid"
+  moved the application to `marked_paid` and the page switched to the waiting state.
+- My applications and Messages pages render the application and the trigger-written message.
+
+### Decisions taken during the build
+
+| Decision | Why |
+|---|---|
+| Email confirmation switched off for the pilot (`supabase config push`) | Supabase's built-in mailer is rate-limited to a few emails an hour, and sign-up had to work for the walkthrough. Revisit with a custom SMTP provider before public launch. |
+| Password minimum raised to 8 | Matches the form's helper text. |
+| Required documents: birth certificate, parent ID, proof of address. Latest report and immunisation card optional. | What the pilot school asks for at the gate today. The list is a constant in `models.ts`. |
+| Documents are uploaded after the application row exists | The application id is the storage folder, which is what the RLS policies key on. |
+
+### Testing note
+
+The Ionic router keeps the previous page mounted for back navigation, so any browser automation
+must scope selectors to the active page (`app-apply-page ion-button…`), or it hits hidden
+elements on the page underneath.
+
+### Test data in the live project
+
+Parent `skoolo.pilot.parent1@outlook.com`, learner Sipho Pilot, application `ENR-E5D24T`. Delete
+before the school's real parents start, or keep as the demo account.
+
+### Open for day 3
+
+School portal: staff sign-in, applications queue, application detail with documents, confirm
+payment, change status, enrolment period and grade capacity settings, bank details.

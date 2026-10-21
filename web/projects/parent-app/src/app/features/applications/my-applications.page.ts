@@ -77,7 +77,7 @@ import {
     header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
     header p { margin: 2px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.92rem; }
-    ion-badge { white-space: normal; text-align: right; }
+    ion-badge { white-space: nowrap; flex-shrink: 0; }
     .meta { margin: 0; font-size: 0.88rem; color: rgba(20, 33, 61, 0.75); display: flex; align-items: center; gap: 6px; }
     .payment.good { color: var(--ion-color-success-shade); }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
