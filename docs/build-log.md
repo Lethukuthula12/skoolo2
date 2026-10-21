@@ -120,3 +120,26 @@ Staff account `skoolo.pilot.admin@outlook.com` (Nomsa Dlamini) linked to Newborn
 
 Deploy both apps (Vercel or Netlify from GitHub), PWA manifest and icons for the parent app,
 production builds, and the real school details once they arrive.
+
+## 2026-10-22 — Day 4: PWA and deployment readiness
+
+- Parent app is a progressive web app: `@angular/pwa` service worker (production only,
+  `registerWhenStable:30000`), branded manifest (`Skoolo`, standalone, en-ZA), eight maskable icons
+  and a favicon rendered from the brand mark, Apple home-screen tags in `index.html`.
+- Production builds pass for both apps. Parent app initial bundle 1.31 MB raw / 257 kB
+  transferred; portal 488 kB / 124 kB. Budgets unchanged.
+- Verified on a local static server of the production build: service worker reaches `activated`,
+  `manifest.webmanifest` and `ngsw.json` served, deep links such as `/auth` return `index.html`,
+  and the directory loads all 21 schools from Supabase.
+- Hosting configuration committed: `vercel.json` (SPA rewrite, no-cache for service-worker files)
+  and `_redirects` in each app's `public/` folder for Netlify. Step-by-step instructions in
+  `docs/deploy.md`, including the Supabase redirect URL update after the first deploy.
+- GitHub Actions workflow builds both apps on every push and pull request.
+
+### Not done yet
+
+- The actual deploy. It needs a Vercel or Netlify account connected to the GitHub repository; the
+  two-project setup is in `docs/deploy.md` and takes about ten minutes in the Vercel UI.
+- After the first deploy: set `site_url` and `additional_redirect_urls` in `supabase/config.toml`
+  to the live URLs and run `npx supabase config push`.
+- Real school details, fee, capacities and bank account, to be entered in the portal.
