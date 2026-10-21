@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "parent-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:parent"],
+      "port": 4200
+    },
+    {
+      "name": "school-portal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:portal"],
+      "port": 4300
+    }
+  ]
+}

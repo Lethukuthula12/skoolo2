@@ -1,0 +1,1057 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      application_documents: {
+        Row: {
+          application_id: string
+          created_at: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_name: string
+          id: string
+          mime_type: string
+          size_bytes: number | null
+          storage_path: string
+          uploaded_by: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_name: string
+          id?: string
+          mime_type: string
+          size_bytes?: number | null
+          storage_path: string
+          uploaded_by?: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          file_name?: string
+          id?: string
+          mime_type?: string
+          size_bytes?: number | null
+          storage_path?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_status_history: {
+        Row: {
+          application_id: string
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["application_status"] | null
+          id: number
+          note: string | null
+          to_status: Database["public"]["Enums"]["application_status"]
+        }
+        Insert: {
+          application_id: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["application_status"] | null
+          id?: never
+          note?: string | null
+          to_status: Database["public"]["Enums"]["application_status"]
+        }
+        Update: {
+          application_id?: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["application_status"] | null
+          id?: never
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["application_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_status_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          address_line: string
+          created_at: string
+          id: string
+          learner_id: string
+          marked_paid_at: string | null
+          parent_id: string
+          parent_note: string | null
+          payment_confirmed_at: string | null
+          payment_confirmed_by: string | null
+          payment_reference: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          period_grade_id: string
+          period_id: string
+          postal_code: string
+          province: Database["public"]["Enums"]["sa_province"]
+          school_id: string
+          staff_note: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          submitted_at: string
+          suburb: string
+          town: string
+          transport_provider_name: string | null
+          updated_at: string
+          uses_school_transport: boolean | null
+        }
+        Insert: {
+          address_line: string
+          created_at?: string
+          id?: string
+          learner_id: string
+          marked_paid_at?: string | null
+          parent_id: string
+          parent_note?: string | null
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
+          payment_reference: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          period_grade_id: string
+          period_id: string
+          postal_code?: string
+          province: Database["public"]["Enums"]["sa_province"]
+          school_id: string
+          staff_note?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          submitted_at?: string
+          suburb?: string
+          town: string
+          transport_provider_name?: string | null
+          updated_at?: string
+          uses_school_transport?: boolean | null
+        }
+        Update: {
+          address_line?: string
+          created_at?: string
+          id?: string
+          learner_id?: string
+          marked_paid_at?: string | null
+          parent_id?: string
+          parent_note?: string | null
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
+          payment_reference?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          period_grade_id?: string
+          period_id?: string
+          postal_code?: string
+          province?: Database["public"]["Enums"]["sa_province"]
+          school_id?: string
+          staff_note?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          submitted_at?: string
+          suburb?: string
+          town?: string
+          transport_provider_name?: string | null
+          updated_at?: string
+          uses_school_transport?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_payment_confirmed_by_fkey"
+            columns: ["payment_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_period_grade_id_fkey"
+            columns: ["period_grade_id"]
+            isOneToOne: false
+            referencedRelation: "period_grade_availability"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_period_grade_id_fkey"
+            columns: ["period_grade_id"]
+            isOneToOne: false
+            referencedRelation: "period_grades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "enrolment_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["open_period_id"]
+          },
+          {
+            foreignKeyName: "applications_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrolment_periods: {
+        Row: {
+          academic_year: number
+          closes_at: string | null
+          created_at: string
+          currency: string
+          fee_amount: number
+          id: string
+          instructions: string | null
+          name: string
+          opens_at: string | null
+          school_id: string
+          status: Database["public"]["Enums"]["period_status"]
+          updated_at: string
+        }
+        Insert: {
+          academic_year: number
+          closes_at?: string | null
+          created_at?: string
+          currency?: string
+          fee_amount?: number
+          id?: string
+          instructions?: string | null
+          name: string
+          opens_at?: string | null
+          school_id: string
+          status?: Database["public"]["Enums"]["period_status"]
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: number
+          closes_at?: string | null
+          created_at?: string
+          currency?: string
+          fee_amount?: number
+          id?: string
+          instructions?: string | null
+          name?: string
+          opens_at?: string | null
+          school_id?: string
+          status?: Database["public"]["Enums"]["period_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrolment_periods_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrolment_periods_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grades: {
+        Row: {
+          code: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          label: string
+          sort_order: number
+        }
+        Update: {
+          code?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      learners: {
+        Row: {
+          created_at: string
+          date_of_birth: string
+          first_name: string
+          gender: Database["public"]["Enums"]["gender"]
+          home_language: string | null
+          id: string
+          identity_number: string | null
+          last_name: string
+          nationality: string
+          parent_id: string
+          passport_number: string | null
+          previous_school: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth: string
+          first_name: string
+          gender?: Database["public"]["Enums"]["gender"]
+          home_language?: string | null
+          id?: string
+          identity_number?: string | null
+          last_name: string
+          nationality?: string
+          parent_id: string
+          passport_number?: string | null
+          previous_school?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string
+          first_name?: string
+          gender?: Database["public"]["Enums"]["gender"]
+          home_language?: string | null
+          id?: string
+          identity_number?: string | null
+          last_name?: string
+          nationality?: string
+          parent_id?: string
+          passport_number?: string | null
+          previous_school?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learners_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          application_id: string | null
+          body: string
+          created_at: string
+          id: string
+          is_read: boolean
+          recipient_id: string
+          school_id: string | null
+          subject: string
+        }
+        Insert: {
+          application_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          recipient_id: string
+          school_id?: string | null
+          subject: string
+        }
+        Update: {
+          application_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          recipient_id?: string
+          school_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      period_grades: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          grade_code: string
+          id: string
+          is_open: boolean
+          period_id: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          grade_code: string
+          id?: string
+          is_open?: boolean
+          period_id: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          grade_code?: string
+          id?: string
+          is_open?: boolean
+          period_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "period_grades_grade_code_fkey"
+            columns: ["grade_code"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "period_grades_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "enrolment_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "period_grades_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["open_period_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      school_bank_accounts: {
+        Row: {
+          account_holder: string
+          account_number: string
+          account_type: string
+          bank_name: string
+          branch_code: string
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_holder: string
+          account_number: string
+          account_type?: string
+          bank_name: string
+          branch_code: string
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string
+          account_number?: string
+          account_type?: string
+          bank_name?: string
+          branch_code?: string
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_bank_accounts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_bank_accounts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_staff: {
+        Row: {
+          created_at: string
+          role: string
+          school_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          role?: string
+          school_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: string
+          school_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_staff_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_staff_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_staff_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schools: {
+        Row: {
+          badge_url: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          highest_grade: string | null
+          id: string
+          is_claimed: boolean
+          is_verified: boolean
+          lowest_grade: string | null
+          name: string
+          phone: string | null
+          province: Database["public"]["Enums"]["sa_province"] | null
+          slug: string
+          street_address: string | null
+          tagline: string | null
+          town: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          badge_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          highest_grade?: string | null
+          id?: string
+          is_claimed?: boolean
+          is_verified?: boolean
+          lowest_grade?: string | null
+          name: string
+          phone?: string | null
+          province?: Database["public"]["Enums"]["sa_province"] | null
+          slug: string
+          street_address?: string | null
+          tagline?: string | null
+          town?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          badge_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          highest_grade?: string | null
+          id?: string
+          is_claimed?: boolean
+          is_verified?: boolean
+          lowest_grade?: string | null
+          name?: string
+          phone?: string | null
+          province?: Database["public"]["Enums"]["sa_province"] | null
+          slug?: string
+          street_address?: string | null
+          tagline?: string | null
+          town?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schools_highest_grade_fkey"
+            columns: ["highest_grade"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "schools_lowest_grade_fkey"
+            columns: ["lowest_grade"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+    }
+    Views: {
+      period_grade_availability: {
+        Row: {
+          capacity: number | null
+          grade_code: string | null
+          grade_label: string | null
+          id: string | null
+          is_available: boolean | null
+          is_open: boolean | null
+          period_id: string | null
+          places_left: number | null
+          places_taken: number | null
+          sort_order: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "period_grades_grade_code_fkey"
+            columns: ["grade_code"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "period_grades_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "enrolment_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "period_grades_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["open_period_id"]
+          },
+        ]
+      }
+      school_directory: {
+        Row: {
+          badge_url: string | null
+          closes_at: string | null
+          currency: string | null
+          description: string | null
+          email: string | null
+          fee_amount: number | null
+          highest_grade: string | null
+          id: string | null
+          is_claimed: boolean | null
+          is_open_for_registration: boolean | null
+          is_verified: boolean | null
+          lowest_grade: string | null
+          name: string | null
+          open_academic_year: number | null
+          open_period_id: string | null
+          opens_at: string | null
+          phone: string | null
+          province: Database["public"]["Enums"]["sa_province"] | null
+          slug: string | null
+          street_address: string | null
+          tagline: string | null
+          town: string | null
+          website: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schools_highest_grade_fkey"
+            columns: ["highest_grade"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "schools_lowest_grade_fkey"
+            columns: ["lowest_grade"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      application_message: {
+        Args: {
+          p_application: Database["public"]["Tables"]["applications"]["Row"]
+          p_body: string
+          p_subject: string
+        }
+        Returns: undefined
+      }
+      confirm_application_payment: {
+        Args: { p_application_id: string; p_note?: string }
+        Returns: undefined
+      }
+      generate_payment_reference: { Args: never; Returns: string }
+      get_payment_instructions: {
+        Args: { p_application_id: string }
+        Returns: {
+          account_holder: string
+          account_number: string
+          account_type: string
+          bank_name: string
+          branch_code: string
+          currency: string
+          fee_amount: number
+          instructions: string
+          payment_reference: string
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          school_name: string
+        }[]
+      }
+      is_allowed_status_transition: {
+        Args: {
+          p_from: Database["public"]["Enums"]["application_status"]
+          p_to: Database["public"]["Enums"]["application_status"]
+        }
+        Returns: boolean
+      }
+      is_school_staff: { Args: { p_school_id: string }; Returns: boolean }
+      is_valid_sa_identity_number: {
+        Args: { p_value: string }
+        Returns: boolean
+      }
+      mark_application_paid: {
+        Args: { p_application_id: string }
+        Returns: undefined
+      }
+      period_school_id: { Args: { p_period_id: string }; Returns: string }
+      set_application_status: {
+        Args: {
+          p_application_id: string
+          p_note?: string
+          p_status: Database["public"]["Enums"]["application_status"]
+        }
+        Returns: undefined
+      }
+      staff_school_ids: { Args: never; Returns: string[] }
+      withdraw_application: {
+        Args: { p_application_id: string }
+        Returns: undefined
+      }
+    }
+    Enums: {
+      application_status:
+        | "submitted"
+        | "under_review"
+        | "more_info_needed"
+        | "accepted"
+        | "waitlisted"
+        | "declined"
+        | "withdrawn"
+      document_type:
+        | "birth_certificate"
+        | "parent_identity"
+        | "proof_of_address"
+        | "latest_report"
+        | "immunisation_card"
+        | "other"
+      gender: "female" | "male" | "unspecified"
+      payment_status: "unpaid" | "marked_paid" | "confirmed"
+      period_status: "draft" | "open" | "closed"
+      sa_province:
+        | "Eastern Cape"
+        | "Free State"
+        | "Gauteng"
+        | "KwaZulu-Natal"
+        | "Limpopo"
+        | "Mpumalanga"
+        | "North West"
+        | "Northern Cape"
+        | "Western Cape"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {
+      application_status: [
+        "submitted",
+        "under_review",
+        "more_info_needed",
+        "accepted",
+        "waitlisted",
+        "declined",
+        "withdrawn",
+      ],
+      document_type: [
+        "birth_certificate",
+        "parent_identity",
+        "proof_of_address",
+        "latest_report",
+        "immunisation_card",
+        "other",
+      ],
+      gender: ["female", "male", "unspecified"],
+      payment_status: ["unpaid", "marked_paid", "confirmed"],
+      period_status: ["draft", "open", "closed"],
+      sa_province: [
+        "Eastern Cape",
+        "Free State",
+        "Gauteng",
+        "KwaZulu-Natal",
+        "Limpopo",
+        "Mpumalanga",
+        "North West",
+        "Northern Cape",
+        "Western Cape",
+      ],
+    },
+  },
+} as const

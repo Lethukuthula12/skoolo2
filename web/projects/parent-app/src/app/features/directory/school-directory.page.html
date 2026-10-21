@@ -1,0 +1,127 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Skoolo</ion-title>
+    <ion-buttons slot="end">
+      @if (auth.isSignedIn()) {
+        <ion-button routerLink="/inbox" aria-label="Messages">
+          <ion-icon slot="icon-only" name="mail-outline" />
+        </ion-button>
+      }
+      <ion-button routerLink="/auth" aria-label="Your account">
+        <ion-icon slot="icon-only" name="person-circle-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar color="primary">
+    <ion-searchbar
+      placeholder="Search schools or towns"
+      [debounce]="250"
+      inputmode="search"
+      (ionInput)="onSearch($event)"
+    />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (loading() && schools().length === 0) {
+    <div class="centered"><ion-spinner name="crescent" /></div>
+  } @else if (loadError()) {
+    <div class="centered">
+      <ion-icon name="alert-circle-outline" size="large" />
+      <p>{{ loadError() }}</p>
+    </div>
+  } @else if (schools().length === 0) {
+    <div class="centered">
+      <ion-icon name="school-outline" size="large" />
+      <p>No schools match “{{ term() }}”.</p>
+    </div>
+  } @else {
+    <ion-list lines="none" class="school-list">
+      @for (school of schools(); track school.id) {
+        <article class="school-card" [class.selected]="school.id === selectedId()">
+          <ion-item button detail="false" (click)="toggle(school)" [attr.aria-expanded]="school.id === selectedId()">
+            <ion-avatar slot="start" aria-hidden="true">
+              @if (school.badge_url) {
+                <img [src]="school.badge_url" [alt]="school.name + ' badge'" />
+              } @else {
+                <span class="initials" [style.background]="'hsl(' + avatarHue(school.name ?? '') + ' 55% 42%)'">
+                  {{ initials(school.name ?? '') }}
+                </span>
+              }
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ school.name }}</h2>
+              <p>{{ school.town }}@if (school.province) {, {{ school.province }}}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="statusColor(school)">{{ statusLabel(school) }}</ion-badge>
+            <ion-icon slot="end" class="chevron" [name]="school.id === selectedId() ? 'chevron-up-outline' : 'chevron-down-outline'" />
+          </ion-item>
+
+          @if (school.id === selectedId()) {
+            <div class="school-details">
+              @if (school.tagline) {
+                <p class="tagline">{{ school.tagline }}</p>
+              }
+              @if (school.description) {
+                <p class="description">{{ school.description }}</p>
+              }
+
+              <dl class="facts">
+                @if (gradeRange(school)) {
+                  <div><dt><ion-icon name="school-outline" /></dt><dd>{{ gradeRange(school) }}</dd></div>
+                }
+                @if (school.street_address) {
+                  <div><dt><ion-icon name="location-outline" /></dt><dd>{{ school.street_address }}</dd></div>
+                }
+                @if (school.phone) {
+                  <div><dt><ion-icon name="call-outline" /></dt><dd><a [href]="'tel:' + school.phone">{{ school.phone }}</a></dd></div>
+                }
+                @if (school.website) {
+                  <div><dt><ion-icon name="globe-outline" /></dt><dd><a [href]="school.website" target="_blank" rel="noopener">{{ school.website }}</a></dd></div>
+                }
+              </dl>
+
+              @switch (registrationState(school)) {
+                @case ('open') {
+                  <div class="registration open">
+                    <h3>{{ school.open_academic_year }} enrolment is open</h3>
+                    @if (school.closes_at) {
+                      <p>Applications close {{ school.closes_at | date: 'd MMMM yyyy' }}.</p>
+                    }
+                    @if (school.fee_amount !== null && school.fee_amount !== undefined) {
+                      <p>Enrolment fee: <strong>{{ school.fee_amount | currency: 'ZAR' : 'R ' : '1.2-2' }}</strong></p>
+                    }
+                    @if (gradesLoading()) {
+                      <ion-spinner name="dots" />
+                    } @else if (gradeAvailability().length > 0) {
+                      <div class="grades">
+                        @for (grade of gradeAvailability(); track grade.id) {
+                          <ion-chip [color]="grade.is_available ? 'success' : 'medium'" [outline]="!grade.is_available">
+                            {{ grade.grade_label }} · {{ placesLabel(grade) }}
+                          </ion-chip>
+                        }
+                      </div>
+                    }
+                    <ion-button expand="block" size="large" (click)="register(school)">Register now</ion-button>
+                  </div>
+                }
+                @case ('closed') {
+                  <div class="registration closed">
+                    <h3>Registration is closed</h3>
+                    <p>{{ school.name }} is not taking applications right now. Check back when the next enrolment period opens.</p>
+                  </div>
+                }
+                @default {
+                  <div class="registration not-listed">
+                    <h3>Not on Skoolo yet</h3>
+                    <p>{{ school.name }} has not joined Skoolo. Ask the school office to claim their listing so you can apply here.</p>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </article>
+      }
+    </ion-list>
+  }
+</ion-content>

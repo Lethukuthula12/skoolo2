@@ -1,0 +1,23 @@
+# Node
+node_modules/
+dist/
+.angular/
+*.log
+npm-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+web/src/environments/environment.local.ts
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

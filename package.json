@@ -1,0 +1,14 @@
+{
+  "name": "skoolo",
+  "private": true,
+  "description": "Skoolo enrolment platform: Supabase backend, Ionic parent app, Angular school portal.",
+  "scripts": {
+    "install:web": "npm --prefix web install",
+    "start:parent": "npm --prefix web run start:parent",
+    "start:portal": "npm --prefix web run start:portal",
+    "build:parent": "npm --prefix web run build:parent",
+    "build:portal": "npm --prefix web run build:portal",
+    "db:push": "supabase db push",
+    "gen:types": "npm --prefix web run gen:types"
+  }
+}

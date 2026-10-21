@@ -1,0 +1,146 @@
+.school-list {
+  padding: 12px 12px 24px;
+  background: transparent;
+}
+
+.school-card {
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.06);
+  transition: box-shadow 150ms ease;
+
+  &.selected {
+    box-shadow: 0 6px 20px rgba(31, 75, 216, 0.14);
+  }
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 12px;
+    --inner-padding-end: 8px;
+    --min-height: 68px;
+  }
+
+  h2 {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .chevron {
+    color: var(--ion-color-medium);
+    font-size: 18px;
+    margin-left: 6px;
+  }
+}
+
+ion-avatar {
+  width: 44px;
+  height: 44px;
+
+  .initials {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
+}
+
+.school-details {
+  padding: 4px 16px 16px;
+  border-top: 1px solid rgba(20, 33, 61, 0.06);
+
+  .tagline {
+    font-weight: 600;
+    margin: 12px 0 4px;
+  }
+
+  .description {
+    color: rgba(20, 33, 61, 0.75);
+    margin: 0 0 12px;
+    line-height: 1.45;
+  }
+
+  .facts {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 14px;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    dt {
+      color: var(--ion-color-primary);
+      display: grid;
+      place-items: center;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    a {
+      color: inherit;
+    }
+  }
+}
+
+.registration {
+  border-radius: 12px;
+  padding: 14px;
+
+  h3 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 6px;
+    font-size: 0.95rem;
+  }
+
+  &.open {
+    background: rgba(30, 142, 90, 0.08);
+
+    h3 {
+      color: var(--ion-color-success-shade);
+    }
+
+    ion-button {
+      margin: 14px 0 0;
+      --border-radius: 12px;
+      font-weight: 700;
+    }
+  }
+
+  &.closed {
+    background: rgba(20, 33, 61, 0.05);
+  }
+
+  &.not-listed {
+    background: rgba(31, 75, 216, 0.06);
+  }
+}
+
+.grades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 0;
+
+  ion-chip {
+    margin: 0;
+    font-size: 0.8rem;
+    height: 28px;
+  }
+}
