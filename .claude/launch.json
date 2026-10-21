@@ -4,14 +4,25 @@
     {
       "name": "parent-app",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:parent"],
+      "runtimeArgs": [
+        "run",
+        "start:parent"
+      ],
       "port": 4200
     },
     {
       "name": "school-portal",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:portal"],
+      "runtimeArgs": [
+        "run",
+        "start:portal"
+      ],
       "port": 4300
+    },
+    {
+      "name": "parent-app-running",
+      "url": "http://localhost:4200",
+      "port": 4200
     }
   ]
 }

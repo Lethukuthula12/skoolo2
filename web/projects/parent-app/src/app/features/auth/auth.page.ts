@@ -31,6 +31,9 @@ type Mode = 'sign_in' | 'sign_up';
           <ion-icon name="person-circle-outline" class="avatar" />
           <h2>{{ auth.user()?.user_metadata?.['full_name'] || 'Parent' }}</h2>
           <p>{{ auth.user()?.email }}</p>
+          <ion-button expand="block" routerLink="/applications">
+            <ion-icon slot="start" name="folder-open-outline" /> My applications
+          </ion-button>
           <ion-button expand="block" fill="outline" routerLink="/inbox">
             <ion-icon slot="start" name="mail-outline" /> Messages
           </ion-button>

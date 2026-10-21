@@ -1,0 +1,168 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      @if (stepIndex() > 0) {
+        <ion-button (click)="back()" aria-label="Back"><ion-icon slot="icon-only" name="arrow-back-outline" /></ion-button>
+      } @else {
+        <ion-back-button defaultHref="/" text="" />
+      }
+    </ion-buttons>
+    <ion-title>{{ school()?.name ?? 'Apply' }}</ion-title>
+  </ion-toolbar>
+  @if (isOpen()) {
+    <ion-progress-bar [value]="progress()" />
+  }
+</ion-header>
+
+<ion-content>
+  @if (loading()) {
+    <div class="centered"><ion-spinner name="crescent" /></div>
+  } @else if (!school()) {
+    <div class="centered"><p>We could not find that school.</p></div>
+  } @else if (!isOpen()) {
+    <div class="form-card">
+      <h2>Registration is closed</h2>
+      <p>{{ school()?.name }} is not taking applications right now.</p>
+      <ion-button expand="block" fill="outline" routerLink="/">Back to schools</ion-button>
+    </div>
+  } @else {
+    @switch (step()) {
+      @case ('learner') {
+        <form class="form-card" [formGroup]="learnerForm" (ngSubmit)="next()">
+          <h2>About the learner</h2>
+          <p class="hint">Step 1 of 3. Applying for {{ school()?.open_academic_year }}.</p>
+
+          <ion-select label="Grade applying for" labelPlacement="floating" fill="outline" interface="action-sheet"
+                      formControlName="periodGradeId" cancelText="Cancel" placeholder="Choose a grade">
+            @for (grade of grades(); track grade.id) {
+              <ion-select-option [value]="grade.id" [disabled]="!grade.is_available">{{ gradeOptionLabel(grade) }}</ion-select-option>
+            }
+          </ion-select>
+          @if (learnerForm.controls.periodGradeId.touched && learnerForm.controls.periodGradeId.invalid) {
+            <p class="error-text">Please choose a grade.</p>
+          }
+
+          <ion-input label="First name" labelPlacement="floating" fill="outline" formControlName="firstName" autocomplete="given-name" />
+          <ion-input label="Surname" labelPlacement="floating" fill="outline" formControlName="lastName" autocomplete="family-name" />
+
+          <ion-radio-group formControlName="identityType" class="radio-row">
+            <ion-radio value="sa_id" labelPlacement="end">South African ID</ion-radio>
+            <ion-radio value="passport" labelPlacement="end">Passport</ion-radio>
+          </ion-radio-group>
+
+          @if (learnerForm.controls.identityType.value === 'sa_id') {
+            <ion-input label="Learner's ID number" labelPlacement="floating" fill="outline" formControlName="identityNumber"
+                       inputmode="numeric" maxlength="13"
+                       [errorText]="learnerForm.controls.identityNumber.hasError('saIdentityNumber') ? 'That ID number is not valid. Please check it.' : 'ID number is required'"
+                       helperText="13 digits from the birth certificate" />
+          } @else {
+            <ion-input label="Passport number" labelPlacement="floating" fill="outline" formControlName="passportNumber" errorText="Passport number is required" />
+            <ion-input label="Nationality" labelPlacement="floating" fill="outline" formControlName="nationality" />
+          }
+
+          <ion-input label="Date of birth" labelPlacement="stacked" fill="outline" formControlName="dateOfBirth" type="date" errorText="Date of birth is required" />
+
+          <ion-select label="Gender" labelPlacement="floating" fill="outline" interface="popover" formControlName="gender">
+            <ion-select-option value="female">Female</ion-select-option>
+            <ion-select-option value="male">Male</ion-select-option>
+            <ion-select-option value="unspecified">Prefer not to say</ion-select-option>
+          </ion-select>
+
+          <ion-input label="Home language" labelPlacement="floating" fill="outline" formControlName="homeLanguage" />
+          <ion-input label="Previous school or crèche (if any)" labelPlacement="floating" fill="outline" formControlName="previousSchool" />
+
+          @if (submitError()) { <p class="error-text">{{ submitError() }}</p> }
+          <ion-button expand="block" size="large" type="submit">Continue</ion-button>
+        </form>
+      }
+
+      @case ('address') {
+        <form class="form-card" [formGroup]="addressForm" (ngSubmit)="next()">
+          <h2>Where you live</h2>
+          <p class="hint">Step 2 of 3. The learner's home address.</p>
+
+          <ion-input label="Street address" labelPlacement="floating" fill="outline" formControlName="addressLine" autocomplete="street-address" errorText="Street address is required" />
+          <ion-input label="Suburb" labelPlacement="floating" fill="outline" formControlName="suburb" />
+          <ion-input label="Town or city" labelPlacement="floating" fill="outline" formControlName="town" autocomplete="address-level2" errorText="Town is required" />
+          <ion-select label="Province" labelPlacement="floating" fill="outline" interface="action-sheet" formControlName="province" cancelText="Cancel">
+            @for (province of provinces; track province) {
+              <ion-select-option [value]="province">{{ province }}</ion-select-option>
+            }
+          </ion-select>
+          @if (addressForm.controls.province.touched && addressForm.controls.province.invalid) {
+            <p class="error-text">Please choose a province.</p>
+          }
+          <ion-input label="Postal code" labelPlacement="floating" fill="outline" formControlName="postalCode" inputmode="numeric" maxlength="4" errorText="Postal codes are 4 digits" />
+
+          <h3>School transport</h3>
+          <p class="hint">
+            Optional. Will the learner travel with a school transport provider, such as a school bus or
+            a private driver (umalume)? We ask so that Skoolo can help schools and parents coordinate
+            transport in future. You can leave it blank.
+          </p>
+          <ion-radio-group formControlName="usesTransport" class="radio-row">
+            <ion-radio value="yes" labelPlacement="end">Yes</ion-radio>
+            <ion-radio value="no" labelPlacement="end">No</ion-radio>
+            <ion-radio value="" labelPlacement="end">Not sure yet</ion-radio>
+          </ion-radio-group>
+          @if (addressForm.controls.usesTransport.value === 'yes') {
+            <ion-input label="Transport provider's name (optional)" labelPlacement="floating" fill="outline" formControlName="transportProvider" />
+          }
+
+          <ion-textarea label="Anything the school should know? (optional)" labelPlacement="floating" fill="outline" formControlName="parentNote" [autoGrow]="true" rows="2" />
+
+          <ion-button expand="block" size="large" type="submit">Continue</ion-button>
+        </form>
+      }
+
+      @case ('review') {
+        <div class="form-card">
+          <h2>Check and submit</h2>
+          <p class="hint">Step 3 of 3. Make sure everything is correct.</p>
+
+          <ion-list lines="full" class="review">
+            <ion-item><ion-label><p>Learner</p><h3>{{ learnerForm.value.firstName }} {{ learnerForm.value.lastName }}</h3></ion-label></ion-item>
+            <ion-item><ion-label><p>Grade</p><h3>{{ selectedGrade()?.grade_label }}</h3></ion-label></ion-item>
+            <ion-item>
+              <ion-label>
+                <p>{{ learnerForm.value.identityType === 'sa_id' ? 'ID number' : 'Passport' }}</p>
+                <h3>{{ learnerForm.value.identityType === 'sa_id' ? learnerForm.value.identityNumber : learnerForm.value.passportNumber }}</h3>
+              </ion-label>
+            </ion-item>
+            <ion-item><ion-label><p>Date of birth</p><h3>{{ learnerForm.value.dateOfBirth }}</h3></ion-label></ion-item>
+            <ion-item>
+              <ion-label>
+                <p>Address</p>
+                <h3>{{ addressForm.value.addressLine }}@if (addressForm.value.suburb) {, {{ addressForm.value.suburb }}}</h3>
+                <p>{{ addressForm.value.town }}, {{ addressForm.value.province }} {{ addressForm.value.postalCode }}</p>
+              </ion-label>
+            </ion-item>
+            @if (school()?.fee_amount) {
+              <ion-item>
+                <ion-label>
+                  <p>Enrolment fee</p>
+                  <h3>{{ school()?.fee_amount | currency: 'ZAR' : 'R ' : '1.2-2' }}</h3>
+                  <ion-note>Paid by EFT after you upload the documents. Payment details come next.</ion-note>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+
+          <ion-checkbox labelPlacement="end" [checked]="consent()" (ionChange)="consent.set($event.detail.checked)" class="consent">
+            <span class="ion-text-wrap">
+              I confirm this information is correct, and I consent to Skoolo and {{ school()?.name }} processing it
+              to handle this application, in line with the Protection of Personal Information Act.
+            </span>
+          </ion-checkbox>
+
+          @if (submitError()) { <p class="error-text">{{ submitError() }}</p> }
+
+          <ion-button expand="block" size="large" [disabled]="!consent() || submitting()" (click)="submit()">
+            @if (submitting()) { <ion-spinner name="crescent" /> } @else { Submit application }
+          </ion-button>
+          <p class="hint small">Submitting reserves a place in {{ selectedGrade()?.grade_label }} while the school reviews your application.</p>
+        </div>
+      }
+    }
+  }
+</ion-content>
