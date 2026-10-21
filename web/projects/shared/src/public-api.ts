@@ -7,3 +7,5 @@ export * from './lib/auth/signed-in.guard';
 export * from './lib/directory/school-directory.service';
 export * from './lib/applications/application.service';
 export * from './lib/identity/sa-identity-number';
+export * from './lib/staff/staff.service';
+export * from './lib/staff/staff.guard';

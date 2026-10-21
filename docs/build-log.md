@@ -78,3 +78,45 @@ before the school's real parents start, or keep as the demo account.
 
 School portal: staff sign-in, applications queue, application detail with documents, confirm
 payment, change status, enrolment period and grade capacity settings, bank details.
+
+## 2026-10-21 — Day 3: school portal
+
+Built and verified in the browser, signed in as the pilot school's staff account:
+
+- Staff sign-in, guard that requires a linked school, shell with navigation.
+- Applications queue with counts (all, to review, payments to confirm, accepted, waitlisted),
+  search, status and payment filters.
+- Application detail: learner, parent contact (name, phone, email), address and transport, documents
+  opened through 15-minute signed URLs (verified the staff storage policy serves the file), status
+  history, confirm payment with an internal note, status changes with a message to the parent, and
+  free-form messages to the parent.
+- Confirming the test payment moved the application to Accepted and Payment confirmed, wrote the
+  history row with the note, and the parent's inbox received both "Application accepted" and
+  "Welcome to Newborn Christian School". Verified in the parent app and in the database.
+- Enrolment settings: period list, period form (name, year, status, fee, dates, instructions), grade
+  table with offered, open, capacity, places taken and places left.
+- School profile and bank account forms.
+
+### Capacity rule verified end to end
+
+Set Grade 00 capacity to 1 in the portal (1 place already taken). The parent app's grade dropdown
+showed "Grade 00 (Preschool) (full)" disabled, and a forced insert from the parent's session was
+rejected by the database trigger with hint `GRADE_FULL`. Capacity restored to 20.
+
+### Decisions and fixes
+
+| Item | Detail |
+|---|---|
+| `profiles.email` added | Staff need to contact parents. Kept in step by auth triggers on insert and email change. |
+| `school_application_counts` RPC | Server-side counts per status and payment state; the list page currently derives counts client-side and the RPC is there for the dashboard once volumes grow. |
+| Portal forms bound to objects held in signals | Zoneless change detection does not re-render when a plain field is assigned after an `await`. The bank details form showed empty until the object was replaced through a signal. Pattern recorded in CLAUDE.md terms: anything loaded asynchronously and shown in a template lives in a signal. |
+| Allowed status transitions duplicated in `badges.ts` | The database is the authority; the client copy only decides which options to show. |
+
+### Test data in the live project
+
+Staff account `skoolo.pilot.admin@outlook.com` (Nomsa Dlamini) linked to Newborn Christian School.
+
+### Open for day 4
+
+Deploy both apps (Vercel or Netlify from GitHub), PWA manifest and icons for the parent app,
+production builds, and the real school details once they arrive.

@@ -531,6 +531,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string
           full_name: string
           id: string
           phone: string
@@ -538,6 +539,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string
           full_name?: string
           id: string
           phone?: string
@@ -545,6 +547,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string
           full_name?: string
           id?: string
           phone?: string
@@ -848,6 +851,14 @@ export type Database = {
         Returns: undefined
       }
       period_school_id: { Args: { p_period_id: string }; Returns: string }
+      school_application_counts: {
+        Args: { p_school_id: string }
+        Returns: {
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          status: Database["public"]["Enums"]["application_status"]
+          total: number
+        }[]
+      }
       set_application_status: {
         Args: {
           p_application_id: string
