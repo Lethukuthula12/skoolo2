@@ -25,6 +25,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
           {{ busy() ? 'Signing in…' : 'Sign in' }}
         </button>
         <div class="links">
+          <a routerLink="/forgot-password">Forgot password?</a>
           <a routerLink="/join">I have an invite code</a>
           <a routerLink="/register-school">Put my school on Skoolo</a>
         </div>

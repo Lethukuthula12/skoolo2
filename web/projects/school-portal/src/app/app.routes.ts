@@ -5,6 +5,8 @@ export const routes: Routes = [
   { path: 'sign-in', loadComponent: () => import('./features/auth/sign-in.page').then((m) => m.SignInPage) },
   { path: 'no-school', loadComponent: () => import('./features/auth/no-school.page').then((m) => m.NoSchoolPage) },
   { path: 'join', loadComponent: () => import('./features/auth/join.page').then((m) => m.JoinPage) },
+  { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password.page').then((m) => m.ForgotPasswordPage) },
+  { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password.page').then((m) => m.ResetPasswordPage) },
   { path: 'register-school', loadComponent: () => import('./features/auth/register-school.page').then((m) => m.RegisterSchoolPage) },
   {
     path: '',

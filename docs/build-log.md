@@ -315,3 +315,23 @@ dropdowns list all grades, so a high school sets its highest grade to Grade 12 a
 8–12 with no change. Nothing added. Recorded the one real gap for high schools in
 `docs/report-card-spec.md`: FET (Grades 10–12) subject sets and NSC promotion rules are not yet
 specified and are only needed when a high school captures marks (Stages 3 and 7).
+
+## 2026-10-22 — Stage 0: password reset flow
+
+Built the forgot-password / reset-password flow on both apps. `AuthService` gained
+`requestPasswordReset` (sends `resetPasswordForEmail` with a redirect to `/reset-password`),
+`updatePassword`, and an `isPasswordRecovery` signal set from the `PASSWORD_RECOVERY` auth event.
+The portal and the parent app each have a request page (email in, neutral "check your email"
+confirmation that does not reveal whether the address exists) and a reset page that accepts a new
+password while a recovery session is present, then signs out and sends the user to sign in. A
+"Forgot password?" link sits on both sign-in screens. Supabase `additional_redirect_urls` widened
+to wildcard paths under the live and local origins and pushed.
+
+Verified the mechanic end to end against the auth API without relying on email: signed in as the
+test admin, changed the password, signed in with the new password, changed it back, signed in
+again; the `recover` request returns 200 (accepted). Both apps build; both pages render in the
+portal.
+
+**Pending (blocked on a domain):** the reset email only delivers once a domain and an email
+provider (Resend free tier) are wired into Supabase SMTP. Until then the flow is complete but the
+link does not arrive. Re-enabling sign-up confirmation waits on the same email setup.

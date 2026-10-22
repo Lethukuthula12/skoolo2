@@ -44,7 +44,7 @@ automated proof, and a forgotten password must not lock anyone out.
 |---|---|
 | Phone testing | Both live sites checked on an iPhone and an Android phone; no sideways scrolling, install path works. |
 | Automated database tests | **Done.** `npm run test:rls` runs `supabase/tests/tenant_isolation.sql`: it builds two schools (each with an admin, a teacher and a parent with a learner and an application) as the `authenticated` role with per-user JWT claims, asserts 20 isolation and role checks, and rolls everything back. Proven to bite: weakening one policy flips the matching check to failure. Re-run before every release. CI wiring is a follow-up (needs Supabase secrets in GitHub Actions). |
-| Password reset | A domain is bought, email sends through a provider (Resend free tier), Supabase auth uses it, and "Forgot password" works on both live sites. Sign-up confirmation is switched back on. **Blocked on buying the domain.** |
+| Password reset | **Flow built** on both apps: a "Forgot password?" link, a request page, and a reset page that sets a new password from the email link's recovery session. The password-change mechanic is verified against the auth API (change, sign in with the new password, change back). **Still needed:** a domain and an email provider (Resend free tier) wired into Supabase SMTP so the reset email actually delivers, then re-enable sign-up confirmation. Blocked on buying the domain. |
 | Demo data | The test application `ENR-E5D24T` and the test accounts are deleted or kept as a labelled demo before real parents use the system. (Grades, bank details and the rest are the admin's to set and correct in the portal, so we do not chase the school to confirm them.) |
 
 ## Stage 1 — Learners, classes and subjects

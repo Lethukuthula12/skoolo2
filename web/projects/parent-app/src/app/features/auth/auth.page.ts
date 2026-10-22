@@ -69,6 +69,7 @@ type Mode = 'sign_in' | 'sign_up';
               <ion-button expand="block" size="large" type="submit" [disabled]="signInForm.invalid || busy()">
                 @if (busy()) { <ion-spinner name="crescent" /> } @else { Sign in }
               </ion-button>
+              <ion-button fill="clear" size="small" routerLink="/forgot-password">Forgot password?</ion-button>
             </form>
           }
         </div>
