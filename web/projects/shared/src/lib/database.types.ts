@@ -748,6 +748,155 @@ export type Database = {
           },
         ]
       }
+      staff_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_name: string
+          id: string
+          mime_type: string
+          school_id: string
+          size_bytes: number | null
+          staff_member_id: string
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_type?: string
+          file_name: string
+          id?: string
+          mime_type: string
+          school_id: string
+          size_bytes?: number | null
+          staff_member_id: string
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_name?: string
+          id?: string
+          mime_type?: string
+          school_id?: string
+          size_bytes?: number | null
+          staff_member_id?: string
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_documents_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_documents_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_documents_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          role: string
+          school_id: string
+          staff_member_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          role?: string
+          school_id: string
+          staff_member_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          role?: string
+          school_id?: string
+          staff_member_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_invites_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invites_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_members: {
         Row: {
           address: string | null
@@ -764,6 +913,7 @@ export type Database = {
           position: string
           school_id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -780,6 +930,7 @@ export type Database = {
           position?: string
           school_id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -796,6 +947,7 @@ export type Database = {
           position?: string
           school_id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -810,6 +962,13 @@ export type Database = {
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -899,6 +1058,40 @@ export type Database = {
       }
     }
     Functions: {
+      accept_staff_invite: {
+        Args: { p_code: string }
+        Returns: {
+          badge_url: string | null
+          company_registration: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          highest_grade: string | null
+          id: string
+          is_claimed: boolean
+          is_verified: boolean
+          legal_name: string | null
+          lowest_grade: string | null
+          name: string
+          npo_registration: string | null
+          phone: string | null
+          province: Database["public"]["Enums"]["sa_province"] | null
+          secondary_phone: string | null
+          slug: string
+          street_address: string | null
+          tagline: string | null
+          tax_reference: string | null
+          town: string
+          updated_at: string
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "schools"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       application_message: {
         Args: {
           p_application: Database["public"]["Tables"]["applications"]["Row"]
@@ -907,10 +1100,87 @@ export type Database = {
         }
         Returns: undefined
       }
+      claim_school: {
+        Args: { p_school_id: string }
+        Returns: {
+          badge_url: string | null
+          company_registration: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          highest_grade: string | null
+          id: string
+          is_claimed: boolean
+          is_verified: boolean
+          legal_name: string | null
+          lowest_grade: string | null
+          name: string
+          npo_registration: string | null
+          phone: string | null
+          province: Database["public"]["Enums"]["sa_province"] | null
+          secondary_phone: string | null
+          slug: string
+          street_address: string | null
+          tagline: string | null
+          tax_reference: string | null
+          town: string
+          updated_at: string
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "schools"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       confirm_application_payment: {
         Args: { p_application_id: string; p_note?: string }
         Returns: undefined
       }
+      create_school: {
+        Args: {
+          p_email?: string
+          p_highest_grade?: string
+          p_lowest_grade?: string
+          p_name: string
+          p_phone?: string
+          p_province: Database["public"]["Enums"]["sa_province"]
+          p_town: string
+        }
+        Returns: {
+          badge_url: string | null
+          company_registration: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          highest_grade: string | null
+          id: string
+          is_claimed: boolean
+          is_verified: boolean
+          legal_name: string | null
+          lowest_grade: string | null
+          name: string
+          npo_registration: string | null
+          phone: string | null
+          province: Database["public"]["Enums"]["sa_province"] | null
+          secondary_phone: string | null
+          slug: string
+          street_address: string | null
+          tagline: string | null
+          tax_reference: string | null
+          town: string
+          updated_at: string
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "schools"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      generate_invite_code: { Args: never; Returns: string }
       generate_payment_reference: { Args: never; Returns: string }
       get_payment_instructions: {
         Args: { p_application_id: string }
@@ -935,6 +1205,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_school_admin: { Args: { p_school_id: string }; Returns: boolean }
       is_school_staff: { Args: { p_school_id: string }; Returns: boolean }
       is_valid_sa_identity_number: {
         Args: { p_value: string }

@@ -14,9 +14,11 @@ import { AuthService, StaffService } from '@skoolo/shared';
         </div>
         <nav>
           <a routerLink="/applications" routerLinkActive="active">Applications</a>
-          <a routerLink="/enrolment" routerLinkActive="active">Enrolment settings</a>
-          <a routerLink="/staff" routerLinkActive="active">Staff register</a>
-          <a routerLink="/school" routerLinkActive="active">School profile</a>
+          @if (staff.isAdmin()) {
+            <a routerLink="/enrolment" routerLinkActive="active">Enrolment settings</a>
+            <a routerLink="/staff" routerLinkActive="active">Staff register</a>
+            <a routerLink="/school" routerLinkActive="active">School profile</a>
+          }
         </nav>
         <div class="user">
           <div class="name">{{ auth.user()?.user_metadata?.['full_name'] || auth.user()?.email }}</div>
@@ -24,6 +26,14 @@ import { AuthService, StaffService } from '@skoolo/shared';
         </div>
       </aside>
       <main class="content">
+        @if (staff.currentSchool(); as school) {
+          @if (!school.is_verified) {
+            <div class="banner">
+              <strong>Waiting for Skoolo to verify {{ school.name }}.</strong>
+              Parents can see your listing but cannot apply until it is verified. You can set up everything in the meantime.
+            </div>
+          }
+        }
         <router-outlet />
       </main>
     </div>
@@ -45,6 +55,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
     .user { margin-top: auto; display: grid; gap: 6px; }
     .name { font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
     .content { padding: 24px; max-width: 1200px; width: 100%; }
+    .banner { background: var(--warning-soft); color: var(--warning); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.95rem; }
 
     @media (max-width: 900px) {
       .shell { grid-template-columns: 1fr; }

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Grade, PROVINCES, Province, SchoolDirectoryService, StaffService } from '@skoolo/shared';
 
@@ -15,6 +15,11 @@ interface BankForm {
 @Component({
   selector: 'app-school-profile-page',
   imports: [FormsModule],
+  styles: `
+    .badge-card { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .badge-preview img, .badge-empty { width: 96px; height: 96px; border-radius: 20px; object-fit: cover; background: var(--bg); }
+    .badge-empty { display: grid; place-items: center; color: var(--muted); font-size: 0.8rem; text-align: center; border: 1px dashed var(--line); }
+  `,
   template: `
     <div class="stack">
       <div>
@@ -24,6 +29,24 @@ interface BankForm {
 
       @if (notice()) { <p class="ok">{{ notice() }}</p> }
       @if (error()) { <p class="error">{{ error() }}</p> }
+
+      <section class="card badge-card">
+        <div class="badge-preview">
+          @if (staff.currentSchool()?.badge_url; as url) {
+            <img [src]="url" alt="School badge" />
+          } @else {
+            <div class="badge-empty">No badge yet</div>
+          }
+        </div>
+        <div class="stack">
+          <h2>School badge</h2>
+          <p class="muted small">Shown next to your school's name in the parent app. A square PNG or JPG up to 2 MB works best.</p>
+          <div class="row">
+            <button class="btn btn-outline" type="button" (click)="pickBadge()" [disabled]="busy()">{{ staff.currentSchool()?.badge_url ? 'Replace badge' : 'Upload badge' }}</button>
+            <input #badgeInput type="file" accept="image/png,image/jpeg,image/webp" hidden (change)="onBadgeChosen($event)" />
+          </div>
+        </div>
+      </section>
 
       @let s = school();
       <form class="card stack" (ngSubmit)="saveSchool()">
@@ -53,7 +76,6 @@ interface BankForm {
           <div class="field"><label for="phone2">Second phone</label><input id="phone2" type="tel" [(ngModel)]="s.secondary_phone" name="phone2" /></div>
           <div class="field"><label for="email">Email</label><input id="email" type="email" [(ngModel)]="s.email" name="email" /></div>
           <div class="field wide"><label for="website">Website</label><input id="website" type="url" [(ngModel)]="s.website" name="website" placeholder="https://" /></div>
-          <div class="field wide"><label for="badge">Badge image URL</label><input id="badge" type="url" [(ngModel)]="s.badge_url" name="badge" placeholder="https://… (a square PNG works best)" /></div>
         </div>
         <h3>Legal details</h3>
         <p class="muted small">Not shown to parents. Used on receipts and official correspondence.</p>
@@ -87,7 +109,8 @@ interface BankForm {
   `,
 })
 export class SchoolProfilePage {
-  private readonly staff = inject(StaffService);
+  protected readonly staff = inject(StaffService);
+  private readonly badgeInput = viewChild.required<ElementRef<HTMLInputElement>>('badgeInput');
   private readonly directory = inject(SchoolDirectoryService);
 
   protected readonly provinces = PROVINCES;
@@ -109,6 +132,25 @@ export class SchoolProfilePage {
 
   constructor() {
     void this.load();
+  }
+
+  protected pickBadge(): void {
+    const input = this.badgeInput().nativeElement;
+    input.value = '';
+    input.click();
+  }
+
+  protected async onBadgeChosen(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      this.error.set('That image is larger than 2 MB. Please use a smaller one.');
+      return;
+    }
+    await this.run(async () => {
+      await this.staff.uploadBadge(file);
+      this.notice.set('Badge uploaded. Parents will see it in the app.');
+    });
   }
 
   protected async saveSchool(): Promise<void> {

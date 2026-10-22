@@ -180,3 +180,36 @@ fields and Grade 0 in the dropdown (period opened for two minutes, then set back
 
 Names, emails and cellphones of the principal, admin clerk and teachers who will sign in, so real
 logins can replace the test staff account. The school badge image.
+
+## 2026-10-22 — Day 5 (afternoon): self-service for schools
+
+Prompted by the admin: nothing about a school's setup may depend on Skoolo's developer. Built and
+verified end to end in the browser:
+
+| Flow | How it works now |
+|---|---|
+| **Put a school on Skoolo** | `/register-school`: a principal creates a login and either claims an unclaimed school from the seeded directory or registers a new one. They become its first admin. The school is `is_claimed` but not `is_verified`; the portal shows a banner and parents cannot apply until Skoolo verifies it. Verification is one SQL update and is the only manual step left, by design. |
+| **Staff logins** | Admin adds a person to the staff register, clicks *Create invite*, and gets an 8-character code plus a link and a WhatsApp share button. The person opens `/join?code=…`, creates a login with the invited email, and is linked to the school with the chosen role. No email sending, so the Supabase mailer limit does not apply. Codes expire after 14 days and are single-use; the email must match. |
+| **Roles** | `admin` (principal, clerk): everything. `staff` (teachers): applications read-only. Enforced in RLS and in the payment and status RPCs; the portal hides what the role cannot do. |
+| **Badge** | Upload on School profile into the public `school-badges` bucket; the parent app shows it immediately. |
+| **Staff documents** | Per staff member: ID copy, qualifications, contract, police clearance, SACE, CV. Private `staff-documents` bucket, admins only, opened through signed links. |
+| **Access list** | Who can sign in, with role, and remove access. Open invites with copy and cancel. |
+
+Verified: admin created a staff record and invite; a new teacher redeemed the code and landed in the
+portal seeing only Applications; a new principal registered "Skoolo Test Academy" and saw the
+verification banner and full admin navigation; badge upload served publicly. All test rows,
+files and users removed afterwards.
+
+### Fix found during testing
+
+`loadSchools` read every `school_staff` row the policy allowed, which for a teacher includes
+colleagues' rows, so a teacher briefly appeared to be an admin. It now filters to the signed-in
+user. Logic that decides permissions must never rely on RLS alone to narrow a result set.
+
+### Operating note for Skoolo
+
+To verify a newly registered school after checking it is real:
+
+```sql
+update public.schools set is_verified = true where slug = '<school-slug>';
+```

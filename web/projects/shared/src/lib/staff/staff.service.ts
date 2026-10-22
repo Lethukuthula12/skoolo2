@@ -1,10 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { injectSupabase } from '../supabase-client';
 import type {
-  Application, ApplicationDocument, ApplicationStatus, EnrolmentPeriod, Learner, PeriodGrade, Profile, School,
-  StaffMember, StaffMemberInsert,
+  Application, ApplicationDocument, ApplicationStatus, EnrolmentPeriod, Learner, PeriodGrade, Profile, Province,
+  School, StaffMember, StaffMemberInsert,
 } from '../models';
-import type { Database, TablesInsert, TablesUpdate } from '../database.types';
+import type { Database, Tables, TablesInsert, TablesUpdate } from '../database.types';
 
 export type StaffApplication = Application & {
   learner: Learner;
@@ -21,9 +21,32 @@ export interface StatusHistoryEntry {
   created_at: string;
 }
 
+export type StaffRole = 'admin' | 'staff';
+export interface SchoolMembership {
+  school: School;
+  role: StaffRole;
+}
+
 export type ApplicationCounts = Database['public']['Functions']['school_application_counts']['Returns'];
 export type GradeAvailabilityRow = Database['public']['Views']['period_grade_availability']['Row'];
-export type BankAccount = Database['public']['Tables']['school_bank_accounts']['Row'];
+export type BankAccount = Tables<'school_bank_accounts'>;
+export type StaffInvite = Tables<'staff_invites'>;
+export type StaffDocument = Tables<'staff_documents'>;
+export type SchoolStaffRow = Tables<'school_staff'> & { profile: Pick<Profile, 'full_name' | 'email' | 'phone'> | null };
+
+export interface NewSchool {
+  name: string;
+  town: string;
+  province: Province;
+  phone?: string | null;
+  email?: string | null;
+  lowestGrade?: string;
+  highestGrade?: string;
+}
+
+export const STAFF_DOCUMENT_TYPES: readonly string[] = [
+  'ID copy', 'Qualification', 'Contract', 'Police clearance', 'SACE certificate', 'CV', 'Other',
+];
 
 const APPLICATION_SELECT = `*, learner:learners(*), parent:profiles!applications_parent_id_fkey(id, full_name, phone, email),
   period_grade:period_grades(id, grade_code, grades(label, sort_order)), application_documents(*)`;
@@ -32,26 +55,44 @@ const APPLICATION_SELECT = `*, learner:learners(*), parent:profiles!applications
 export class StaffService {
   private readonly client = injectSupabase();
 
-  /** Schools the signed-in user administers. Loaded once by the staff guard. */
-  readonly schools = signal<School[]>([]);
+  /** Schools the signed-in user belongs to, with their role. Loaded once by the staff guard. */
+  readonly memberships = signal<SchoolMembership[]>([]);
   readonly currentSchoolId = signal<string | null>(null);
-  readonly currentSchool = computed(() => this.schools().find((s) => s.id === this.currentSchoolId()) ?? null);
   readonly loaded = signal(false);
 
+  readonly schools = computed(() => this.memberships().map((m) => m.school));
+  readonly currentMembership = computed(
+    () => this.memberships().find((m) => m.school.id === this.currentSchoolId()) ?? null,
+  );
+  readonly currentSchool = computed(() => this.currentMembership()?.school ?? null);
+  readonly isAdmin = computed(() => this.currentMembership()?.role === 'admin');
+
   async loadSchools(): Promise<School[]> {
-    const { data, error } = await this.client.from('school_staff').select('school_id, schools(*)');
+    // Staff can see their colleagues' rows too, so filter to the signed-in user's own memberships.
+    const userId = (await this.client.auth.getSession()).data.session?.user.id;
+    if (!userId) {
+      this.memberships.set([]);
+      this.loaded.set(true);
+      return [];
+    }
+    const { data, error } = await this.client
+      .from('school_staff')
+      .select('school_id, role, schools(*)')
+      .eq('user_id', userId);
     if (error) throw error;
-    const schools = (data ?? []).map((row) => row.schools as unknown as School).filter(Boolean);
-    this.schools.set(schools);
-    if (!this.currentSchoolId() && schools.length > 0) {
-      this.currentSchoolId.set(schools[0].id);
+    const memberships = (data ?? [])
+      .map((row) => ({ school: row.schools as unknown as School, role: row.role as StaffRole }))
+      .filter((m) => !!m.school);
+    this.memberships.set(memberships);
+    if (!this.currentSchoolId() && memberships.length > 0) {
+      this.currentSchoolId.set(memberships[0].school.id);
     }
     this.loaded.set(true);
-    return schools;
+    return memberships.map((m) => m.school);
   }
 
   reset(): void {
-    this.schools.set([]);
+    this.memberships.set([]);
     this.currentSchoolId.set(null);
     this.loaded.set(false);
   }
@@ -60,6 +101,58 @@ export class StaffService {
     const id = this.currentSchoolId();
     if (!id) throw new Error('No school selected');
     return id;
+  }
+
+  // ----- Onboarding -----------------------------------------------------------
+
+  async createSchool(input: NewSchool): Promise<School> {
+    const { data, error } = await this.client.rpc('create_school', {
+      p_name: input.name,
+      p_town: input.town,
+      p_province: input.province,
+      p_phone: input.phone ?? undefined,
+      p_email: input.email ?? undefined,
+      p_lowest_grade: input.lowestGrade ?? 'GR',
+      p_highest_grade: input.highestGrade ?? 'G7',
+    });
+    if (error) throw error;
+    this.reset();
+    await this.loadSchools();
+    this.currentSchoolId.set(data.id);
+    return data;
+  }
+
+  async claimSchool(schoolId: string): Promise<School> {
+    const { data, error } = await this.client.rpc('claim_school', { p_school_id: schoolId });
+    if (error) throw error;
+    this.reset();
+    await this.loadSchools();
+    this.currentSchoolId.set(data.id);
+    return data;
+  }
+
+  async acceptInvite(code: string): Promise<School> {
+    const { data, error } = await this.client.rpc('accept_staff_invite', { p_code: code });
+    if (error) throw error;
+    this.reset();
+    await this.loadSchools();
+    this.currentSchoolId.set(data.id);
+    return data;
+  }
+
+  /** Unclaimed schools matching a name, for the "this is my school" search. */
+  async searchUnclaimedSchools(term: string): Promise<School[]> {
+    const cleaned = term.trim().replace(/[,()%]/g, '');
+    if (cleaned.length < 2) return [];
+    const { data, error } = await this.client
+      .from('schools')
+      .select('*')
+      .eq('is_claimed', false)
+      .ilike('name', `%${cleaned}%`)
+      .order('name')
+      .limit(10);
+    if (error) throw error;
+    return data ?? [];
   }
 
   // ----- Applications -------------------------------------------------------
@@ -183,7 +276,7 @@ export class StaffService {
     if (error) throw error;
   }
 
-  // ----- School profile and bank account -----------------------------------
+  // ----- School profile, badge and bank account -----------------------------
 
   async updateSchool(changes: TablesUpdate<'schools'>): Promise<School> {
     const { data, error } = await this.client
@@ -193,8 +286,23 @@ export class StaffService {
       .select()
       .single();
     if (error) throw error;
-    this.schools.update((list) => list.map((s) => (s.id === data.id ? data : s)));
+    this.memberships.update((list) => list.map((m) => (m.school.id === data.id ? { ...m, school: data } : m)));
     return data;
+  }
+
+  /** Uploads the badge to the public bucket and points the school at it. Returns the new URL. */
+  async uploadBadge(file: File): Promise<string> {
+    const schoolId = this.requireSchoolId();
+    const extension = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+    const path = `${schoolId}/badge.${extension}`;
+    const { error } = await this.client.storage
+      .from('school-badges')
+      .upload(path, file, { contentType: file.type, upsert: true });
+    if (error) throw error;
+    const { data } = this.client.storage.from('school-badges').getPublicUrl(path);
+    const url = `${data.publicUrl}?v=${Date.now()}`;
+    await this.updateSchool({ badge_url: url });
+    return url;
   }
 
   async bankAccount(): Promise<BankAccount | null> {
@@ -217,7 +325,7 @@ export class StaffService {
     return data;
   }
 
-  // ----- Staff register ------------------------------------------------------
+  // ----- Staff register, invites and documents -------------------------------
 
   async staffMembers(): Promise<StaffMember[]> {
     const { data, error } = await this.client
@@ -242,6 +350,104 @@ export class StaffService {
 
   async deleteStaffMember(id: string): Promise<void> {
     const { error } = await this.client.from('staff_members').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  /** People who can sign in to this school's portal. */
+  async logins(): Promise<SchoolStaffRow[]> {
+    const { data, error } = await this.client
+      .from('school_staff')
+      .select('*, profile:profiles(full_name, email, phone)')
+      .eq('school_id', this.requireSchoolId());
+    if (error) throw error;
+    return (data ?? []) as unknown as SchoolStaffRow[];
+  }
+
+  async removeLogin(userId: string): Promise<void> {
+    const { error } = await this.client
+      .from('school_staff')
+      .delete()
+      .eq('school_id', this.requireSchoolId())
+      .eq('user_id', userId);
+    if (error) throw error;
+  }
+
+  async invites(): Promise<StaffInvite[]> {
+    const { data, error } = await this.client
+      .from('staff_invites')
+      .select('*')
+      .eq('school_id', this.requireSchoolId())
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async createInvite(input: { email: string; fullName: string; role: StaffRole; staffMemberId?: string | null }): Promise<StaffInvite> {
+    const { data, error } = await this.client
+      .from('staff_invites')
+      .insert({
+        school_id: this.requireSchoolId(),
+        email: input.email,
+        full_name: input.fullName,
+        role: input.role,
+        staff_member_id: input.staffMemberId ?? null,
+        code: '',
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteInvite(id: string): Promise<void> {
+    const { error } = await this.client.from('staff_invites').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  async staffDocuments(staffMemberId: string): Promise<StaffDocument[]> {
+    const { data, error } = await this.client
+      .from('staff_documents')
+      .select('*')
+      .eq('staff_member_id', staffMemberId)
+      .order('created_at');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async uploadStaffDocument(staffMemberId: string, type: string, file: File): Promise<StaffDocument> {
+    const schoolId = this.requireSchoolId();
+    const safeName = file.name.replace(/[^A-Za-z0-9._-]/g, '_');
+    const path = `${schoolId}/${staffMemberId}/${Date.now()}_${safeName}`;
+    const { error: uploadError } = await this.client.storage
+      .from('staff-documents')
+      .upload(path, file, { contentType: file.type });
+    if (uploadError) throw uploadError;
+    const { data, error } = await this.client
+      .from('staff_documents')
+      .insert({
+        school_id: schoolId,
+        staff_member_id: staffMemberId,
+        document_type: type,
+        storage_path: path,
+        file_name: file.name,
+        mime_type: file.type || 'application/octet-stream',
+        size_bytes: file.size,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async staffDocumentUrl(storagePath: string): Promise<string> {
+    const { data, error } = await this.client.storage.from('staff-documents').createSignedUrl(storagePath, 60 * 15);
+    if (error) throw error;
+    return data.signedUrl;
+  }
+
+  async deleteStaffDocument(doc: StaffDocument): Promise<void> {
+    await this.client.storage.from('staff-documents').remove([doc.storage_path]);
+    const { error } = await this.client.from('staff_documents').delete().eq('id', doc.id);
     if (error) throw error;
   }
 }

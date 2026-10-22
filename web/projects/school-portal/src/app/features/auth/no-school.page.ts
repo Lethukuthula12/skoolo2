@@ -1,17 +1,22 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService, StaffService } from '@skoolo/shared';
 
 @Component({
   selector: 'app-no-school-page',
+  imports: [RouterLink],
   template: `
     <div class="wrap">
       <div class="card">
         <h1>No school linked to this account</h1>
         <p class="muted">
           You are signed in as <strong>{{ auth.user()?.email }}</strong>, but this account is not a staff member of
-          any school on Skoolo yet. Ask Skoolo to link your school, then sign in again.
+          any school on Skoolo yet.
         </p>
+        <div class="row">
+          <a class="btn btn-primary" routerLink="/join">I have an invite code</a>
+          <a class="btn btn-outline" routerLink="/register-school">Put my school on Skoolo</a>
+        </div>
         <button class="btn btn-outline" type="button" (click)="signOut()">Sign out</button>
       </div>
     </div>

@@ -114,6 +114,9 @@ import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badg
           </div>
 
           <div class="stack">
+            @if (!staff.isAdmin()) {
+              <section class="card"><p class="muted">Only school administrators can confirm payments or change the status.</p></section>
+            } @else {
             <section class="card">
               <h2>Payment</h2>
               @if (a.payment_status === 'confirmed') {
@@ -167,6 +170,7 @@ import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badg
               </div>
               <button class="btn btn-outline" type="button" (click)="sendMessage()" [disabled]="!messageSubject.trim() || !messageBody.trim() || busy()">Send</button>
             </section>
+            }
           </div>
         </div>
       </div>
@@ -185,7 +189,7 @@ import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badg
 export class ApplicationDetailPage {
   readonly id = input.required<string>();
 
-  private readonly staff = inject(StaffService);
+  protected readonly staff = inject(StaffService);
 
   protected readonly statusLabels = APPLICATION_STATUS_LABELS;
   protected readonly paymentLabels = PAYMENT_STATUS_LABELS;

@@ -1,17 +1,17 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, StaffService } from '@skoolo/shared';
 
 @Component({
   selector: 'app-sign-in-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   template: `
     <div class="wrap">
       <form class="card" [formGroup]="form" (ngSubmit)="signIn()">
         <div class="brand">Skoolo <span>for schools</span></div>
         <h1>Sign in</h1>
-        <p class="muted">Use the staff account your school was set up with.</p>
+        <p class="muted">For principals, admin staff and teachers.</p>
         <div class="field">
           <label for="email">Email</label>
           <input id="email" type="email" formControlName="email" autocomplete="email" />
@@ -24,6 +24,10 @@ import { AuthService, StaffService } from '@skoolo/shared';
         <button class="btn btn-primary" type="submit" [disabled]="form.invalid || busy()">
           {{ busy() ? 'Signing in…' : 'Sign in' }}
         </button>
+        <div class="links">
+          <a routerLink="/join">I have an invite code</a>
+          <a routerLink="/register-school">Put my school on Skoolo</a>
+        </div>
       </form>
     </div>
   `,
@@ -33,6 +37,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
     .brand { font-weight: 800; font-size: 1.3rem; color: var(--brand); }
     .brand span { font-weight: 500; color: var(--muted); font-size: 1rem; }
     .btn { margin-top: 6px; }
+    .links { display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; margin-top: 4px; flex-wrap: wrap; }
   `,
 })
 export class SignInPage {
