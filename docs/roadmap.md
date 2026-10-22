@@ -13,7 +13,7 @@ school. Nothing in the next stage starts while the current one has open bugs.
 
 | Stage | What | Requests | Status |
 |---|---|---|---|
-| 0 | Make what exists solid | — | **Next** |
+| 0 | Make what exists solid | — | **In progress** |
 | 1 | Learners, classes and subjects | 1, 8 (teaching assignments) | Planned |
 | 2 | Connect parents to their children | prerequisite for 2, 4, 6 | Planned |
 | 3 | Term reports | 2, 5, 3 (schedules and pass and fail lists) | Planned, target Term 4 reports in early December 2026 |
@@ -43,7 +43,7 @@ automated proof, and a forgotten password must not lock anyone out.
 | Item | Done when |
 |---|---|
 | Phone testing | Both live sites checked on an iPhone and an Android phone; no sideways scrolling, install path works. |
-| Automated database tests | One command runs a script that creates two schools, each with an admin, a teacher and a parent, inside a transaction that is rolled back. It proves: neither school can read or change the other's applications, learners, documents, staff register, invites or bank details; teachers cannot confirm payments or change statuses; a full grade rejects an application; invalid status changes are rejected; invite codes are single-use, bound to an email and expire. It passes, and is re-run before every release. |
+| Automated database tests | **Done.** `npm run test:rls` runs `supabase/tests/tenant_isolation.sql`: it builds two schools (each with an admin, a teacher and a parent with a learner and an application) as the `authenticated` role with per-user JWT claims, asserts 20 isolation and role checks, and rolls everything back. Proven to bite: weakening one policy flips the matching check to failure. Re-run before every release. CI wiring is a follow-up (needs Supabase secrets in GitHub Actions). |
 | Password reset | A domain is bought, email sends through a provider (Resend free tier), Supabase auth uses it, and "Forgot password" works on both live sites. Sign-up confirmation is switched back on. **Blocked on buying the domain.** |
 | Loose ends | The school confirms Grade 0 is distinct from Grade R and the Capitec account holder name. Test application `ENR-E5D24T` and test accounts are deleted or kept as a labelled demo. |
 

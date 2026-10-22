@@ -1,0 +1,247 @@
+-- Cross-school isolation and role enforcement test.
+--
+-- Builds two complete schools (A and B), each with an admin, a teacher and a parent with a
+-- learner and an application, entirely as the `authenticated` role with per-user JWT claims, so
+-- row-level security and the SECURITY DEFINER functions are exercised exactly as a real request
+-- does. Then it asserts that neither school can see or change the other's data, that teachers
+-- cannot do admin-only actions, that a full grade is refused, that illegal status changes are
+-- refused, and that invite codes are single-use, email-bound and expiring.
+--
+-- Everything runs inside one DO block that always RAISEs at the end, so all test data is rolled
+-- back. The final message is the pass/fail sentinel; scripts/test-rls.mjs reads it.
+--
+-- Run with: npm run test:rls   (from the repo root)
+
+do $$
+declare
+  v_aA uuid := gen_random_uuid(); v_tA uuid := gen_random_uuid(); v_pA uuid := gen_random_uuid();
+  v_aB uuid := gen_random_uuid(); v_tB uuid := gen_random_uuid(); v_pB uuid := gen_random_uuid();
+  v_iv uuid := gen_random_uuid(); v_iv2 uuid := gen_random_uuid();
+  v_emailAA text := 'admin.a@test.skoolo';  v_emailTA text := 'teacher.a@test.skoolo'; v_emailPA text := 'parent.a@test.skoolo';
+  v_emailAB text := 'admin.b@test.skoolo';  v_emailTB text := 'teacher.b@test.skoolo'; v_emailPB text := 'parent.b@test.skoolo';
+  v_emailIv text := 'invitee@test.skoolo';  v_emailIv2 text := 'invitee2@test.skoolo';
+  v_schoolA uuid; v_schoolB uuid;
+  v_periodA uuid; v_periodB uuid; v_pgA uuid; v_pgB uuid;
+  v_learnerA uuid; v_learnerA2 uuid; v_learnerB uuid;
+  v_appA uuid; v_appB uuid;
+  v_staffA uuid; v_code text; v_codeIv text; v_codeExpired text;
+  v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
+begin
+  -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
+  insert into auth.users (id, email, raw_user_meta_data) values
+    (v_aA, v_emailAA, json_build_object('full_name','Admin A','phone','0820000001')),
+    (v_tA, v_emailTA, json_build_object('full_name','Teacher A','phone','0820000002')),
+    (v_pA, v_emailPA, json_build_object('full_name','Parent A','phone','0820000003')),
+    (v_aB, v_emailAB, json_build_object('full_name','Admin B','phone','0820000004')),
+    (v_tB, v_emailTB, json_build_object('full_name','Teacher B','phone','0820000005')),
+    (v_pB, v_emailPB, json_build_object('full_name','Parent B','phone','0820000006')),
+    (v_iv, v_emailIv, json_build_object('full_name','Invitee','phone','0820000007')),
+    (v_iv2, v_emailIv2, json_build_object('full_name','Invitee Two','phone','0820000008'));
+
+  -- From here on, behave as an ordinary authenticated client.
+  set local role authenticated;
+
+  -- 2) Build school A (capacity 1 in Grade R so the "full grade" test can bite).
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  select id into v_schoolA from public.create_school('Isolation School A','Town A','Gauteng', null, null, 'GR','G7');
+  insert into public.enrolment_periods (school_id, academic_year, name, status, fee_amount, currency)
+    values (v_schoolA, 2027, '2027', 'open', 500, 'ZAR') returning id into v_periodA;
+  insert into public.period_grades (period_id, grade_code, is_open, capacity)
+    values (v_periodA, 'GR', true, 1) returning id into v_pgA;
+  insert into public.school_bank_accounts (school_id, account_holder, bank_name, branch_code, account_number)
+    values (v_schoolA, 'School A', 'Bank', '000000', '111111');
+  insert into public.staff_members (school_id, first_name, last_name, position, email)
+    values (v_schoolA, 'Teacher', 'A', 'Teacher', v_emailTA) returning id into v_staffA;
+  insert into public.staff_invites (school_id, staff_member_id, email, full_name, role, code)
+    values (v_schoolA, v_staffA, v_emailTA, 'Teacher A', 'staff', '') returning code into v_code;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  perform public.accept_staff_invite(v_code);   -- teacher A becomes staff of A
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pA, 'role','authenticated','email', v_emailPA)::text, true);
+  insert into public.learners (parent_id, first_name, last_name, date_of_birth, passport_number)
+    values (v_pA, 'Lena', 'A', '2020-01-01', 'PA0001') returning id into v_learnerA;
+  insert into public.applications (school_id, period_id, period_grade_id, learner_id, parent_id,
+      payment_reference, address_line, town, province)
+    values (v_schoolA, v_periodA, v_pgA, v_learnerA, v_pA, 'X', '1 St', 'Town A', 'Gauteng')
+    returning id into v_appA;
+  insert into public.application_documents (application_id, document_type, storage_path, file_name, mime_type)
+    values (v_appA, 'birth_certificate', v_appA || '/birth/f.png', 'f.png', 'image/png');
+
+  -- 3) Build school B.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  select id into v_schoolB from public.create_school('Isolation School B','Town B','Western Cape', null, null, 'GR','G7');
+  insert into public.enrolment_periods (school_id, academic_year, name, status, fee_amount, currency)
+    values (v_schoolB, 2027, '2027', 'open', 500, 'ZAR') returning id into v_periodB;
+  insert into public.period_grades (period_id, grade_code, is_open, capacity)
+    values (v_periodB, 'GR', true, 30) returning id into v_pgB;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  insert into public.learners (parent_id, first_name, last_name, date_of_birth, passport_number)
+    values (v_pB, 'Leo', 'B', '2020-02-02', 'PB0001') returning id into v_learnerB;
+  insert into public.applications (school_id, period_id, period_grade_id, learner_id, parent_id,
+      payment_reference, address_line, town, province)
+    values (v_schoolB, v_periodB, v_pgB, v_learnerB, v_pB, 'X', '2 Rd', 'Town B', 'Western Cape')
+    returning id into v_appB;
+
+  -- ===================== ISOLATION: admin B must not see school A =====================
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.applications where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || format('admin B sees %s of A''s applications', n); end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where id = v_learnerA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s learner'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.application_documents where application_id = v_appA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s documents'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.staff_members where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s staff register'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.staff_invites where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s invites'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.school_bank_accounts where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s bank account'; end if;
+
+  v_checks := v_checks + 1;
+  update public.applications set staff_note = 'hacked' where id = v_appA;
+  get diagnostics n = row_count;
+  if n <> 0 then v_fail := v_fail || 'admin B updated A''s application'; end if;
+
+  v_checks := v_checks + 1;
+  begin
+    perform public.confirm_application_payment(v_appA);
+    v_fail := v_fail || 'admin B confirmed payment on A''s application';
+  exception when others then null;  -- expected: not found for this school
+  end;
+
+  -- Parent B must not see parent A's learner
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where id = v_learnerA;
+  if n <> 0 then v_fail := v_fail || 'parent B sees parent A''s learner'; end if;
+
+  -- ===================== ROLE: teacher A may read but not act =====================
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.applications where school_id = v_schoolA;
+  if n < 1 then v_fail := v_fail || 'teacher A cannot read own school applications'; end if;
+
+  v_checks := v_checks + 1;
+  begin
+    perform public.confirm_application_payment(v_appA);
+    v_fail := v_fail || 'teacher A confirmed a payment';
+  exception when others then null;  -- expected: admin only
+  end;
+
+  v_checks := v_checks + 1;
+  begin
+    perform public.set_application_status(v_appA, 'accepted');
+    v_fail := v_fail || 'teacher A changed a status';
+  exception when others then null;  -- expected: admin only
+  end;
+
+  -- ===================== BUSINESS RULES (as admin / parent A) =====================
+  -- Full grade: Grade R capacity is 1 and already taken.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pA, 'role','authenticated','email', v_emailPA)::text, true);
+  insert into public.learners (parent_id, first_name, last_name, date_of_birth, passport_number)
+    values (v_pA, 'Lena2', 'A', '2021-01-01', 'PA0002') returning id into v_learnerA2;
+  v_checks := v_checks + 1;
+  begin
+    insert into public.applications (school_id, period_id, period_grade_id, learner_id, parent_id,
+        payment_reference, address_line, town, province)
+      values (v_schoolA, v_periodA, v_pgA, v_learnerA2, v_pA, 'X', '1 St', 'Town A', 'Gauteng');
+    v_fail := v_fail || 'full grade accepted a second application';
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'GRADE_FULL' then v_fail := v_fail || format('full grade wrong hint: %s / %s', v_hint, sqlerrm); end if;
+  end;
+
+  -- Illegal status transition: decline, then try to accept.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  perform public.set_application_status(v_appA, 'declined');  -- allowed
+  v_checks := v_checks + 1;
+  begin
+    perform public.set_application_status(v_appA, 'accepted'); -- declined -> accepted is illegal
+    v_fail := v_fail || 'illegal status transition accepted';
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'INVALID_TRANSITION' then v_fail := v_fail || format('transition wrong hint: %s / %s', v_hint, sqlerrm); end if;
+  end;
+
+  -- ===================== INVITE LIFECYCLE =====================
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  insert into public.staff_invites (school_id, email, full_name, role, code)
+    values (v_schoolA, v_emailIv, 'Invitee', 'staff', '') returning code into v_codeIv;
+  insert into public.staff_invites (school_id, email, full_name, role, code, expires_at)
+    values (v_schoolA, v_emailIv2, 'Invitee Two', 'staff', '', now() - interval '1 day')
+    returning code into v_codeExpired;
+
+  -- Wrong email cannot redeem
+  perform set_config('request.jwt.claims', json_build_object('sub', v_iv, 'role','authenticated','email', 'someone.else@test.skoolo')::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.accept_staff_invite(v_codeIv);
+    v_fail := v_fail || 'invite redeemed with the wrong email';
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'INVITE_EMAIL_MISMATCH' then v_fail := v_fail || format('mismatch wrong hint: %s', v_hint); end if;
+  end;
+
+  -- Correct email redeems once
+  perform set_config('request.jwt.claims', json_build_object('sub', v_iv, 'role','authenticated','email', v_emailIv)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.accept_staff_invite(v_codeIv);
+  exception when others then
+    v_fail := v_fail || format('valid invite rejected: %s', sqlerrm);
+  end;
+
+  -- ...but not twice
+  v_checks := v_checks + 1;
+  begin
+    perform public.accept_staff_invite(v_codeIv);
+    v_fail := v_fail || 'invite redeemed twice';
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'INVITE_USED' then v_fail := v_fail || format('reuse wrong hint: %s', v_hint); end if;
+  end;
+
+  -- Expired invite is refused
+  perform set_config('request.jwt.claims', json_build_object('sub', v_iv2, 'role','authenticated','email', v_emailIv2)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.accept_staff_invite(v_codeExpired);
+    v_fail := v_fail || 'expired invite redeemed';
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'INVITE_EXPIRED' then v_fail := v_fail || format('expiry wrong hint: %s', v_hint); end if;
+  end;
+
+  -- ===================== POSITIVE CONTROLS =====================
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.applications where school_id = v_schoolA;
+  if n < 1 then v_fail := v_fail || 'admin A cannot read own applications'; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pA, 'role','authenticated','email', v_emailPA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.applications where parent_id = v_pA;
+  if n < 1 then v_fail := v_fail || 'parent A cannot read own application'; end if;
+
+  -- ===================== RESULT (always rolls back) =====================
+  if array_length(v_fail, 1) is null then
+    raise exception 'SKOOLO_RLS_TESTS_PASSED: % checks passed', v_checks;
+  else
+    raise exception 'SKOOLO_RLS_TESTS_FAILED (% of % failed): %',
+      array_length(v_fail, 1), v_checks, array_to_string(v_fail, ' | ');
+  end if;
+end $$;

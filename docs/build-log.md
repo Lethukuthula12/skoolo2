@@ -235,3 +235,31 @@ What it took to get there, for the next time:
 - Current Wrangler needs Node 22; `.node-version` pins it. Angular 20 is fine on 22.
 - Workers' `single-page-application` handling replaces `_redirects`; a catch-all `_redirects`
   file is rejected as a redirect loop.
+
+## 2026-10-22 — Stage 0: automated cross-school isolation tests
+
+`npm run test:rls` (`scripts/test-rls.mjs` → `supabase/tests/tenant_isolation.sql`) builds two
+schools against the linked project, each with an admin, a teacher and a parent with a learner and
+an application, acting as the `authenticated` role with per-user JWT claims so RLS and the
+SECURITY DEFINER functions run exactly as for a real request. It asserts 20 checks and rolls
+everything back by raising a sentinel exception at the end.
+
+Checks: admin B cannot read A's applications, learners, documents, staff register, invites or bank
+account, nor update A's application nor confirm its payment; parent B cannot see parent A's
+learner; teacher A can read the school's applications but cannot confirm payment or change status;
+a full grade rejects a second application (`GRADE_FULL`); an illegal status transition is rejected
+(`INVALID_TRANSITION`); an invite is refused for the wrong email, accepted once, then refused as
+used, and an expired invite is refused; admin A and parent A can read their own applications.
+
+Verified three ways: it passes clean (20/20); re-running leaves no rows (`Isolation School%`
+schools and `%@test.skoolo` users both 0), confirming the rollback; and it bites — weakening the
+`staff see school applications` policy to `using (true)`, inside a rolled-back transaction, flips
+exactly the "admin B sees A's applications" check to failure while leaving the live policy intact.
+
+How it works, for the next person: the whole test is one `DO` block. It seeds `auth.users` as the
+privileged role first (the trigger creates profiles), then `set local role authenticated` once and
+switches user with `set_config('request.jwt.claims', …, true)` per step. `supabase db query -f`
+runs the file as one transaction; the closing `RAISE` both reports the result and rolls back.
+
+Not done in Stage 0 yet: password reset (blocked on a domain and an email provider), running this
+test in CI (needs Supabase secrets in GitHub Actions), and the phone testing and loose ends.

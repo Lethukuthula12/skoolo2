@@ -111,8 +111,10 @@ half of it.
 - **Hosting**: Cloudflare Workers with static assets, redeploying from `main` on every push.
   Parent app <https://skoolo-app.lethufzikhali.workers.dev>, portal
   <https://skoolo-schools.lethufzikhali.workers.dev>. See `docs/deploy.md`.
-- **Not yet**: automated database tests (Stage 0 of the roadmap), password reset (needs a domain
-  and an email provider).
+- **Tests**: `npm run test:rls` runs `supabase/tests/tenant_isolation.sql`, which proves cross-school
+  isolation and role enforcement against the linked project and rolls back. Extend it with every
+  new school-owned table or RPC.
+- **Not yet**: password reset (needs a domain and an email provider); CI wiring for the RLS test.
 
 ## Routine operations
 
@@ -120,6 +122,7 @@ half of it.
   `update public.schools set is_verified = true where slug = '<slug>';`
 - Regenerate types after a migration: `npm run gen:types` in `web/`.
 - Run ad-hoc SQL: `npx supabase db query --linked "<sql>"` (one statement per call).
+- Run the isolation tests: `npm run test:rls`.
 - If a change does not appear in the browser, restart `ng serve` before debugging the code.
 
 ## What comes next

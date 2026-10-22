@@ -32,6 +32,8 @@ the current state of the system.
   status transitions) are enforced in PostgreSQL with constraints, triggers or SECURITY DEFINER
   functions, never only in the client.
 - After any migration, regenerate types: `npm run gen:types` in `web/`.
+- Add any new school-owned table or RPC to `supabase/tests/tenant_isolation.sql` and run
+  `npm run test:rls` (it must pass) before every release.
 
 ## Angular
 - Standalone components, signals, typed reactive forms, lazy-loaded feature routes.

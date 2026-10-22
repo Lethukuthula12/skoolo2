@@ -9,7 +9,8 @@
     "build:parent": "npm --prefix web ci --no-audit --no-fund && npm --prefix web run build:parent",
     "build:portal": "npm --prefix web ci --no-audit --no-fund && npm --prefix web run build:portal",
     "db:push": "supabase db push",
-    "gen:types": "npm --prefix web run gen:types"
+    "gen:types": "npm --prefix web run gen:types",
+    "test:rls": "node scripts/test-rls.mjs"
   },
   "engines": {
     "node": ">=20.19 <25"
