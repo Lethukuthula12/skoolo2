@@ -80,3 +80,24 @@ lookup for schools that offer them.
 - The development machine is temporary. Everything is in GitHub and Supabase from the first hour.
 - Five days means almost no automated tests. The capacity rule and row-level security are the two
   things that get tests.
+
+## Amendments, 2026-10-22
+
+Agreed at the pilot school with its administrator. These extend the decisions above.
+
+| # | Decision | Why |
+|---|---|---|
+| 14 | **Schools set themselves up; Skoolo verifies.** A principal registers or claims their school from the portal and becomes its first admin. Skoolo flips `is_verified` once per school after checking it is real. Nothing else about a school's configuration goes through Skoolo. | Multi-tenant from day one. The developer cannot be in the loop for every school. Verification stays manual because parents pay the school directly and must not be sent to a fake one. |
+| 15 | **Staff logins by invite code, not email.** The admin creates an invite for a staff member; the code (plus link and WhatsApp share) is handed over in person or by message. The person signs up with the invited email and redeems it. | No dependency on email delivery, which is rate-limited on the free tier. Codes are single-use, expire after 14 days and are bound to an email address. |
+| 16 | **Two roles.** `admin` (principal, clerk): full control. `staff` (teachers): applications read-only. Enforced in RLS and the payment and status RPCs. | The admin wanted teachers in the system without letting them confirm payments or change outcomes. |
+| 17 | **Staff register with documents** lives in the system: name, position, class, ID number, contact details, address, notes, and private files (ID copy, qualifications, contract, police clearance, SACE, CV). Admin-only. | Asked for by the administrator; the record every school keeps on paper today. |
+| 18 | **Badge uploaded by the school**, stored in a public bucket. | Self-service; it is public branding. |
+| 19 | **Grade 0 is its own level** between Grade 00 and Grade RR. Pilot school's structure: 00, 0, RR, R, 1–7. | As given by the school. Flagged for confirmation that it is not the same as Grade R. |
+| 20 | **The applying parent's details are captured per application:** full name, relationship, ID or passport number, phone. The account holder's contact details remain on the profile. | The school's form asks for the parent's ID; the person applying may not be the account holder. |
+| 21 | **The enrolment fee is once-off** (R520 at the pilot school). Monthly, termly or yearly school fees are outside the pilot. | Clarified with the school. |
+
+### Updated scope line
+
+Out until proven needed: push notifications, SMS, email delivery provider, card payments, Skoolo
+super-admin console (verification is one SQL statement until then), school fees, reporting,
+custom forms per school, app store builds.

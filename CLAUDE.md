@@ -1,6 +1,19 @@
 # Skoolo — project rules
 
 Read `docs/decisions.md` first. It is the source of truth for scope and the reasons behind it.
+Invoke the `skoolo` skill (`/skoolo`) at the start of a work session; it holds the principles and
+the current state of the system.
+
+## Multi-tenancy and self-service (non-negotiable)
+- Skoolo serves every private school in South Africa. The pilot school is the first tenant, never
+  a special case. No per-school logic, ids, emails or names in code; schools differ only in data.
+- Every school-owned table has `school_id` and RLS. Every new query, view, RPC and storage path is
+  checked against the question: can a second school's data leak through this?
+- Schools set themselves up. If a feature needs the developer to run SQL per school, it is not
+  done. The single exception is verifying a newly registered school (`is_verified`).
+- Permissions are roles in data (`admin`, `staff`) checked with `is_school_admin()` /
+  `is_school_staff()` in SQL and `staff.isAdmin()` in the portal. Never rely on RLS alone to
+  narrow a result set when deciding what a user may do; filter for the signed-in user explicitly.
 
 ## Constraints
 - Solo developer, pilot deadline measured in days. Prefer the boring, working solution. No
