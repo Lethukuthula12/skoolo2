@@ -9,13 +9,14 @@ import type { SearchbarCustomEvent } from '@ionic/angular/standalone';
 import {
   AuthService, Grade, GradeAvailability, SchoolDirectoryEntry, SchoolDirectoryService,
 } from '@skoolo/shared';
+import { InstallHintComponent } from './install-hint.component';
 
 type RegistrationState = 'open' | 'closed' | 'not_listed';
 
 @Component({
   selector: 'app-school-directory-page',
   imports: [
-    CurrencyPipe, DatePipe, RouterLink,
+    CurrencyPipe, DatePipe, RouterLink, InstallHintComponent,
     IonAvatar, IonBadge, IonButton, IonButtons, IonChip, IonContent, IonHeader, IonIcon, IonItem,
     IonLabel, IonList, IonSearchbar, IonSpinner, IonTitle, IonToolbar,
   ],

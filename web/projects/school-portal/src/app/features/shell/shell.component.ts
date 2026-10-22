@@ -39,7 +39,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
     </div>
   `,
   styles: `
-    .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; }
     .sidebar {
       background: #fff; border-right: 1px solid var(--line); padding: 20px 16px;
       display: flex; flex-direction: column; gap: 20px; position: sticky; top: 0; height: 100vh;
@@ -54,14 +54,14 @@ import { AuthService, StaffService } from '@skoolo/shared';
     }
     .user { margin-top: auto; display: grid; gap: 6px; }
     .name { font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
-    .content { padding: 24px; max-width: 1200px; width: 100%; }
+    .content { padding: 24px; max-width: 1200px; width: 100%; min-width: 0; }
     .banner { background: var(--warning-soft); color: var(--warning); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.95rem; }
 
     @media (max-width: 900px) {
-      .shell { grid-template-columns: 1fr; }
+      .shell { grid-template-columns: minmax(0, 1fr); }
       .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 12px 16px; gap: 12px; border-right: none; border-bottom: 1px solid var(--line); }
       .top { flex: 1 1 100%; display: flex; gap: 10px; align-items: baseline; }
-      nav { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+      nav { display: flex; gap: 4px; flex: 1 1 auto; min-width: 0; overflow-x: auto; }
       nav a { white-space: nowrap; padding: 8px 10px; font-size: 0.9rem; }
       .user { margin: 0; grid-auto-flow: column; align-items: center; }
       .name { display: none; }

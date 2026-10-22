@@ -84,7 +84,7 @@ import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badg
               @if (a.application_documents.length === 0) {
                 <p class="muted">No documents uploaded yet.</p>
               } @else {
-                <table class="data">
+                <div class="table-wrap"><table class="data">
                   <tbody>
                     @for (doc of sortedDocuments(); track doc.id) {
                       <tr>
@@ -93,7 +93,7 @@ import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badg
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               }
             </section>
 

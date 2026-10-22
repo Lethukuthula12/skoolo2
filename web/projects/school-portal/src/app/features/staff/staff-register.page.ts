@@ -77,7 +77,7 @@ const EMPTY_FORM: StaffForm = {
                 <h3>Documents</h3>
                 <p class="muted small">ID copy, qualifications, contract, police clearance. Only administrators can see these.</p>
                 @if (documents().length > 0) {
-                  <table class="data">
+                  <div class="table-wrap"><table class="data">
                     <tbody>
                       @for (d of documents(); track d.id) {
                         <tr>
@@ -89,7 +89,7 @@ const EMPTY_FORM: StaffForm = {
                         </tr>
                       }
                     </tbody>
-                  </table>
+                  </table></div>
                 } @else {
                   <p class="muted small">No documents yet.</p>
                 }
@@ -171,7 +171,7 @@ const EMPTY_FORM: StaffForm = {
         @if (logins().length === 0) {
           <p class="muted">No logins yet.</p>
         } @else {
-          <table class="data">
+          <div class="table-wrap"><table class="data">
             <tbody>
               @for (l of logins(); track l.user_id) {
                 <tr>
@@ -185,11 +185,11 @@ const EMPTY_FORM: StaffForm = {
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
         @if (openInvites().length > 0) {
           <h3>Open invites</h3>
-          <table class="data">
+          <div class="table-wrap"><table class="data">
             <tbody>
               @for (i of openInvites(); track i.id) {
                 <tr>
@@ -202,7 +202,7 @@ const EMPTY_FORM: StaffForm = {
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
       </div>
     </div>

@@ -23,6 +23,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <app-install-hint />
   @if (loading() && schools().length === 0) {
     <div class="centered"><ion-spinner name="crescent" /></div>
   } @else if (loadError()) {
