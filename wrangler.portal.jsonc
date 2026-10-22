@@ -1,0 +1,11 @@
+// Cloudflare Worker serving the school portal as static assets.
+// Deploy command: `npx wrangler deploy --config wrangler.portal.jsonc`
+{
+  "name": "skoolo-schools",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./web/dist/school-portal/browser",
+    "not_found_handling": "single-page-application",
+    "html_handling": "auto-trailing-slash"
+  }
+}

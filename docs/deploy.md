@@ -1,71 +1,68 @@
 # Deploying Skoolo
 
-Both web apps are static builds that talk to Supabase directly, so any static host works. We use
-**Cloudflare Pages**: free for commercial use, unlimited bandwidth, edge servers in Johannesburg
-and Cape Town, and the same account can hold the domain's DNS later. The `_redirects` file in
-each app's `public/` folder gives Cloudflare (and Netlify) the single-page-app routing it needs.
+Both web apps are static builds that talk to Supabase directly. We host them on **Cloudflare
+Workers** with static assets: free for commercial use, static requests are free and unlimited,
+edge servers in Johannesburg and Cape Town, and the same account can hold the domain's DNS later.
 
-The root `package.json` installs the web dependencies and runs the build, and `.node-version`
-pins Node 20, so no root directory or environment variable needs to be set on the host.
+The repository carries everything the host needs:
+
+- `package.json` at the root installs the web dependencies and builds each app.
+- `.node-version` pins Node 20.
+- `wrangler.jsonc` deploys the parent app; `wrangler.portal.jsonc` deploys the portal. Both serve
+  the built folder as static assets with single-page-app routing.
+- `_headers` in each app's `public/` folder keeps the service worker files uncached.
 
 ## Part 1: create the account and connect GitHub (once)
 
 1. Go to <https://dash.cloudflare.com/sign-up> and create an account with your personal email.
    Confirm the email address they send you.
 2. In the left menu click **Workers & Pages** (under *Compute* on some accounts).
-3. Click the blue **Create** button at the top right.
-4. You will see two tabs, **Workers** and **Pages**. Click **Pages**.
-5. Under *Import an existing Git repository* click **Get started** (or **Connect to Git**).
-6. Choose **GitHub**. A GitHub window opens asking which repositories Cloudflare may see.
+3. Click **Create**, then under *Workers* choose **Import a repository** (or *Connect to Git*).
+4. Choose **GitHub**. A GitHub window opens asking which repositories Cloudflare may see.
    Choose **Only select repositories**, pick `Lethukuthula12/skoolo2`, and click **Install &
    Authorize**. You are returned to Cloudflare.
 
 ## Part 2: the parent app
 
-7. In the repository list click **skoolo2**, then **Begin setup**.
-8. Fill in the form. Leave anything not listed here as it is.
+5. Click **skoolo2** in the repository list.
+6. Fill in the form:
 
    | Field | Value |
    |---|---|
-   | Project name | `skoolo-app` (if taken, `skoolo-parents` or similar) |
+   | Project name | `skoolo-app` (must match the `name` in `wrangler.jsonc`) |
    | Production branch | `main` |
-   | Framework preset | `None` (leave blank if there is no such field) |
    | Build command | `npm run build:parent` |
-   | Build output directory | `web/dist/parent-app/browser` |
+   | Deploy command | `npx wrangler deploy` |
    | Root directory | leave empty |
 
-9. Click **Save and Deploy**. The first build takes three to five minutes. When it finishes you
-   get a URL like `https://skoolo-app.pages.dev`. Open it: the school directory should load.
+7. Click **Create and Deploy**. The first build takes three to five minutes. You get a URL like
+   `https://skoolo-app.<your-subdomain>.workers.dev`. Open it: the school directory should load.
 
 ### Changing the settings of a project you already created
 
-Open the project in **Workers & Pages**, then **Settings**, then **Builds & deployments** (on some
-accounts just **Build**). Under *Build configuration* click **Edit**, change the fields to the
-values above, and save. Then open **Deployments** and click **Retry deployment** on the latest
-one, or push any commit.
-
-If the settings page has a **Deploy command** field and no **Build output directory**, the project
-was created as a Worker, not a Pages project. Delete it (Settings, bottom of the page) and create
-it again from **Create**, then the **Pages** tab.
+Open the project in **Workers & Pages**, then **Settings**, scroll to **Build configuration**, and
+set the fields above. Make sure **Disable builds** is off. Then open **Deployments** and retry the
+latest deployment, or push any commit.
 
 ## Part 3: the school portal
 
-10. Go back to **Workers & Pages**, click **Create**, then **Pages**, then **Connect to Git**
-    again. Choose `skoolo2` again and click **Begin setup**.
-11. Fill in the form:
+8. **Workers & Pages**, **Create**, **Import a repository**, choose `skoolo2` again.
+9. Fill in the form:
 
-    | Field | Value |
-    |---|---|
-    | Project name | `skoolo-schools` |
-    | Production branch | `main` |
-    | Framework preset | `None` |
-    | Build command | `npm run build:portal` |
-    | Build output directory | `web/dist/school-portal/browser` |
-    | Root directory | leave empty |
+   | Field | Value |
+   |---|---|
+   | Project name | `skoolo-schools` (must match the `name` in `wrangler.portal.jsonc`) |
+   | Production branch | `main` |
+   | Build command | `npm run build:portal` |
+   | Deploy command | `npx wrangler deploy --config wrangler.portal.jsonc` |
+   | Root directory | leave empty |
 
-12. **Save and Deploy**. You get `https://skoolo-schools.pages.dev`.
+10. **Create and Deploy**. You get `https://skoolo-schools.<your-subdomain>.workers.dev`.
 
-From now on every push to `main` rebuilds both sites automatically.
+From now on every push to `main` rebuilds and redeploys both.
+
+If a project was created under a different name, either create it again with the name above, or
+change the `name` field in the matching `wrangler*.jsonc` file to the project's name.
 
 ## Part 4: tell Supabase about the new addresses
 
@@ -99,21 +96,24 @@ Open the failed deployment in Cloudflare and read the log.
 
 - `ng: not found` means the build command is not exactly `npm run build:parent` or
   `npm run build:portal`.
-- "No output directory found" means the build output directory does not start with `web/dist/`.
-- The same build runs on GitHub Actions on every push, so the repository's **Actions** tab shows
+- A wrangler error about a missing entry point or assets directory means the deploy command does
+  not match the table above, or the build did not produce `web/dist/...`.
+- A name mismatch means the project name and the `name` in the wrangler file differ.
+- The same build runs on GitHub Actions on every push, so the repository **Actions** tab shows
   whether the code itself builds.
 
 ## Custom domain later
 
-When you own `skoolo.co.za`: in each Pages project open **Custom domains**, add `app.skoolo.co.za`
+When you own `skoolo.co.za`: in each Worker open **Domains & Routes**, add `app.skoolo.co.za`
 to the parent app and `schools.skoolo.co.za` to the portal, and follow the DNS instructions shown.
 If the domain's DNS is on Cloudflare, it is one click. Then update the Supabase addresses in
 Part 4 again.
 
 ## Other hosts
 
-Netlify works the same way with the same build settings and the `_redirects` files. Vercel also
-works (`vercel.json` is in the repo), but its free plan does not allow commercial use.
+Cloudflare Pages, Netlify and Vercel all work with build output `web/dist/<app>/browser`; the
+`_redirects` files cover single-page routing on Pages and Netlify, `vercel.json` covers Vercel
+(whose free plan does not allow commercial use).
 
 ## Local production preview
 
