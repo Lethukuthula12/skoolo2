@@ -1,8 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { injectSupabase } from '../supabase-client';
 import type {
-  Application, ApplicationDocument, ApplicationStatus, EnrolmentPeriod, Learner, PeriodGrade, Profile, Province,
-  School, StaffMember, StaffMemberInsert,
+  Application, ApplicationDocument, ApplicationStatus, ClassSubjectTeacher, EnrolmentPeriod, Learner,
+  LearnerGuardian, LearnerGuardianInsert, LearnerInsert, PeriodGrade, Profile, Province, School, SchoolClass,
+  SchoolClassInsert, StaffMember, StaffMemberInsert,
 } from '../models';
 import type { Database, Tables, TablesInsert, TablesUpdate } from '../database.types';
 
@@ -450,4 +451,149 @@ export class StaffService {
     const { error } = await this.client.from('staff_documents').delete().eq('id', doc.id);
     if (error) throw error;
   }
+
+  // ----- Subjects ------------------------------------------------------------
+
+  async subjects(): Promise<Tables<'subjects'>[]> {
+    const { data, error } = await this.client
+      .from('subjects')
+      .select('*')
+      .eq('school_id', this.requireSchoolId())
+      .order('sort_order');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async saveSubject(subject: Omit<TablesInsert<'subjects'>, 'school_id'> & { id?: string }): Promise<Tables<'subjects'>> {
+    const row = { ...subject, school_id: this.requireSchoolId() };
+    const { data, error } = await this.client.from('subjects').upsert(row).select().single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteSubject(id: string): Promise<void> {
+    const { error } = await this.client.from('subjects').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  /** Offer the CAPS defaults for every grade in the school's range. Returns how many were added. */
+  async seedDefaultSubjects(): Promise<number> {
+    const { data, error } = await this.client.rpc('seed_default_subjects', { p_school_id: this.requireSchoolId() });
+    if (error) throw error;
+    return data ?? 0;
+  }
+
+  // ----- Classes and teaching assignments ------------------------------------
+
+  async classes(year?: number): Promise<ClassRow[]> {
+    let query = this.client
+      .from('classes')
+      .select('*, grades(label, sort_order), class_teacher:staff_members(first_name, last_name)')
+      .eq('school_id', this.requireSchoolId())
+      .order('academic_year', { ascending: false });
+    if (year) query = query.eq('academic_year', year);
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data ?? []) as unknown as ClassRow[];
+  }
+
+  async saveClass(cls: Omit<SchoolClassInsert, 'school_id'> & { id?: string }): Promise<SchoolClass> {
+    const row = { ...cls, school_id: this.requireSchoolId() };
+    const { data, error } = await this.client.from('classes').upsert(row).select().single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteClass(id: string): Promise<void> {
+    const { error } = await this.client.from('classes').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  async classSubjectTeachers(classId: string): Promise<ClassSubjectTeacherRow[]> {
+    const { data, error } = await this.client
+      .from('class_subject_teachers')
+      .select('*, subjects(name, grade_code), teacher:staff_members(first_name, last_name)')
+      .eq('class_id', classId);
+    if (error) throw error;
+    return (data ?? []) as unknown as ClassSubjectTeacherRow[];
+  }
+
+  async assignSubjectTeacher(classId: string, subjectId: string, teacherId: string | null): Promise<void> {
+    const { error } = await this.client
+      .from('class_subject_teachers')
+      .upsert({ class_id: classId, subject_id: subjectId, teacher_id: teacherId }, { onConflict: 'class_id,subject_id' });
+    if (error) throw error;
+  }
+
+  // ----- Learner register ----------------------------------------------------
+
+  async schoolLearners(): Promise<RegisterLearnerRow[]> {
+    const { data, error } = await this.client
+      .from('learners')
+      .select('*, classes(name, grade_code)')
+      .eq('school_id', this.requireSchoolId())
+      .order('last_name')
+      .order('first_name');
+    if (error) throw error;
+    return (data ?? []) as unknown as RegisterLearnerRow[];
+  }
+
+  async saveLearner(learner: Omit<LearnerInsert, 'school_id'> & { id?: string }): Promise<Learner> {
+    const row = { ...learner, school_id: this.requireSchoolId() };
+    const { data, error } = await this.client.from('learners').upsert(row).select().single();
+    if (error) throw error;
+    return data;
+  }
+
+  async moveLearner(id: string, classId: string | null): Promise<void> {
+    const { error } = await this.client.from('learners').update({ current_class_id: classId }).eq('id', id);
+    if (error) throw error;
+  }
+
+  async deleteLearner(id: string): Promise<void> {
+    const { error } = await this.client.from('learners').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  /** Bulk-insert validated learner rows into a class. Returns how many were saved. */
+  async importLearners(classId: string, rows: LearnerInsert[]): Promise<number> {
+    const schoolId = this.requireSchoolId();
+    const prepared = rows.map((r) => ({ ...r, school_id: schoolId, current_class_id: classId }));
+    const { data, error } = await this.client.from('learners').insert(prepared).select('id');
+    if (error) throw error;
+    return data?.length ?? 0;
+  }
+
+  async guardians(learnerId: string): Promise<LearnerGuardian[]> {
+    const { data, error } = await this.client
+      .from('learner_guardians')
+      .select('*')
+      .eq('learner_id', learnerId)
+      .order('is_primary', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async saveGuardian(guardian: LearnerGuardianInsert & { id?: string }): Promise<LearnerGuardian> {
+    const { data, error } = await this.client.from('learner_guardians').upsert(guardian).select().single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteGuardian(id: string): Promise<void> {
+    const { error } = await this.client.from('learner_guardians').delete().eq('id', id);
+    if (error) throw error;
+  }
 }
+
+export type ClassRow = SchoolClass & {
+  grades: { label: string; sort_order: number } | null;
+  class_teacher: { first_name: string; last_name: string } | null;
+};
+export type ClassSubjectTeacherRow = ClassSubjectTeacher & {
+  subjects: { name: string; grade_code: string } | null;
+  teacher: { first_name: string; last_name: string } | null;
+};
+export type RegisterLearnerRow = Learner & {
+  classes: { name: string; grade_code: string } | null;
+};

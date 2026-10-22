@@ -1,0 +1,140 @@
+<div class="stack">
+  <div class="toolbar">
+    <div>
+      <h1>Classes and subjects</h1>
+      <p class="muted">Set up your classes, assign teachers, and choose the subjects each grade offers.</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="tab() === 'classes'" (click)="tab.set('classes')">Classes</button>
+    <button class="tab" [class.active]="tab() === 'subjects'" (click)="tab.set('subjects')">Subjects</button>
+  </div>
+
+  @if (notice()) { <p class="ok">{{ notice() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (tab() === 'classes') {
+    <div class="card stack">
+      <div class="toolbar">
+        <h2>Classes for {{ year() }}</h2>
+        <span class="spacer"></span>
+        <label class="row small">Year
+          <input type="number" class="year" [ngModel]="year()" (ngModelChange)="changeYear($event)" min="2020" max="2100" />
+        </label>
+      </div>
+
+      <form class="add-class" (ngSubmit)="addClass()">
+        <select [(ngModel)]="newClass.grade_code" name="grade" required>
+          <option value="">Grade…</option>
+          @for (g of schoolGrades(); track g.code) { <option [value]="g.code">{{ g.label }}</option> }
+        </select>
+        <input type="text" [(ngModel)]="newClass.name" name="name" placeholder="Class name (e.g. A, Blue, 3A)" />
+        <select [(ngModel)]="newClass.class_teacher_id" name="teacher">
+          <option value="">Class teacher…</option>
+          @for (t of teachers(); track t.id) { <option [value]="t.id">{{ t.first_name }} {{ t.last_name }}</option> }
+        </select>
+        <button class="btn btn-primary" type="submit" [disabled]="busy() || !newClass.grade_code || !newClass.name.trim()">Add class</button>
+      </form>
+
+      @if (classes().length === 0) {
+        <div class="empty">No classes yet for {{ year() }}. Add your first class above.</div>
+      } @else {
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Grade</th><th>Class</th><th>Class teacher</th><th>Learners</th><th></th></tr></thead>
+            <tbody>
+              @for (c of classes(); track c.id) {
+                <tr>
+                  <td>{{ gradeLabel(c.grade_code) }}</td>
+                  <td><strong>{{ c.name }}</strong></td>
+                  <td>
+                    <select [ngModel]="c.class_teacher_id ?? ''" (ngModelChange)="updateClassTeacher(c, $event)">
+                      <option value="">Not assigned</option>
+                      @for (t of teachers(); track t.id) { <option [value]="t.id">{{ t.first_name }} {{ t.last_name }}</option> }
+                    </select>
+                  </td>
+                  <td>{{ learnerCount(c.id) }}</td>
+                  <td class="right">
+                    @if (isSubjectTeaching(c.grade_code)) {
+                      <button class="btn btn-outline btn-sm" type="button" (click)="toggleAssignments(c)">Subject teachers</button>
+                    }
+                    <button class="btn btn-ghost btn-sm" type="button" (click)="removeClass(c)">Delete</button>
+                  </td>
+                </tr>
+                @if (expandedClassId() === c.id) {
+                  <tr class="assignments">
+                    <td colspan="5">
+                      <h4>Subject teachers for {{ gradeLabel(c.grade_code) }} {{ c.name }}</h4>
+                      @if (subjectsForGrade(c.grade_code).length === 0) {
+                        <p class="muted small">No subjects set up for this grade yet. Add them in the Subjects tab.</p>
+                      } @else {
+                        <div class="assign-grid">
+                          @for (s of subjectsForGrade(c.grade_code); track s.id) {
+                            <div class="assign-row">
+                              <span>{{ s.name }}</span>
+                              <select [ngModel]="teacherForSubject(s.id)" (ngModelChange)="assignSubjectTeacher(c.id, s.id, $event)">
+                                <option value="">Not assigned</option>
+                                @for (t of teachers(); track t.id) { <option [value]="t.id">{{ t.first_name }} {{ t.last_name }}</option> }
+                              </select>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="card stack">
+      <div class="toolbar">
+        <h2>Subjects</h2>
+        <span class="spacer"></span>
+        <button class="btn btn-outline" type="button" (click)="addCapsDefaults()" [disabled]="busy()">Add CAPS defaults</button>
+      </div>
+      <p class="muted small">The standard CAPS subjects for each grade in your range. Edit or add your own, for example Religious Studies.</p>
+
+      <form class="add-subject" (ngSubmit)="addSubject()">
+        <select [(ngModel)]="newSubject.grade_code" name="sgrade" required>
+          <option value="">Grade…</option>
+          @for (g of schoolGrades(); track g.code) { <option [value]="g.code">{{ g.label }}</option> }
+        </select>
+        <input type="text" [(ngModel)]="newSubject.name" name="sname" placeholder="Subject name" />
+        <select [(ngModel)]="newSubject.language_level" name="slevel">
+          <option value="">Not a language</option>
+          <option value="home">Home Language</option>
+          <option value="first_additional">First Additional Language</option>
+          <option value="second_additional">Second Additional Language</option>
+        </select>
+        <button class="btn btn-primary" type="submit" [disabled]="busy() || !newSubject.grade_code || !newSubject.name.trim()">Add subject</button>
+      </form>
+
+      @if (subjects().length === 0) {
+        <div class="empty">No subjects yet. Use "Add CAPS defaults" or add your own above.</div>
+      } @else {
+        @for (g of schoolGrades(); track g.code) {
+          @if (subjectsForGrade(g.code).length > 0) {
+            <div class="subject-group">
+              <h4>{{ g.label }}</h4>
+              <div class="chips">
+                @for (s of subjectsForGrade(g.code); track s.id) {
+                  <span class="chip">
+                    {{ s.name }}@if (s.language_level) { <em>· {{ languageLevels[s.language_level] }}</em> }
+                    <button type="button" (click)="removeSubject(s)" aria-label="Delete">×</button>
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+</div>

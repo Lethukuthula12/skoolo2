@@ -33,6 +33,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/enrolment/enrolment-settings.page').then((m) => m.EnrolmentSettingsPage),
       },
       {
+        path: 'classes',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/classes/classes.page').then((m) => m.ClassesPage),
+      },
+      {
+        path: 'learners',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/learners/learners.page').then((m) => m.LearnersPage),
+      },
+      {
         path: 'staff',
         loadComponent: () => import('./features/staff/staff-register.page').then((m) => m.StaffRegisterPage),
       },

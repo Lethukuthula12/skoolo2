@@ -379,3 +379,32 @@ does not; and a teacher of another school sees no register learners.
 
 Next in Stage 1: the admin screens (subjects setup, classes and teacher assignment, learner import
 from Excel, learner CRUD, class-list export) and the teacher's class view.
+
+## 2026-10-23 — Stage 1 (part 2): the admin screens
+
+Two portal pages, administrators only.
+
+- **Classes and subjects** (`/classes`): a Subjects tab with "Add CAPS defaults" (calls
+  `seed_default_subjects`) and per-grade add/edit/delete; a Classes tab to create classes for a
+  chosen year with a class teacher, and, for the subject-teaching grades, assign a teacher to each
+  subject. Verified: seeding added 51 CAPS subjects across Grades 00–7; a Grade 4 class was created,
+  recognised as subject-teaching, and a subject teacher assigned.
+- **Learners** (`/learners`): pick a class to see its roster, add and edit learners with guardians,
+  move a learner between classes, and import a class from Excel or CSV with a validated preview
+  (missing names, invalid ID numbers and dual ID/passport are flagged before import). Export the
+  roster to Excel and print a class list. Verified: a learner was added, a CSV of four imported two
+  and rejected the bad rows.
+
+Dependency: `xlsx` (SheetJS 0.18.5) for reading and writing Excel, allowed as a CommonJS dependency
+in the portal build.
+
+Bug found and fixed in testing: Excel/CSV auto-parsing read `12/04/2015` as US month-first and
+shifted the timezone, turning 12 April into December. CSV files are now parsed directly so dates
+stay day-first (South African), and Excel date cells are formatted from local parts. Re-verified:
+`12/04/2015` now reads as 2015-04-12.
+
+Test artifacts (a sample class, subjects and learners) were removed from the pilot school afterward,
+so its register starts clean for the real admin. The enrolment application is untouched.
+
+Still in Stage 1: the teacher's own class view, replacing today's Home placeholder, so a teacher
+sees the classes they teach and their learners.

@@ -1,0 +1,163 @@
+<div class="stack">
+  <div class="toolbar">
+    <div>
+      <h1>Learners</h1>
+      <p class="muted">The school's register. Import a class from Excel, add learners, and export a class list.</p>
+    </div>
+  </div>
+
+  @if (notice()) { <p class="ok">{{ notice() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (classes().length === 0) {
+    <div class="card empty">
+      No classes yet for {{ year() }}. Create classes first, on the Classes and subjects page, then come back to add learners.
+    </div>
+  } @else {
+    <div class="card stack">
+      <div class="toolbar">
+        <label class="row">Class
+          <select [ngModel]="selectedClassId()" (ngModelChange)="selectedClassId.set($event)">
+            @for (c of classes(); track c.id) { <option [value]="c.id">{{ gradeLabelOf(c) }} {{ c.name }}</option> }
+            <option value="">Not in a class</option>
+          </select>
+        </label>
+        <span class="spacer"></span>
+        <button class="btn btn-primary" type="button" (click)="startNew()">Add learner</button>
+        <button class="btn btn-outline" type="button" (click)="pickFile()">Import from Excel</button>
+        <button class="btn btn-outline" type="button" (click)="exportRoster()" [disabled]="roster().length === 0">Export</button>
+        <button class="btn btn-outline" type="button" (click)="printRoster()" [disabled]="roster().length === 0">Print</button>
+        <input #fileInput type="file" accept=".xlsx,.xls,.csv" hidden (change)="onFileChosen($event)" />
+      </div>
+
+      @if (roster().length === 0) {
+        <div class="empty">No learners in this class yet. Add one, or import from Excel.</div>
+      } @else {
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>#</th><th>Surname, first name</th><th>Date of birth</th><th>Age</th><th>Gender</th><th>ID / passport</th><th>Move to</th></tr></thead>
+            <tbody>
+              @for (l of roster(); track l.id; let i = $index) {
+                <tr class="clickable" (click)="edit(l)">
+                  <td>{{ i + 1 }}</td>
+                  <td><strong>{{ l.last_name }}, {{ l.first_name }}</strong></td>
+                  <td>{{ l.date_of_birth }}</td>
+                  <td>{{ age(l.date_of_birth) }}</td>
+                  <td>{{ l.gender }}</td>
+                  <td>{{ l.identity_number || l.passport_number }}</td>
+                  <td (click)="$event.stopPropagation()">
+                    <select [ngModel]="l.current_class_id ?? ''" (ngModelChange)="moveLearner(l, $event)">
+                      @for (c of classes(); track c.id) { <option [value]="c.id">{{ gradeLabelOf(c) }} {{ c.name }}</option> }
+                      <option value="">Not in a class</option>
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  @if (editing()) {
+    @let f = form();
+    <form class="card stack" (ngSubmit)="save()">
+      <h2>{{ f.id ? 'Edit learner' : 'New learner' }}</h2>
+      <div class="form-grid">
+        <div class="field"><label for="first">First name</label><input id="first" type="text" [(ngModel)]="f.first_name" name="first" required /></div>
+        <div class="field"><label for="last">Surname</label><input id="last" type="text" [(ngModel)]="f.last_name" name="last" required /></div>
+        <div class="field"><label for="dob">Date of birth</label><input id="dob" type="date" [(ngModel)]="f.date_of_birth" name="dob" required /></div>
+        <div class="field"><label for="gender">Gender</label>
+          <select id="gender" [(ngModel)]="f.gender" name="gender">
+            <option value="female">Female</option><option value="male">Male</option><option value="unspecified">Unspecified</option>
+          </select>
+        </div>
+        <div class="field"><label for="idtype">Identity</label>
+          <select id="idtype" [(ngModel)]="f.identity_type" name="idtype">
+            <option value="sa_id">South African ID</option><option value="passport">Passport</option><option value="none">None yet</option>
+          </select>
+        </div>
+        @if (f.identity_type === 'sa_id') {
+          <div class="field"><label for="idno">ID number</label><input id="idno" type="text" inputmode="numeric" maxlength="13" [(ngModel)]="f.identity_number" name="idno" /></div>
+        } @else if (f.identity_type === 'passport') {
+          <div class="field"><label for="passport">Passport number</label><input id="passport" type="text" [(ngModel)]="f.passport_number" name="passport" /></div>
+        }
+        <div class="field"><label for="adm">Admission number</label><input id="adm" type="text" [(ngModel)]="f.admission_number" name="adm" /></div>
+        <div class="field"><label for="lang">Home language</label><input id="lang" type="text" [(ngModel)]="f.home_language" name="lang" /></div>
+      </div>
+
+      @if (!f.id) {
+        <h3>Primary guardian (optional)</h3>
+        <div class="form-grid">
+          <div class="field"><label for="gname">Guardian name</label><input id="gname" type="text" [(ngModel)]="f.guardian_name" name="gname" /></div>
+          <div class="field"><label for="gphone">Guardian phone</label><input id="gphone" type="tel" [(ngModel)]="f.guardian_phone" name="gphone" /></div>
+        </div>
+      }
+
+      <div class="row">
+        <button class="btn btn-primary" type="submit" [disabled]="busy() || !f.first_name.trim() || !f.last_name.trim() || !f.date_of_birth">Save</button>
+        <button class="btn btn-outline" type="button" (click)="cancel()">Close</button>
+      </div>
+
+      @if (f.id) {
+        <hr />
+        <h3>Guardians</h3>
+        @if (guardians().length > 0) {
+          <table class="data">
+            <tbody>
+              @for (g of guardians(); track g.id) {
+                <tr>
+                  <td><strong>{{ g.full_name }}</strong>@if (g.is_primary) { <span class="badge badge-success">Primary</span> } <br /><span class="muted small">{{ g.relationship }} · {{ g.phone }}</span></td>
+                  <td class="right"><button class="btn btn-ghost btn-sm" type="button" (click)="removeGuardian(g)">Remove</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+        <div class="row">
+          <input type="text" [(ngModel)]="f.guardian_name" name="addgname" placeholder="Guardian name" />
+          <input type="tel" [(ngModel)]="f.guardian_phone" name="addgphone" placeholder="Phone" />
+          <button class="btn btn-outline btn-sm" type="button" (click)="addGuardian()" [disabled]="busy() || !f.guardian_name.trim()">Add guardian</button>
+          <span class="spacer"></span>
+          <button class="btn btn-danger btn-sm" type="button" (click)="removeCurrent()" [disabled]="busy()">Remove learner</button>
+        </div>
+      }
+    </form>
+  }
+
+  @if (showImport()) {
+    <div class="card stack">
+      <div class="toolbar">
+        <h2>Import preview — {{ selectedClass() ? gradeLabelOf(selectedClass()!) + ' ' + selectedClass()!.name : '' }}</h2>
+        <span class="spacer"></span>
+        <span class="muted small">{{ validImportCount() }} of {{ importRows().length }} rows are ready</span>
+      </div>
+      <p class="muted small">
+        Columns are matched by name: first name, surname, date of birth, ID number, passport, gender, admission number,
+        guardian and phone. Fix the rows with a problem in your file and import again, or import the ready rows now.
+      </p>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Learner</th><th>Date of birth</th><th>ID / passport</th><th>Status</th></tr></thead>
+          <tbody>
+            @for (r of importRows(); track $index) {
+              <tr [class.bad]="r.error">
+                <td>{{ r.data.first_name }} {{ r.data.last_name }}</td>
+                <td>{{ r.data.date_of_birth }}</td>
+                <td>{{ r.data.identity_number || r.data.passport_number || '' }}</td>
+                <td>@if (r.error) { <span class="badge badge-danger">{{ r.error }}</span> } @else { <span class="badge badge-success">Ready</span> }</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="row">
+        <button class="btn btn-primary" type="button" (click)="confirmImport()" [disabled]="busy() || validImportCount() === 0">Import {{ validImportCount() }} learners</button>
+        <button class="btn btn-outline" type="button" (click)="cancelImport()">Cancel</button>
+      </div>
+    </div>
+  }
+</div>

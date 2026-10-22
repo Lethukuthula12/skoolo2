@@ -66,3 +66,17 @@ export const STAFF_POSITIONS: readonly string[] = [
   'Principal', 'Deputy principal', 'Teacher', 'Admin clerk', 'Bursar', 'Receptionist', 'Groundsman',
   'Cleaner', 'Security', 'Driver', 'Cook', 'Other',
 ];
+
+export type Subject = Tables<'subjects'>;
+export type SubjectInsert = TablesInsert<'subjects'>;
+export type SchoolClass = Tables<'classes'>;
+export type SchoolClassInsert = TablesInsert<'classes'>;
+export type ClassSubjectTeacher = Tables<'class_subject_teachers'>;
+export type LearnerGuardian = Tables<'learner_guardians'>;
+export type LearnerGuardianInsert = TablesInsert<'learner_guardians'>;
+
+export const LANGUAGE_LEVEL_LABELS: Record<string, string> = {
+  home: 'Home Language',
+  first_additional: 'First Additional Language',
+  second_additional: 'Second Additional Language',
+};

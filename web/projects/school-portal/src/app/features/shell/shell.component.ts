@@ -16,6 +16,8 @@ import { AuthService, StaffService } from '@skoolo/shared';
           @if (staff.isAdmin()) {
             <a routerLink="/applications" routerLinkActive="active">Applications</a>
             <a routerLink="/enrolment" routerLinkActive="active">Enrolment settings</a>
+            <a routerLink="/classes" routerLinkActive="active">Classes & subjects</a>
+            <a routerLink="/learners" routerLinkActive="active">Learners</a>
             <a routerLink="/staff" routerLinkActive="active">Staff register</a>
             <a routerLink="/school" routerLinkActive="active">School profile</a>
           } @else {

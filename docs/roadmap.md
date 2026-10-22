@@ -14,7 +14,7 @@ school. Nothing in the next stage starts while the current one has open bugs.
 | Stage | What | Requests | Status |
 |---|---|---|---|
 | 0 | Make what exists solid | — | **In progress** |
-| 1 | Learners, classes and subjects | 1, 8 (teaching assignments) | **In progress** (data model and security done; admin screens next) |
+| 1 | Learners, classes and subjects | 1, 8 (teaching assignments) | **In progress** (model, security and admin screens done; teacher class view next) |
 | 2 | Connect parents to their children | prerequisite for 2, 4, 6 | Planned |
 | 3 | Term reports | 2, 5, 3 (schedules and pass and fail lists) | Planned, target Term 4 reports in early December 2026 |
 | 4 | Messages between home and school | 4, 6 | Planned |

@@ -110,6 +110,9 @@
             ],
             "styles": [
               "projects/school-portal/src/styles.scss"
+            ],
+            "allowedCommonJsDependencies": [
+              "xlsx"
             ]
           },
           "configurations": {
