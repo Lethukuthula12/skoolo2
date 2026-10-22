@@ -42,6 +42,11 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'children',
+    canActivate: [signedInGuard],
+    loadComponent: () => import('./features/children/children.page').then((m) => m.ChildrenPage),
+  },
+  {
     path: 'inbox',
     canActivate: [signedInGuard],
     loadComponent: () => import('./features/inbox/inbox.page').then((m) => m.InboxPage),

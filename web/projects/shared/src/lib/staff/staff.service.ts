@@ -594,6 +594,28 @@ export class StaffService {
     return (data ?? []) as MyClass[];
   }
 
+  /** Give every learner in a class a family code. Returns how many were added. */
+  async generateFamilyCodes(classId: string): Promise<number> {
+    const { data, error } = await this.client.rpc('set_class_family_codes', { p_class_id: classId });
+    if (error) throw error;
+    return data ?? 0;
+  }
+
+  async regenerateFamilyCode(learnerId: string): Promise<string> {
+    const { data, error } = await this.client.rpc('regenerate_family_code', { p_learner_id: learnerId });
+    if (error) throw error;
+    return data ?? '';
+  }
+
+  /** How many parent accounts are connected to each learner, for this school. */
+  async guardianLinkCounts(): Promise<Record<string, number>> {
+    const { data, error } = await this.client.from('learner_guardians').select('learner_id').not('user_id', 'is', null);
+    if (error) throw error;
+    const counts: Record<string, number> = {};
+    for (const row of data ?? []) counts[row.learner_id] = (counts[row.learner_id] ?? 0) + 1;
+    return counts;
+  }
+
   /** Learners in one class. Row security limits a teacher to classes they teach. */
   async classLearners(classId: string): Promise<Learner[]> {
     const { data, error } = await this.client

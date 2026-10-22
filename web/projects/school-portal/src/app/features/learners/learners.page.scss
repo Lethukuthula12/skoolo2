@@ -4,3 +4,6 @@ td select { width: auto; min-width: 150px; padding: 6px 8px; }
 tr.bad td { background: rgba(192, 57, 43, 0.06); }
 hr { border: none; border-top: 1px solid var(--line); margin: 4px 0; }
 h3 { margin: 4px 0 0; }
+.code-cell { white-space: nowrap; }
+.code-cell code { background: var(--brand-soft); padding: 2px 6px; border-radius: 6px; margin-right: 4px; font-size: 0.85rem; }
+.code-cell .badge { margin-left: 4px; }

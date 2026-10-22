@@ -427,3 +427,23 @@ with the teacher assigned and two learners. Remove it before real use if preferr
 
 Stage 1 is built and verified across admin and teacher roles. It meets the definition of done
 except the last line, a real person using it: the admin importing the school's actual learners.
+
+## 2026-10-23 — Stage 2: connecting parents to their children (screens)
+
+Parent app: a **My children** page (reached from the directory header, the account page, and
+`/children`) lists the parent's connected children with school, grade and class, and a **Connect a
+child** form to redeem a family code with an optional relationship. `ApplicationService.myChildren`
+and `redeemFamilyCode` call the Stage 2 functions.
+
+Portal: the **Learners** page now has a **Family codes** button (generates a code for every learner
+in the class), and each row shows the code, a **Share** button that opens a prefilled WhatsApp
+message with the code and the parent-app link, and how many parent accounts are connected.
+
+Verified end to end in the browser: as admin, generated codes for the demo class; as the parent,
+redeemed one and the child (Ayanda, Newborn, Grade 4 A) appeared under My children alongside the
+parent's applicant child (Sipho). The database shows the guardian link with the parent's account
+and relationship. Applicant parents are connected automatically through the learner's parent_id, so
+they need no code.
+
+Isolation suite stands at 38 checks (the Stage 2 backbone commit). Stage 2 meets the definition of
+done except the last line: ten real families connected, which is for the school to do.

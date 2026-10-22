@@ -61,6 +61,9 @@ export class LearnersPage {
 
   protected readonly importRows = signal<ImportRow[]>([]);
   protected readonly showImport = signal(false);
+  protected readonly linkCounts = signal<Record<string, number>>({});
+
+  private readonly parentAppUrl = 'https://skoolo-app.lethufzikhali.workers.dev';
 
   protected readonly roster = computed(() => {
     const classId = this.selectedClassId();
@@ -406,7 +409,28 @@ export class LearnersPage {
   }
 
   private async loadLearners(): Promise<void> {
-    this.allLearners.set(await this.staff.schoolLearners());
+    const [learners, counts] = await Promise.all([this.staff.schoolLearners(), this.staff.guardianLinkCounts()]);
+    this.allLearners.set(learners);
+    this.linkCounts.set(counts);
+  }
+
+  protected connectedCount(learnerId: string): number {
+    return this.linkCounts()[learnerId] ?? 0;
+  }
+
+  protected async generateCodes(): Promise<void> {
+    if (!this.selectedClassId()) return;
+    await this.run(async () => {
+      const added = await this.staff.generateFamilyCodes(this.selectedClassId());
+      await this.loadLearners();
+      this.notice.set(added > 0 ? `Generated ${added} family codes. Share each with the family.` : 'Every learner already has a family code.');
+    });
+  }
+
+  protected shareCode(learner: RegisterLearnerRow): void {
+    if (!learner.family_code) return;
+    const text = `Hi, here is how to follow ${learner.first_name} on Skoolo. Open ${this.parentAppUrl}, sign up or sign in, go to "My children", tap Connect and enter the family code ${learner.family_code}.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   }
 
   private async run(action: () => Promise<void>, failure = 'Something went wrong.'): Promise<void> {

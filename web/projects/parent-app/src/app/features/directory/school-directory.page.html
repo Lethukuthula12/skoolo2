@@ -3,6 +3,9 @@
     <ion-title>Skoolo</ion-title>
     <ion-buttons slot="end">
       @if (auth.isSignedIn()) {
+        <ion-button routerLink="/children" aria-label="My children">
+          <ion-icon slot="icon-only" name="people-outline" />
+        </ion-button>
         <ion-button routerLink="/inbox" aria-label="Messages">
           <ion-icon slot="icon-only" name="mail-outline" />
         </ion-button>

@@ -187,6 +187,29 @@ export class ApplicationService {
     if (error) throw error;
   }
 
+  /** The children this parent is connected to (applicant or linked by family code). */
+  async myChildren(): Promise<MyChild[]> {
+    const { data, error } = await this.client.rpc('my_children');
+    if (error) throw error;
+    return (data ?? []) as MyChild[];
+  }
+
+  /** Redeem a family code to connect to a child. Returns the child, or throws a friendly message. */
+  async redeemFamilyCode(code: string, relationship?: string): Promise<{ first_name: string; last_name: string; school_name: string }> {
+    const { data, error } = await this.client.rpc('redeem_family_code', {
+      p_code: code.trim().toUpperCase(),
+      p_relationship: relationship ?? '',
+    });
+    if (error) {
+      const hint = (error as { hint?: string }).hint;
+      if (hint === 'CODE_NOT_FOUND') throw new Error('That code was not found. Check it with your school and try again.');
+      throw new Error(error.message);
+    }
+    const row = data?.[0];
+    if (!row) throw new Error('That code was not found. Check it with your school and try again.');
+    return { first_name: row.first_name, last_name: row.last_name, school_name: row.school_name };
+  }
+
   private translate(error: { message: string; hint?: string | null; code?: string }): ApplicationError {
     const hint = (error.hint ?? '') as ApplicationErrorHint;
     switch (hint) {
@@ -207,4 +230,14 @@ export class ApplicationService {
     }
     return new ApplicationError('UNKNOWN', error.message);
   }
+}
+
+export interface MyChild {
+  id: string;
+  first_name: string;
+  last_name: string;
+  date_of_birth: string;
+  school_name: string | null;
+  class_name: string | null;
+  grade_label: string | null;
 }

@@ -27,6 +27,7 @@
         <span class="spacer"></span>
         <button class="btn btn-primary" type="button" (click)="startNew()">Add learner</button>
         <button class="btn btn-outline" type="button" (click)="pickFile()">Import from Excel</button>
+        <button class="btn btn-outline" type="button" (click)="generateCodes()" [disabled]="busy() || roster().length === 0 || !selectedClassId()">Family codes</button>
         <button class="btn btn-outline" type="button" (click)="exportRoster()" [disabled]="roster().length === 0">Export</button>
         <button class="btn btn-outline" type="button" (click)="printRoster()" [disabled]="roster().length === 0">Print</button>
         <input #fileInput type="file" accept=".xlsx,.xls,.csv" hidden (change)="onFileChosen($event)" />
@@ -37,7 +38,7 @@
       } @else {
         <div class="table-wrap">
           <table class="data">
-            <thead><tr><th>#</th><th>Surname, first name</th><th>Date of birth</th><th>Age</th><th>Gender</th><th>ID / passport</th><th>Move to</th></tr></thead>
+            <thead><tr><th>#</th><th>Surname, first name</th><th>Date of birth</th><th>Age</th><th>Gender</th><th>ID / passport</th><th>Family code</th><th>Move to</th></tr></thead>
             <tbody>
               @for (l of roster(); track l.id; let i = $index) {
                 <tr class="clickable" (click)="edit(l)">
@@ -47,6 +48,15 @@
                   <td>{{ age(l.date_of_birth) }}</td>
                   <td>{{ l.gender }}</td>
                   <td>{{ l.identity_number || l.passport_number }}</td>
+                  <td (click)="$event.stopPropagation()" class="code-cell">
+                    @if (l.family_code) {
+                      <code>{{ l.family_code }}</code>
+                      <button class="btn btn-ghost btn-sm" type="button" (click)="shareCode(l)">Share</button>
+                      <span class="badge" [class.badge-success]="connectedCount(l.id) > 0" [class.badge-muted]="connectedCount(l.id) === 0">{{ connectedCount(l.id) }} linked</span>
+                    } @else {
+                      <span class="muted small">—</span>
+                    }
+                  </td>
                   <td (click)="$event.stopPropagation()">
                     <select [ngModel]="l.current_class_id ?? ''" (ngModelChange)="moveLearner(l, $event)">
                       @for (c of classes(); track c.id) { <option [value]="c.id">{{ gradeLabelOf(c) }} {{ c.name }}</option> }
