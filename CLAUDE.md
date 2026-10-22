@@ -46,6 +46,8 @@ the current state of the system.
   in the OS credential store (Supabase CLI) or hosting provider settings.
 
 ## Working style
+- One roadmap stage at a time (`docs/roadmap.md`). Do not start the next stage until the current one
+  meets the definition of done in the `skoolo` skill. Bugs in shipped work come before new work.
 - Commit at the end of every working session and push to `origin/main`. This machine is temporary.
 - When a requirement is ambiguous, state the assumption in one line and keep going.
 - Append decisions and completed milestones to `docs/build-log.md`.

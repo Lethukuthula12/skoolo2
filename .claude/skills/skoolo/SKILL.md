@@ -12,8 +12,41 @@ already using it, because the whole point is that they will.
 Read these before building, in this order:
 
 1. `docs/decisions.md` — what was agreed and why. The source of truth for scope.
-2. `docs/build-log.md` — what exists, what was verified, what is still open.
-3. `CLAUDE.md` — standing engineering rules.
+2. `docs/roadmap.md` — the stages, their order, which one is current, and what "done" means for each.
+3. `docs/build-log.md` — what exists, what was verified, what is still open.
+4. `CLAUDE.md` — standing engineering rules.
+
+## How we work: one stage at a time
+
+The school's wish list is long and every item is reasonable. We still build exactly one stage of
+`docs/roadmap.md` at a time, and we only start the next when the current one is done. Bugs in
+something already shipped come before any new work. A half-finished feature at a school is worse
+than a missing one: staff lose trust in the whole system.
+
+**Before building a stage**
+
+- The stage's "done when" line in the roadmap is agreed with the school, in plain words about what
+  a person can do.
+- Its open questions in the roadmap are answered, or the assumption is written next to them.
+- Mark it **In progress** in the roadmap status table.
+
+**Definition of done.** A stage is done only when every line holds:
+
+1. **Data is the school's.** Every new table has `school_id`, RLS, and policies in the same
+   migration. Storage paths start with the school id.
+2. **Automated proof.** The new tables and RPCs are added to the cross-school database test
+   script, and the whole script passes: a second school cannot read or change any of it, and each
+   role can do exactly what it should and nothing more.
+3. **Walked through by hand** in the browser as every affected role (admin, staff, parent),
+   including at least one failure path, at phone width (375 px, no sideways scroll) and desktop.
+4. **Deployed and checked live** on the real addresses, on a real phone.
+5. **Used at the school.** A real person did the real task with it. Their feedback is fixed or
+   written into the roadmap.
+6. **Written down.** `docs/build-log.md` entry with what was verified, roadmap status set to
+   **Done**, decisions added to `docs/decisions.md`, and "What exists" below updated.
+
+If a stage turns out too big to finish in about a week, split it in the roadmap rather than ship
+half of it.
 
 ## The principles
 
@@ -44,7 +77,9 @@ Read these before building, in this order:
 
 6. **South African context first.** CAPS grades (00, 0, RR, R, 1–12), ZAR, SA ID numbers with
    Luhn checks and a passport fallback, POPIA: say why each personal field is collected, collect
-   the minimum, keep sensitive documents private and admin-only.
+   the minimum, keep sensitive documents private and admin-only. Schools teach in two ways:
+   one class teacher for everything in the younger grades, subject teachers in the older ones.
+   Where the line falls is a school setting (Grade 4 at the pilot school), never a constant.
 
 7. **Boring and working beats clever.** Solo developer, pilot already live. Prefer a migration
    and a plain Angular page over a new abstraction. No feature flags, no "for later" scaffolding.
@@ -70,6 +105,11 @@ Read these before building, in this order:
   verification banner.
 - **Database**: migrations under `supabase/migrations/`, every rule above, buckets
   `application-documents` (private), `staff-documents` (private), `school-badges` (public).
+- **Hosting**: Cloudflare Workers with static assets, redeploying from `main` on every push.
+  Parent app <https://skoolo-app.lethufzikhali.workers.dev>, portal
+  <https://skoolo-schools.lethufzikhali.workers.dev>. See `docs/deploy.md`.
+- **Not yet**: automated database tests (Stage 0 of the roadmap), password reset (needs a domain
+  and an email provider).
 
 ## Routine operations
 
@@ -79,10 +119,11 @@ Read these before building, in this order:
 - Run ad-hoc SQL: `npx supabase db query --linked "<sql>"` (one statement per call).
 - If a change does not appear in the browser, restart `ng serve` before debugging the code.
 
-## Still manual or missing (candidates for next work)
+## What comes next
 
-- A Skoolo super-admin screen for verifying schools and seeing all tenants.
-- Email delivery through a real SMTP provider before public launch (sign-up confirmation is
-  currently off for the pilot).
-- Card or instant EFT payments through a provider, still paying the school directly.
-- School fees beyond the once-off enrolment fee are out of scope.
+The order is in `docs/roadmap.md` and is not re-decided at the start of each session. In short:
+Stage 0 makes what exists solid, then learners and classes, connecting parents, report delivery,
+home-school messages, school fees, teacher timetables, and assessment results.
+
+Outside the roadmap for now: a Skoolo super-admin screen for verifying schools (one SQL statement
+until then), card or instant EFT payments, app store builds.
