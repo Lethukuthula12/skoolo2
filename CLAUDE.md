@@ -15,6 +15,13 @@ the current state of the system.
   `is_school_staff()` in SQL and `staff.isAdmin()` in the portal. Never rely on RLS alone to
   narrow a result set when deciding what a user may do; filter for the signed-in user explicitly.
 
+## Never build on a school's data
+- Each school's admin captures and edits every school-specific detail in the system. Questions to a
+  school are to understand what to build, never to seed, hardcode or special-case their data.
+- Least privilege: a role sees only what its job needs. Teachers have no enrolment access.
+- When product behaviour or who-sees-what is unspecified, ask or flag it in one line. Never invent
+  an access rule or a product decision and bury it in code.
+
 ## Constraints
 - Solo developer, pilot deadline measured in days. Prefer the boring, working solution. No
   speculative abstractions, no feature flags, no "for later" scaffolding.

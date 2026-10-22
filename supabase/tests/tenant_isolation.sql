@@ -128,12 +128,16 @@ begin
   select count(*) into n from public.learners where id = v_learnerA;
   if n <> 0 then v_fail := v_fail || 'parent B sees parent A''s learner'; end if;
 
-  -- ===================== ROLE: teacher A may read but not act =====================
+  -- ===================== ROLE: teacher has no enrolment access =====================
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
 
   v_checks := v_checks + 1;
   select count(*) into n from public.applications where school_id = v_schoolA;
-  if n < 1 then v_fail := v_fail || 'teacher A cannot read own school applications'; end if;
+  if n <> 0 then v_fail := v_fail || format('teacher A sees %s applications (enrolment is admin-only)', n); end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where id = v_learnerA;
+  if n <> 0 then v_fail := v_fail || 'teacher A sees an applicant learner'; end if;
 
   v_checks := v_checks + 1;
   begin

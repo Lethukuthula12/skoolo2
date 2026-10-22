@@ -45,7 +45,7 @@ automated proof, and a forgotten password must not lock anyone out.
 | Phone testing | Both live sites checked on an iPhone and an Android phone; no sideways scrolling, install path works. |
 | Automated database tests | **Done.** `npm run test:rls` runs `supabase/tests/tenant_isolation.sql`: it builds two schools (each with an admin, a teacher and a parent with a learner and an application) as the `authenticated` role with per-user JWT claims, asserts 20 isolation and role checks, and rolls everything back. Proven to bite: weakening one policy flips the matching check to failure. Re-run before every release. CI wiring is a follow-up (needs Supabase secrets in GitHub Actions). |
 | Password reset | A domain is bought, email sends through a provider (Resend free tier), Supabase auth uses it, and "Forgot password" works on both live sites. Sign-up confirmation is switched back on. **Blocked on buying the domain.** |
-| Loose ends | The school confirms Grade 0 is distinct from Grade R and the Capitec account holder name. Test application `ENR-E5D24T` and test accounts are deleted or kept as a labelled demo. |
+| Demo data | The test application `ENR-E5D24T` and the test accounts are deleted or kept as a labelled demo before real parents use the system. (Grades, bank details and the rest are the admin's to set and correct in the portal, so we do not chase the school to confirm them.) |
 
 ## Stage 1 — Learners, classes and subjects
 
@@ -211,14 +211,11 @@ calculated term mark matches the teacher's own calculation.
 
 | For stage | Question |
 |---|---|
-| 0 | Is Grade 0 a separate level from Grade R? What is the exact account holder name on the Capitec account? |
 | 1 | Do Grade 00, Grade RR and Grade R also have one class teacher each? |
 | 1 | Whose numbers are the "contact numbers" in the learner list: mother, father, guardian? How many per learner? |
 | 3 | Who captures Term 4 marks: the subject teachers, the class teachers, or the admin? Is the principal the only one who approves? |
 | 3 | How are Grade 00, Grade 0 and Grade RR reported today: marks, or written comments per development area? |
-| 3 | Term 4 2026 closing date and Term 1 2027 opening date, which go on the report. Is there a school stamp we can photograph? |
 | 3 | When do Term 4 reports go home? This is the real deadline. |
 | 4 | Who should receive an absence note: the class teacher, the office, or both? |
-| 5 | Fee amounts per grade, any discount for paying per term or per year, and how parents pay today (reference used, cash). Is there a debtors list now? |
-| 5 | Who records payments and who confirms them? (Earlier: the admin clerk receives, the principal confirms.) |
+| 5 | What payment plans do schools offer (monthly, per term, per year) and is there a discount for paying upfront? Who records payments and who confirms them? (The amounts themselves the admin captures.) |
 | 6 | Who builds the timetable today, each teacher or the principal? How many periods a day, and what times? |

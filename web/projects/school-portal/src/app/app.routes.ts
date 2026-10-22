@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { staffGuard } from '@skoolo/shared';
+import { adminGuard, staffGuard } from '@skoolo/shared';
 
 export const routes: Routes = [
   { path: 'sign-in', loadComponent: () => import('./features/auth/sign-in.page').then((m) => m.SignInPage) },
@@ -13,11 +13,17 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'applications' },
       {
+        path: 'home',
+        loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage),
+      },
+      {
         path: 'applications',
+        canActivate: [adminGuard],
         loadComponent: () => import('./features/applications/applications-list.page').then((m) => m.ApplicationsListPage),
       },
       {
         path: 'applications/:id',
+        canActivate: [adminGuard],
         loadComponent: () => import('./features/applications/application-detail.page').then((m) => m.ApplicationDetailPage),
       },
       {

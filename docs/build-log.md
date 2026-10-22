@@ -263,3 +263,22 @@ runs the file as one transaction; the closing `RAISE` both reports the result an
 
 Not done in Stage 0 yet: password reset (blocked on a domain and an email provider), running this
 test in CI (needs Supabase secrets in GitHub Actions), and the phone testing and loose ends.
+
+## 2026-10-22 — Enrolment restricted to administrators; two standing rules
+
+Migration `20261022000500_enrolment_is_admin_only.sql` moves every application-adjacent read from
+`is_school_staff` to `is_school_admin`: applications, status history, documents, applicant
+profiles and learners, staff-sent messages, and the application-files storage policy. Teachers
+(role `staff`) now have no enrolment access. The portal guards the applications routes with a new
+`adminGuard` and lands teachers on a placeholder `HomePage`; the Applications nav item is
+admin-only. Verified: admin still sees the applications queue and full nav; a teacher lands on
+Home. The isolation test was flipped accordingly and now asserts a teacher sees zero applications
+and zero applicant learners; it passes at 21 checks.
+
+Two rules added to the skill and CLAUDE.md (decisions 28-30):
+1. Never build on a school's data. The admin captures and edits every school-specific detail;
+   our questions are to understand the system, never to seed or hardcode their data.
+2. Least privilege, and surface decisions. A role sees only what its job needs; teachers have no
+   enrolment access. Unspecified product behaviour is asked or flagged, never invented and buried.
+
+Roadmap pruned of questions that only ask the school for their own data.

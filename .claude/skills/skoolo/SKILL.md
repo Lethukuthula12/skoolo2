@@ -87,6 +87,17 @@ half of it.
 7. **Boring and working beats clever.** Solo developer, pilot already live. Prefer a migration
    and a plain Angular page over a new abstraction. No feature flags, no "for later" scaffolding.
 
+8. **Never build on a school's data.** Each school's admin captures and edits every
+   school-specific detail in the system: profile, badge, bank account, grades, classes, subjects,
+   learners, fees, staff. Questions we ask a school are to understand the system we are building,
+   never to seed, hardcode or special-case their data. The pilot school's details were a one-time
+   bootstrap and its admin owns them now.
+
+9. **Least privilege, and surface decisions.** A role sees only what its job needs. Teachers have
+   no enrolment access at all: applications, applicants, their documents and the payment queue are
+   administrators only. When who-sees-what or any product behaviour is unspecified, ask or flag it
+   in one line; never invent an access rule or a product decision and bury it in code.
+
 ## Before you add anything, ask
 
 - Which school owns this data? Where is `school_id` and the RLS policy?
@@ -102,8 +113,9 @@ half of it.
   application with guardian details and live grade availability, documents, EFT payment screen
   with unique reference, mark paid, My applications, inbox.
 - **School portal** (Angular): sign-in, join by invite code, register or claim a school,
-  applications queue and detail, confirm payment (sends welcome message), status changes with
-  messages, enrolment periods and per-grade capacity, school profile with badge and legal details,
+  applications queue and detail (administrators only; teachers land on a placeholder home),
+  confirm payment (sends welcome message), status changes with messages, enrolment periods and
+  per-grade capacity, school profile with badge and legal details,
   bank account, staff register with documents, invites and access list, role-based navigation,
   verification banner.
 - **Database**: migrations under `supabase/migrations/`, every rule above, buckets
