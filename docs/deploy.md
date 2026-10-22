@@ -1,48 +1,105 @@
 # Deploying Skoolo
 
-Both web apps are static builds that talk to Supabase directly, so any static host works. The
-instructions below are for Vercel, which handles two projects from one repository cleanly. Netlify
-works the same way; the `_redirects` files in each app's `public/` folder cover its SPA routing.
+Both web apps are static builds that talk to Supabase directly, so any static host works. We use
+**Cloudflare Pages**: free for commercial use, unlimited bandwidth, edge servers in Johannesburg
+and Cape Town, and the same account can hold the domain's DNS later. The `_redirects` file in
+each app's `public/` folder gives Cloudflare (and Netlify) the single-page-app routing it needs.
 
-## One-time setup on Vercel
+## Part 1: create the account and connect GitHub (once)
 
-1. Sign in at vercel.com with GitHub and import `Lethukuthula12/skoolo2`.
-2. Create the **parent app** project:
-   - Project name: `skoolo-app`
-   - Root Directory: `web`
-   - Framework preset: Other
-   - Build Command: `npm run build:parent`
-   - Output Directory: `dist/parent-app/browser`
-   - Install Command: `npm ci`
-3. Import the same repository again and create the **school portal** project:
-   - Project name: `skoolo-schools`
-   - Root Directory: `web`
-   - Build Command: `npm run build:portal`
-   - Output Directory: `dist/school-portal/browser`
-   - Install Command: `npm ci`
-4. Deploy. Every push to `main` redeploys both.
+1. Go to <https://dash.cloudflare.com/sign-up> and create an account with your personal email.
+   Confirm the email address they send you.
+2. In the left menu click **Workers & Pages** (under *Compute* on some accounts).
+3. Click the blue **Create** button at the top right.
+4. You will see two tabs, **Workers** and **Pages**. Click **Pages**.
+5. Under *Import an existing Git repository* click **Get started** (or **Connect to Git**).
+6. Choose **GitHub**. A GitHub window opens asking which repositories Cloudflare may see.
+   Choose **Only select repositories**, pick `Lethukuthula12/skoolo2`, and click **Install &
+   Authorize**. You are returned to Cloudflare.
 
-The repository's `vercel.json` adds the SPA rewrite and keeps the service worker files uncached.
+## Part 2: the parent app
 
-## After the first deploy
+7. In the repository list click **skoolo2**, then **Begin setup**.
+8. Fill in the *Set up builds and deployments* form exactly like this:
 
-1. Note the two URLs, for example `https://skoolo-app.vercel.app` and `https://skoolo-schools.vercel.app`.
-2. In `supabase/config.toml`, set `site_url` to the parent app URL and add both URLs to
-   `additional_redirect_urls`, then run:
+   | Field | Value |
+   |---|---|
+   | Project name | `skoolo-app` (if taken, `skoolo-parents` or similar) |
+   | Production branch | `main` |
+   | Framework preset | `None` |
+   | Build command | `npm run build:parent` |
+   | Build output directory | `dist/parent-app/browser` |
 
-   ```bash
-   npx supabase config push
-   ```
+9. Click **Root directory (advanced)** to expand it and type `web`.
+10. Click **Environment variables (advanced)**, then **Add variable**:
+    variable name `NODE_VERSION`, value `20`.
+11. Click **Save and Deploy**. The first build takes two to four minutes. When it finishes you
+    get a URL like `https://skoolo-app.pages.dev`. Open it: the school directory should load.
 
-3. Open the parent app URL on a phone. In Chrome on Android use the menu and choose
-   "Add to Home screen" or "Install app". On iPhone use Share and "Add to Home Screen".
-4. Share the parent app link with the school. A QR code of the URL on a poster at the gate works
-   well; any free QR generator will do.
+## Part 3: the school portal
+
+12. Go back to **Workers & Pages**, click **Create**, then **Pages**, then **Connect to Git**
+    again. Choose `skoolo2` again and click **Begin setup**.
+13. Fill in the form:
+
+    | Field | Value |
+    |---|---|
+    | Project name | `skoolo-schools` |
+    | Production branch | `main` |
+    | Framework preset | `None` |
+    | Build command | `npm run build:portal` |
+    | Build output directory | `dist/school-portal/browser` |
+    | Root directory (advanced) | `web` |
+    | Environment variable | `NODE_VERSION` = `20` |
+
+14. **Save and Deploy**. You get `https://skoolo-schools.pages.dev`.
+
+From now on every push to `main` rebuilds both sites automatically.
+
+## Part 4: tell Supabase about the new addresses
+
+Supabase only sends people back to addresses it knows. In `supabase/config.toml` set:
+
+```toml
+site_url = "https://skoolo-app.pages.dev"
+additional_redirect_urls = ["https://skoolo-app.pages.dev", "https://skoolo-schools.pages.dev", "http://localhost:4200", "http://localhost:4300"]
+```
+
+then run:
+
+```bash
+npx supabase config push
+```
+
+(Replace the two addresses with the real ones Cloudflare gave you.)
+
+## Part 5: put it on a phone
+
+Open the parent app address in Chrome on Android, tap the menu, and choose **Install app** or
+**Add to Home screen**. On iPhone, open it in Safari, tap **Share**, then **Add to Home Screen**.
+The icon and the full-screen behaviour come from the manifest in the build.
+
+Share the parent app address with the school. A QR code of the URL on a poster at the gate works
+well; any free QR generator will do.
+
+## If a build fails
+
+- Open the failed deployment in Cloudflare and read the log. The two likely causes are the root
+  directory not set to `web`, or `NODE_VERSION` missing.
+- The same build runs on GitHub Actions on every push, so the repository's **Actions** tab shows
+  whether the code itself builds.
 
 ## Custom domain later
 
-Add `app.skoolo.co.za` and `schools.skoolo.co.za` (or whatever domain you buy) to the two Vercel
-projects, point the DNS CNAME records at Vercel, and update the Supabase URLs above.
+When you own `skoolo.co.za`: in each Pages project open **Custom domains**, add `app.skoolo.co.za`
+to the parent app and `schools.skoolo.co.za` to the portal, and follow the DNS instructions shown.
+If the domain's DNS is on Cloudflare, it is one click. Then update the Supabase addresses in
+Part 4 again.
+
+## Other hosts
+
+Netlify works the same way with the same build settings and the `_redirects` files. Vercel also
+works (`vercel.json` is in the repo), but its free plan does not allow commercial use.
 
 ## Local production preview
 
