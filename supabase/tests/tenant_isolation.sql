@@ -28,7 +28,7 @@ declare
   v_learnerA uuid; v_learnerA2 uuid; v_learnerB uuid;
   v_appA uuid; v_appB uuid;
   v_staffA uuid; v_staffTA2 uuid; v_code text; v_codeTA2 text; v_codeIv text; v_codeExpired text;
-  v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid;
+  v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid; v_reportA uuid;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
   -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
@@ -275,6 +275,74 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.learner_guardians where learner_id = v_rollLearnerA and user_id is not null;
   if n < 1 then v_fail := v_fail || 'the school does not see the linked guardian account'; end if;
+
+  -- ===================== STAGE 3: term reports =====================
+  -- Admin A creates the term-1 reports for the class.
+  perform public.ensure_term_reports(v_classA, 1);
+  select id into v_reportA from public.report_cards where learner_id = v_rollLearnerA and term_number = 1;
+  v_checks := v_checks + 1;
+  if v_reportA is null then v_fail := v_fail || 'ensure_term_reports did not create a report'; end if;
+
+  -- Teacher A (teaches the class) may capture a mark.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_mark(v_reportA, v_subjectA, 75);
+  exception when others then
+    v_fail := v_fail || format('class teacher cannot capture a mark: %s', sqlerrm);
+  end;
+
+  -- Teacher A2 (does not teach the class) can neither read nor write it.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.report_cards where id = v_reportA;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees reports for a class they do not teach'; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_mark(v_reportA, v_subjectA, 10);
+    v_fail := v_fail || 'a teacher captured a mark for a class they do not teach';
+  exception when others then null;
+  end;
+
+  -- Admin B (other school) cannot read or write it.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.report_cards where id = v_reportA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s report'; end if;
+
+  -- The connected parent cannot see the report while it is a draft.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.report_cards where id = v_reportA;
+  if n <> 0 then v_fail := v_fail || 'a parent sees a report before it is published'; end if;
+
+  -- A teacher cannot approve; an admin can.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.approve_class_reports(v_classA, 1);
+    v_fail := v_fail || 'a teacher approved reports';
+  exception when others then null;
+  end;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  perform public.approve_class_reports(v_classA, 1);
+  perform public.publish_class_reports(v_classA, 1);
+
+  -- Now the connected parent can read the published report and its marks.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.report_cards where id = v_reportA;
+  if n < 1 then v_fail := v_fail || 'a parent cannot see their child''s published report'; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.report_marks where report_card_id = v_reportA;
+  if n < 1 then v_fail := v_fail || 'a parent cannot see the published report''s marks'; end if;
+
+  -- An unrelated parent still cannot see the published report.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.report_cards where id = v_reportA;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees a published report'; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.

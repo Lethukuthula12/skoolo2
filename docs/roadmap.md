@@ -16,7 +16,7 @@ school. Nothing in the next stage starts while the current one has open bugs.
 | 0 | Make what exists solid | — | **In progress** |
 | 1 | Learners, classes and subjects | 1, 8 (teaching assignments) | **Built** (model, admin screens and teacher view done and verified; awaiting the admin importing real learners) |
 | 2 | Connect parents to their children | prerequisite for 2, 4, 6 | **Built** (codes, redeem, My children, portal sharing, verified; awaiting ten real families) |
-| 3 | Term reports | 2, 5, 3 (schedules and pass and fail lists) | Planned, target Term 4 reports in early December 2026 |
+| 3 | Term reports | 2, 5, 3 (schedules and pass and fail lists) | **In progress** (data model, scale, capture/approve/publish and security done; screens next) |
 | 4 | Messages between home and school | 4, 6 | Planned |
 | 5 | School fees | 7 | Planned, target January 2027 billing |
 | 6 | Teacher timetables and calendars | 8 | Planned, target start of Term 1 2027 |

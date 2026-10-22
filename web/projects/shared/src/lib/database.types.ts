@@ -39,6 +39,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_terms: {
+        Row: {
+          academic_year: number
+          closes_at: string | null
+          created_at: string
+          id: string
+          next_term_opens_at: string | null
+          opens_at: string | null
+          school_id: string
+          term_number: number
+          updated_at: string
+        }
+        Insert: {
+          academic_year: number
+          closes_at?: string | null
+          created_at?: string
+          id?: string
+          next_term_opens_at?: string | null
+          opens_at?: string | null
+          school_id: string
+          term_number: number
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: number
+          closes_at?: string | null
+          created_at?: string
+          id?: string
+          next_term_opens_at?: string | null
+          opens_at?: string | null
+          school_id?: string
+          term_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_terms_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_terms_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_documents: {
         Row: {
           application_id: string
@@ -768,6 +819,141 @@ export type Database = {
         }
         Relationships: []
       }
+      report_cards: {
+        Row: {
+          academic_year: number
+          approved_at: string | null
+          approved_by: string | null
+          class_id: string
+          created_at: string
+          days_absent: number | null
+          id: string
+          learner_id: string
+          principal_comment: string | null
+          published_at: string | null
+          school_id: string
+          status: Database["public"]["Enums"]["report_status"]
+          teacher_comment: string | null
+          term_number: number
+          updated_at: string
+        }
+        Insert: {
+          academic_year: number
+          approved_at?: string | null
+          approved_by?: string | null
+          class_id: string
+          created_at?: string
+          days_absent?: number | null
+          id?: string
+          learner_id: string
+          principal_comment?: string | null
+          published_at?: string | null
+          school_id: string
+          status?: Database["public"]["Enums"]["report_status"]
+          teacher_comment?: string | null
+          term_number: number
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          class_id?: string
+          created_at?: string
+          days_absent?: number | null
+          id?: string
+          learner_id?: string
+          principal_comment?: string | null
+          published_at?: string | null
+          school_id?: string
+          status?: Database["public"]["Enums"]["report_status"]
+          teacher_comment?: string | null
+          term_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_cards_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_cards_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_cards_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_cards_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_cards_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_marks: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          mark: number | null
+          report_card_id: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          mark?: number | null
+          report_card_id: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          mark?: number | null
+          report_card_id?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_marks_report_card_id_fkey"
+            columns: ["report_card_id"]
+            isOneToOne: false
+            referencedRelation: "report_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_marks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_bank_accounts: {
         Row: {
           account_holder: string
@@ -875,6 +1061,7 @@ export type Database = {
           province: Database["public"]["Enums"]["sa_province"] | null
           secondary_phone: string | null
           slug: string
+          stamp_url: string | null
           street_address: string | null
           subject_teaching_from_grade: string | null
           tagline: string | null
@@ -901,6 +1088,7 @@ export type Database = {
           province?: Database["public"]["Enums"]["sa_province"] | null
           secondary_phone?: string | null
           slug: string
+          stamp_url?: string | null
           street_address?: string | null
           subject_teaching_from_grade?: string | null
           tagline?: string | null
@@ -927,6 +1115,7 @@ export type Database = {
           province?: Database["public"]["Enums"]["sa_province"] | null
           secondary_phone?: string | null
           slug?: string
+          stamp_url?: string | null
           street_address?: string | null
           subject_teaching_from_grade?: string | null
           tagline?: string | null
@@ -1344,6 +1533,7 @@ export type Database = {
           province: Database["public"]["Enums"]["sa_province"] | null
           secondary_phone: string | null
           slug: string
+          stamp_url: string | null
           street_address: string | null
           subject_teaching_from_grade: string | null
           tagline: string | null
@@ -1359,6 +1549,8 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      achievement_description: { Args: { p_level: number }; Returns: string }
+      achievement_level: { Args: { p_mark: number }; Returns: number }
       application_message: {
         Args: {
           p_application: Database["public"]["Tables"]["applications"]["Row"]
@@ -1367,6 +1559,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      approve_class_reports: {
+        Args: { p_class_id: string; p_term: number }
+        Returns: number
+      }
+      can_edit_class_reports: { Args: { p_class_id: string }; Returns: boolean }
+      can_read_report: { Args: { p_report_card_id: string }; Returns: boolean }
       claim_school: {
         Args: { p_school_id: string }
         Returns: {
@@ -1387,6 +1585,7 @@ export type Database = {
           province: Database["public"]["Enums"]["sa_province"] | null
           secondary_phone: string | null
           slug: string
+          stamp_url: string | null
           street_address: string | null
           subject_teaching_from_grade: string | null
           tagline: string | null
@@ -1435,6 +1634,7 @@ export type Database = {
           province: Database["public"]["Enums"]["sa_province"] | null
           secondary_phone: string | null
           slug: string
+          stamp_url: string | null
           street_address: string | null
           subject_teaching_from_grade: string | null
           tagline: string | null
@@ -1453,6 +1653,10 @@ export type Database = {
       enrol_application: {
         Args: { p_application_id: string; p_class_id: string }
         Returns: undefined
+      }
+      ensure_term_reports: {
+        Args: { p_class_id: string; p_term: number }
+        Returns: number
       }
       generate_family_code: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
@@ -1520,6 +1724,10 @@ export type Database = {
         Returns: number
       }
       period_school_id: { Args: { p_period_id: string }; Returns: string }
+      publish_class_reports: {
+        Args: { p_class_id: string; p_term: number }
+        Returns: number
+      }
       redeem_family_code: {
         Args: { p_code: string; p_relationship?: string }
         Returns: {
@@ -1532,6 +1740,10 @@ export type Database = {
       regenerate_family_code: {
         Args: { p_learner_id: string }
         Returns: string
+      }
+      save_mark: {
+        Args: { p_mark: number; p_report_card_id: string; p_subject_id: string }
+        Returns: undefined
       }
       school_application_counts: {
         Args: { p_school_id: string }
@@ -1551,6 +1763,14 @@ export type Database = {
         Returns: undefined
       }
       set_class_family_codes: { Args: { p_class_id: string }; Returns: number }
+      set_report_meta: {
+        Args: {
+          p_days_absent: number
+          p_report_card_id: string
+          p_teacher_comment: string
+        }
+        Returns: undefined
+      }
       staff_school_ids: { Args: never; Returns: string[] }
       teaches_class: { Args: { p_class_id: string }; Returns: boolean }
       withdraw_application: {
@@ -1577,6 +1797,7 @@ export type Database = {
       gender: "female" | "male" | "unspecified"
       payment_status: "unpaid" | "marked_paid" | "confirmed"
       period_status: "draft" | "open" | "closed"
+      report_status: "draft" | "approved" | "published"
       sa_province:
         | "Eastern Cape"
         | "Free State"
@@ -1737,6 +1958,7 @@ export const Constants = {
       gender: ["female", "male", "unspecified"],
       payment_status: ["unpaid", "marked_paid", "confirmed"],
       period_status: ["draft", "open", "closed"],
+      report_status: ["draft", "approved", "published"],
       sa_province: [
         "Eastern Cape",
         "Free State",

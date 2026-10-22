@@ -447,3 +447,28 @@ they need no code.
 
 Isolation suite stands at 38 checks (the Stage 2 backbone commit). Stage 2 meets the definition of
 done except the last line: ten real families connected, which is for the school to do.
+
+## 2026-10-23 — Stage 3 (part 1): report data model and write path
+
+The secure foundation for term reports, following docs/report-card-spec.md.
+
+- **achievement_level(mark)** and **achievement_description(level)**: the national 7-point scale,
+  computed from the mark so nobody types a code.
+- **academic_terms** (term dates for the report), **report_cards** (one per learner per term, with
+  status draft → approved → published, days absent, teacher and principal comments) and
+  **report_marks** (a mark per subject). `schools.stamp_url` for the report stamp.
+- **Write path through functions only**, enforcing role and status: `ensure_term_reports` creates a
+  class's draft reports and empty marks; `save_mark` and `set_report_meta` let a teacher of the
+  class or an admin edit while draft; `approve_class_reports` and `publish_class_reports` are admin
+  only, and publishing messages every connected parent. There are no write policies, so nothing
+  bypasses these rules.
+- **Read security** via `can_read_report`: a school's admins and a teacher of the class can read
+  any status; a connected parent can read only once published.
+
+Isolation suite now at 48 checks. New ones prove: the class teacher captures a mark; a teacher of
+another class cannot read or write it; admin B sees nothing; a parent cannot see a draft; a teacher
+cannot approve; after an admin approves and publishes, the connected parent can read the report and
+its marks, and an unrelated parent still cannot.
+
+Next in Stage 3: the mark-capture grid and approval in the portal, the report card PDF, delivery to
+parents in the app, and the schedule export with pass/fail filters.
