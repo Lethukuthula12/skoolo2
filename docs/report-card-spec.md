@@ -78,6 +78,15 @@ Grades 00, 0 and RR are before Grade R and outside CAPS; the National Curriculum
 children from birth to four applies. Their reports are usually descriptive. How the pilot school
 reports on them is an open question in the roadmap.
 
+Grades 10 to 12 are the Further Education and Training (FET) phase. The grade list already runs to
+Grade 12, so a high school can set its range, create classes and open enrolment for these grades
+today. Their reports are different, though: subjects are elective combinations rather than a fixed
+list, promotion follows the National Senior Certificate rather than the Grade R–9 guidelines above,
+and reporting is in percentages (national codes are not required past Grade 9). The FET subject
+sets and promotion rules are not specified here and will be needed only when a high school actually
+uses Skoolo for marks and reports (Stages 3 and 7). Classes, learners and enrolment for Grades 8–12
+need nothing extra.
+
 ## Progression and promotion guidelines
 
 Used for the end-of-year report and the pass and fail lists the school asked for.

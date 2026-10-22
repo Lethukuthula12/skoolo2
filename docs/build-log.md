@@ -305,3 +305,13 @@ inside a rolled-back transaction fails the guard, and RLS is restored by the rol
 So the guarantee against a separation regression is now two tests that must pass before release:
 one proves isolation on real data, the other proves the catalog shape that makes isolation
 possible. A new table that forgets RLS, or a view that forgets security_invoker, fails the build.
+
+## 2026-10-22 — Grade range confirmed to Grade 12
+
+Checked in response to "add classes to Grade 12 for a big school": the `grades` lookup already
+holds G00, G0, GRR, GR and G1–G12, and no code caps the range. Enrolment settings shows every
+grade within a school's own lowest–highest range (`highest ?? 99`), and the school profile grade
+dropdowns list all grades, so a high school sets its highest grade to Grade 12 and opens Grades
+8–12 with no change. Nothing added. Recorded the one real gap for high schools in
+`docs/report-card-spec.md`: FET (Grades 10–12) subject sets and NSC promotion rules are not yet
+specified and are only needed when a high school captures marks (Stages 3 and 7).
