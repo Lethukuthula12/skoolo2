@@ -5,6 +5,9 @@ Both web apps are static builds that talk to Supabase directly, so any static ho
 and Cape Town, and the same account can hold the domain's DNS later. The `_redirects` file in
 each app's `public/` folder gives Cloudflare (and Netlify) the single-page-app routing it needs.
 
+The root `package.json` installs the web dependencies and runs the build, and `.node-version`
+pins Node 20, so no root directory or environment variable needs to be set on the host.
+
 ## Part 1: create the account and connect GitHub (once)
 
 1. Go to <https://dash.cloudflare.com/sign-up> and create an account with your personal email.
@@ -24,24 +27,22 @@ each app's `public/` folder gives Cloudflare (and Netlify) the single-page-app r
 
    | Field | Value |
    |---|---|
-   | Project name |  (if taken,  or similar) |
-   | Production branch |  |
-   | Framework preset |  (leave blank if there is no such field) |
-   | Build command |  |
-   | Build output directory |  |
+   | Project name | `skoolo-app` (if taken, `skoolo-parents` or similar) |
+   | Production branch | `main` |
+   | Framework preset | `None` (leave blank if there is no such field) |
+   | Build command | `npm run build:parent` |
+   | Build output directory | `web/dist/parent-app/browser` |
    | Root directory | leave empty |
 
-   The root-level  installs the web dependencies and builds, so the root directory
-   can stay empty.  pins Node 20; no environment variable is needed.
-
 9. Click **Save and Deploy**. The first build takes three to five minutes. When it finishes you
-   get a URL like . Open it: the school directory should load.
+   get a URL like `https://skoolo-app.pages.dev`. Open it: the school directory should load.
 
 ### Changing the settings of a project you already created
 
 Open the project in **Workers & Pages**, then **Settings**, then **Builds & deployments** (on some
-accounts just **Build**). Under *Build configuration* click **Edit** and change the fields above.
-Then open **Deployments** and click **Retry deployment** on the latest one, or push any commit.
+accounts just **Build**). Under *Build configuration* click **Edit**, change the fields to the
+values above, and save. Then open **Deployments** and click **Retry deployment** on the latest
+one, or push any commit.
 
 If the settings page has a **Deploy command** field and no **Build output directory**, the project
 was created as a Worker, not a Pages project. Delete it (Settings, bottom of the page) and create
@@ -50,21 +51,21 @@ it again from **Create**, then the **Pages** tab.
 ## Part 3: the school portal
 
 10. Go back to **Workers & Pages**, click **Create**, then **Pages**, then **Connect to Git**
-    again. Choose  again and click **Begin setup**.
+    again. Choose `skoolo2` again and click **Begin setup**.
 11. Fill in the form:
 
     | Field | Value |
     |---|---|
-    | Project name |  |
-    | Production branch |  |
-    | Framework preset |  |
-    | Build command |  |
-    | Build output directory |  |
+    | Project name | `skoolo-schools` |
+    | Production branch | `main` |
+    | Framework preset | `None` |
+    | Build command | `npm run build:portal` |
+    | Build output directory | `web/dist/school-portal/browser` |
     | Root directory | leave empty |
 
-12. **Save and Deploy**. You get .
+12. **Save and Deploy**. You get `https://skoolo-schools.pages.dev`.
 
-From now on every push to  rebuilds both sites automatically.
+From now on every push to `main` rebuilds both sites automatically.
 
 ## Part 4: tell Supabase about the new addresses
 
@@ -94,9 +95,11 @@ well; any free QR generator will do.
 
 ## If a build fails
 
-- Open the failed deployment in Cloudflare and read the log. `ng: not found` means the build
-  command is not `npm run build:parent` / `npm run build:portal` as given above; a missing output
-  means the build output directory does not start with `web/dist/`.
+Open the failed deployment in Cloudflare and read the log.
+
+- `ng: not found` means the build command is not exactly `npm run build:parent` or
+  `npm run build:portal`.
+- "No output directory found" means the build output directory does not start with `web/dist/`.
 - The same build runs on GitHub Actions on every push, so the repository's **Actions** tab shows
   whether the code itself builds.
 
