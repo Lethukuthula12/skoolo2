@@ -213,3 +213,25 @@ To verify a newly registered school after checking it is real:
 ```sql
 update public.schools set is_verified = true where slug = '<school-slug>';
 ```
+
+## 2026-10-22 — Deployed
+
+Both apps are live on Cloudflare Workers with static assets, deploying from `main` on every push:
+
+- Parent app: <https://skoolo-app.lethufzikhali.workers.dev>
+- School portal: <https://skoolo-schools.lethufzikhali.workers.dev>
+
+Verified from outside: both serve the app, deep links such as `/auth` and `/sign-in` return the
+app, the manifest and `ngsw.json` are served with `no-cache`. Supabase `site_url` and
+`additional_redirect_urls` now point at the live addresses (plus localhost for development).
+
+What it took to get there, for the next time:
+
+- Cloudflare's "Create" flow now makes a **Worker** by default, not a Pages project. The repo
+  carries `wrangler.jsonc` (parent app) and `wrangler.portal.jsonc` (portal) so the default deploy
+  command works.
+- Root `package.json` scripts install the web dependencies before building, so no root directory
+  setting is needed on the host.
+- Current Wrangler needs Node 22; `.node-version` pins it. Angular 20 is fine on 22.
+- Workers' `single-page-application` handling replaces `_redirects`; a catch-all `_redirects`
+  file is rejected as a redirect loop.

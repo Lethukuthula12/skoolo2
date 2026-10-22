@@ -11,6 +11,10 @@ confirm payments and manage intake per grade from a web portal.
 | School portal | `web/projects/school-portal` | Angular 20 |
 | Shared models and Supabase client | `web/projects/shared` | Angular library |
 
+**Live:** parent app <https://skoolo-app.lethufzikhali.workers.dev> · school portal
+<https://skoolo-schools.lethufzikhali.workers.dev>. Both redeploy from `main` on every push
+(Cloudflare Workers, see `docs/deploy.md`).
+
 Read `docs/decisions.md` before changing anything. It records what was agreed and why.
 
 ## Local development
