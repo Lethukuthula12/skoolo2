@@ -111,9 +111,11 @@ Part 4 again.
 
 ## Other hosts
 
-Cloudflare Pages, Netlify and Vercel all work with build output `web/dist/<app>/browser`; the
-`_redirects` files cover single-page routing on Pages and Netlify, `vercel.json` covers Vercel
-(whose free plan does not allow commercial use).
+Cloudflare Pages, Netlify and Vercel all work with build output `web/dist/<app>/browser`.
+`vercel.json` covers single-page routing on Vercel (whose free plan does not allow commercial
+use). For Netlify or Cloudflare Pages add a `_redirects` file containing `/* /index.html 200` to
+each app's `public/` folder; do not keep that file when deploying to Workers, which rejects it as
+a redirect loop because its own `single-page-application` handling already covers it.
 
 ## Local production preview
 
