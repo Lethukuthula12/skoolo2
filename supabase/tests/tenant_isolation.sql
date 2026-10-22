@@ -18,6 +18,7 @@ declare
   v_aB uuid := gen_random_uuid(); v_tB uuid := gen_random_uuid(); v_pB uuid := gen_random_uuid();
   v_iv uuid := gen_random_uuid(); v_iv2 uuid := gen_random_uuid();
   v_tA2 uuid := gen_random_uuid();
+  v_pFam uuid := gen_random_uuid(); v_emailPFam text := 'parent.fam@test.skoolo'; v_famCode text;
   v_emailAA text := 'admin.a@test.skoolo';  v_emailTA text := 'teacher.a@test.skoolo'; v_emailPA text := 'parent.a@test.skoolo';
   v_emailAB text := 'admin.b@test.skoolo';  v_emailTB text := 'teacher.b@test.skoolo'; v_emailPB text := 'parent.b@test.skoolo';
   v_emailIv text := 'invitee@test.skoolo';  v_emailIv2 text := 'invitee2@test.skoolo';
@@ -40,7 +41,8 @@ begin
     (v_pB, v_emailPB, json_build_object('full_name','Parent B','phone','0820000006')),
     (v_iv, v_emailIv, json_build_object('full_name','Invitee','phone','0820000007')),
     (v_iv2, v_emailIv2, json_build_object('full_name','Invitee Two','phone','0820000008')),
-    (v_tA2, v_emailTA2, json_build_object('full_name','Teacher A2','phone','0820000009'));
+    (v_tA2, v_emailTA2, json_build_object('full_name','Teacher A2','phone','0820000009')),
+    (v_pFam, v_emailPFam, json_build_object('full_name','Family Parent','phone','0820000010'));
 
   -- From here on, behave as an ordinary authenticated client.
   set local role authenticated;
@@ -90,6 +92,11 @@ begin
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
   perform public.accept_staff_invite(v_codeTA2);  -- teacher A2 becomes staff of A, teaching nothing
+
+  -- Family code for the roll learner (for the Stage 2 linking checks).
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  perform public.set_class_family_codes(v_classA);
+  select family_code into v_famCode from public.learners where id = v_rollLearnerA;
 
   -- 3) Build school B.
   perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
@@ -225,6 +232,49 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.my_classes();
   if n <> 0 then v_fail := v_fail || 'a teacher with no class gets classes from my_classes'; end if;
+
+  -- ===================== STAGE 2: family linking =====================
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+
+  v_checks := v_checks + 1;
+  begin
+    perform public.redeem_family_code('WRONGCOD');
+    v_fail := v_fail || 'a wrong family code was accepted';
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'CODE_NOT_FOUND' then v_fail := v_fail || format('wrong family code: wrong hint %s', v_hint); end if;
+  end;
+
+  v_checks := v_checks + 1;
+  begin
+    perform public.redeem_family_code(v_famCode, 'Mother');
+  exception when others then
+    v_fail := v_fail || format('valid family code rejected: %s', sqlerrm);
+  end;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.my_children() where id = v_rollLearnerA;
+  if n < 1 then v_fail := v_fail || 'linked parent does not see their child in my_children'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where id = v_rollLearnerA;  -- via the linked-guardian policy
+  if n < 1 then v_fail := v_fail || 'linked parent cannot read their child''s learner row'; end if;
+
+  -- A different parent is not connected to this child.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.my_children() where id = v_rollLearnerA;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the child in my_children'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where id = v_rollLearnerA;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent can read the child''s learner row'; end if;
+
+  -- The school sees the link.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learner_guardians where learner_id = v_rollLearnerA and user_id is not null;
+  if n < 1 then v_fail := v_fail || 'the school does not see the linked guardian account'; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.

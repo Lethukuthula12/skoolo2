@@ -492,6 +492,7 @@ export type Database = {
           phone: string
           relationship: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -503,6 +504,7 @@ export type Database = {
           phone?: string
           relationship?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -514,6 +516,7 @@ export type Database = {
           phone?: string
           relationship?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -521,6 +524,13 @@ export type Database = {
             columns: ["learner_id"]
             isOneToOne: false
             referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_guardians_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -531,6 +541,7 @@ export type Database = {
           created_at: string
           current_class_id: string | null
           date_of_birth: string
+          family_code: string | null
           first_name: string
           gender: Database["public"]["Enums"]["gender"]
           home_language: string | null
@@ -550,6 +561,7 @@ export type Database = {
           created_at?: string
           current_class_id?: string | null
           date_of_birth: string
+          family_code?: string | null
           first_name: string
           gender?: Database["public"]["Enums"]["gender"]
           home_language?: string | null
@@ -569,6 +581,7 @@ export type Database = {
           created_at?: string
           current_class_id?: string | null
           date_of_birth?: string
+          family_code?: string | null
           first_name?: string
           gender?: Database["public"]["Enums"]["gender"]
           home_language?: string | null
@@ -1441,6 +1454,7 @@ export type Database = {
         Args: { p_application_id: string; p_class_id: string }
         Returns: undefined
       }
+      generate_family_code: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
       generate_payment_reference: { Args: never; Returns: string }
       get_payment_instructions: {
@@ -1478,6 +1492,18 @@ export type Database = {
         Args: { p_application_id: string }
         Returns: undefined
       }
+      my_children: {
+        Args: never
+        Returns: {
+          class_name: string
+          date_of_birth: string
+          first_name: string
+          grade_label: string
+          id: string
+          last_name: string
+          school_name: string
+        }[]
+      }
       my_classes: {
         Args: never
         Returns: {
@@ -1494,6 +1520,19 @@ export type Database = {
         Returns: number
       }
       period_school_id: { Args: { p_period_id: string }; Returns: string }
+      redeem_family_code: {
+        Args: { p_code: string; p_relationship?: string }
+        Returns: {
+          first_name: string
+          last_name: string
+          learner_id: string
+          school_name: string
+        }[]
+      }
+      regenerate_family_code: {
+        Args: { p_learner_id: string }
+        Returns: string
+      }
       school_application_counts: {
         Args: { p_school_id: string }
         Returns: {
@@ -1511,6 +1550,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_class_family_codes: { Args: { p_class_id: string }; Returns: number }
       staff_school_ids: { Args: never; Returns: string[] }
       teaches_class: { Args: { p_class_id: string }; Returns: boolean }
       withdraw_application: {
