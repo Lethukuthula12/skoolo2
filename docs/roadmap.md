@@ -1,7 +1,8 @@
 # Skoolo — roadmap
 
-Written 2026-10-22 from the feature list the pilot school gave us. Enrolment for 2027 has closed,
-so the order favours what the school can use this term and next year's first weeks.
+Written 2026-10-22 from the feature list the pilot school gave us, and revised the same day with
+the school's answers. Enrolment for 2027 has closed, so the order favours what the school can use
+this term and in the first weeks of next year.
 
 **How we work:** one stage at a time. A stage is not done until it passes the definition of done
 in the `skoolo` skill (`.claude/skills/skoolo/SKILL.md`): agreed with the school, tested
@@ -13,13 +14,13 @@ school. Nothing in the next stage starts while the current one has open bugs.
 | Stage | What | Requests | Status |
 |---|---|---|---|
 | 0 | Make what exists solid | — | **Next** |
-| 1 | Learners and classes | 1, part of 3 | Planned |
+| 1 | Learners, classes and subjects | 1, 8 (teaching assignments) | Planned |
 | 2 | Connect parents to their children | prerequisite for 2, 4, 6 | Planned |
-| 3 | Send reports to parents | 2 | Planned, target before Term 4 reports go home (early December 2026) |
+| 3 | Term reports | 2, 5, 3 (schedules and pass and fail lists) | Planned, target Term 4 reports in early December 2026 |
 | 4 | Messages between home and school | 4, 6 | Planned |
 | 5 | School fees | 7 | Planned, target January 2027 billing |
-| 6 | Teacher timetables | 8 | Planned, target start of Term 1 2027 |
-| 7 | Assessment results and report cards | 5, rest of 3 | Planned, target end of Term 1 2027 |
+| 6 | Teacher timetables and calendars | 8 | Planned, target start of Term 1 2027 |
+| 7 | Assessment detail | rest of 5 | Planned, target Term 1 2027 |
 
 The school's requests, in their words:
 
@@ -46,9 +47,11 @@ automated proof, and a forgotten password must not lock anyone out.
 | Password reset | A domain is bought, email sends through a provider (Resend free tier), Supabase auth uses it, and "Forgot password" works on both live sites. Sign-up confirmation is switched back on. **Blocked on buying the domain.** |
 | Loose ends | The school confirms Grade 0 is distinct from Grade R and the Capitec account holder name. Test application `ENR-E5D24T` and test accounts are deleted or kept as a labelled demo. |
 
-## Stage 1 — Learners and classes
+## Stage 1 — Learners, classes and subjects
 
-Why: every other request needs to know which learner is in which class and who teaches it.
+Why: every other request needs to know which learner is in which class, which subjects they take,
+and who teaches them. Everything here is set up by the school's admin, so every school can arrange
+its own classes and subjects.
 
 The school teaches in two ways, and the model must hold both from the start:
 
@@ -63,48 +66,89 @@ elsewhere.
 
 The school can:
 
-- Set up its subjects per grade (CAPS defaults offered, editable).
+- Set up its subjects per grade. The CAPS subjects for each phase are offered as defaults
+  (`docs/report-card-spec.md`), with each language recorded at its level, for example
+  "Home Language: isiZulu". The admin edits them and adds the school's own.
 - Create classes for a year and grade (for example Grade 3A), and assign a class teacher from the staff register.
 - For subject teacher grades, assign a teacher to each subject in each class.
-- Import its current learners from an Excel or CSV template, or add them one at a time, with parent or guardian contact details.
-- Move learners between classes.
+- Import its current learners from Excel. The template matches the school's existing list:
+  name, surname, date of birth, ID number, sex, grade, contact numbers, enrolment date, plus an
+  optional class and admission number. Skoolo checks every row before importing (valid ID number,
+  known grade, no duplicates) and shows the problems to fix.
+- Add, edit and move learners one at a time.
 - When accepting an application, choose the class; the learner joins the register automatically.
 - Export a class list to Excel and PDF.
 
 A teacher who signs in sees the classes they teach: their own class, or every class where they
 teach a subject, and nothing else.
 
-Done when the admin has imported the real learners, every class has a class teacher, every subject
-in Grades 4 to 7 has a teacher, a real teacher sees only the classes they teach, and a class list
-opens correctly in Excel.
+The learner register also holds what the report card and schedule need later: admission number
+(generated when the school has none) and years in the current phase.
+
+Done when the admin has imported the real learners from the school's own Excel list, every class
+has a class teacher, every subject in Grades 4 to 7 has a teacher, a real teacher sees only the
+classes they teach, and a class list opens correctly in Excel.
 
 ## Stage 2 — Connect parents to their children
 
-Why: reports, messages and absence notes reach nobody until a parent account is linked to a learner.
+Why: reports, messages and absence notes reach nobody in the app until a parent account is linked
+to a learner.
 
 - The school generates a family code per learner and shares it by WhatsApp, in bulk per class.
+  The contact numbers from the learner import are used to prefill the WhatsApp messages.
 - The parent enters the code in the parent app and sees the child under "My children".
 - Parents who applied through Skoolo are linked automatically when the application is accepted.
 - The school sees which families are connected and who still needs a nudge.
 
 Done when ten real families are connected.
 
-## Stage 3 — Send reports to parents
+## Stage 3 — Term reports
 
-Why: the school called it a massive pain point, and Term 4 reports go home in early December.
+Why: the school called sending reports a massive pain point, Term 4 reports go home in early
+December, and the school has marks rather than finished report files. So Skoolo produces the report
+itself. What a South African report card must contain, the 7-point scale and the promotion
+guidelines are in `docs/report-card-spec.md`.
 
-- The admin uploads one PDF per learner, or a batch whose file names are matched to learners, reviews the matches, and publishes per class.
-- The parent gets an inbox message and opens the report in the app.
-- The school sees who has opened it and who has not, so it knows whose report still needs printing.
+The school can:
 
-Not in this stage: generating report cards from captured marks. That is Stage 7, and it will feed
-this same delivery.
+- **Set up once:** term opening and closing dates, the school stamp image, and who approves
+  results (the principal).
+- **Capture marks:** per class and term, a grid of learners by subjects. The percentage is typed
+  in, for example isiZulu 75%, and the code and description are filled in from the national scale.
+  Days absent and a teacher's comment per learner. Who captures (subject teachers, the class
+  teacher or the admin) is the school's choice.
+- **Approve:** the principal reviews a class with missing marks and learners below the promotion
+  guidelines flagged, then approves it. Nothing reaches a parent before that. This is request 5:
+  results become official only after the principal has viewed and approved them.
+- **Generate:** a report card PDF per learner with every component the policy requires: learner and
+  school details, term, subjects with code, description and percentage, attendance, comments,
+  teacher and principal names, school dates, stamp and the code table. The end-of-year report
+  shows the year's final marks and the outcome (promoted, progressed or retained), which the
+  principal confirms.
+- **Deliver:** connected parents get an inbox message and open the report in the app. The school
+  downloads all of a class's reports as PDFs to print for families not yet connected, and sees
+  who has opened theirs.
+- **Export:** the class or grade schedule to Excel and PDF, filterable by meets or does not meet
+  the promotion guidelines. This is request 3.
 
-Done when one class's real Term 4 reports reach parents through Skoolo.
+Rules: a published report is locked; a correction creates a new version with a record of who
+changed what. **A report is never withheld for any reason, including unpaid fees**, as national
+policy requires.
+
+Not in this stage: capturing individual tests and assignments that add up to the term mark. The
+school enters the term mark directly, as it does today. Detail comes in Stage 7.
+
+Timing, honestly: this depends on Stages 0, 1 and 2 finishing in about three weeks. If Stage 2 is
+not finished, Term 4 reports print from Skoolo and in-app delivery follows.
+
+Done when Term 4 2026 reports for at least one real class are captured, approved by the
+principal, and reach every family, in the app or printed from Skoolo.
 
 ## Stage 4 — Messages between home and school
 
-- A parent reports an absence: which child, which days, the reason, and optionally a photo of a doctor's note. The class teacher and the office see it, and the parent gets an acknowledgement.
+- A parent reports an absence: which child, which days, the reason, and optionally a photo of a
+  doctor's note. The class teacher and the office both see it, and the parent gets an
+  acknowledgement. Reported absences feed the days-absent count on the report.
 - A teacher messages one parent or the whole class. The parent can reply in the same thread.
 - Administrators can see every thread, for safeguarding.
 
@@ -120,15 +164,15 @@ day one. Money needs care, so this stage is larger and tested hardest.
 - The admin clerk records EFT and cash payments; the principal confirms them.
 - Parents see their statement and balance in the app.
 - An arrears list, exportable.
+- Arrears never block a report card.
 
 Not in this stage: card payments and automatic bank statement matching.
 
 Done when January 2027 fees for the real learners are on Skoolo and the clerk records a month of payments with it.
 
-## Stage 6 — Teacher timetables
+## Stage 6 — Teacher timetables and calendars
 
-Assumption until the school confirms: "calendar" means the teacher's weekly timetable of periods,
-plus their own dated items such as tests and assignment due dates.
+The school confirmed it wants both: the weekly timetable of periods and a calendar of dated items.
 
 - The school sets its day structure once: periods, times and breaks.
 - A teacher builds their weekly timetable from the classes and subjects they are assigned in
@@ -140,27 +184,41 @@ plus their own dated items such as tests and assignment due dates.
 
 Done when every Grade 4 to 7 teacher at the pilot school has their 2027 timetable in Skoolo.
 
-## Stage 7 — Assessment results and report cards
+## Stage 7 — Assessment detail
 
-- Assessments per subject per term, mark capture by the subject teacher or class teacher.
-- The principal reviews and approves before results are final.
-- Pass or fail per the CAPS promotion requirements for each phase.
-- Filtered exports to Excel and PDF: passed, failed, by subject, by class.
-- Report cards generated from approved marks and sent through Stage 3.
+- Teachers capture individual assessments per subject per term: tests, assignments, projects and
+  the end-of-year examination.
+- The school sets the weighting per phase, following policy: Grades R to 3 are all school-based
+  assessment; Grades 4 to 6 are 75% school-based assessment and 25% examination.
+- Term and final marks are calculated instead of typed, and flow into the Stage 3 reports and
+  approval.
+- Analysis per assessment and per subject, exportable.
 
-Done when Term 1 2027 results are captured, approved and exported for a real class.
+Done when Term 1 2027 marks for a real class are built from captured assessments and the
+calculated term mark matches the teacher's own calculation.
 
-## Questions to ask the school
+## Answers from the school (2026-10-22)
+
+| Question | Answer |
+|---|---|
+| Classes per grade and their names | The admin sets them up in the system, so every school sets its own. |
+| Current learner list | Yes, in Excel: name, surname, date of birth, ID number, sex, grade, contact numbers, enrolment date. |
+| Subjects in Grades 4 to 7 | The admin sets them up. |
+| What goes on reports | Marks per subject as a percentage, for example isiZulu 75%. Format to follow South African policy: researched in `docs/report-card-spec.md`. |
+| "Calendar" | Both: the weekly timetable and a calendar of tests and events. |
+
+## Still to ask the school
 
 | For stage | Question |
 |---|---|
-| 1 | How many classes per grade, and what are they called (3A and 3B, or names)? |
-| 1 | Is there a current learner list in Excel? Which columns does it have? |
-| 3 | What produces reports today: SA-SAMS, other software, Excel, or by hand? Can it give one PDF per learner? |
+| 0 | Is Grade 0 a separate level from Grade R? What is the exact account holder name on the Capitec account? |
+| 1 | Do Grade 00, Grade RR and Grade R also have one class teacher each? |
+| 1 | Whose numbers are the "contact numbers" in the learner list: mother, father, guardian? How many per learner? |
+| 3 | Who captures Term 4 marks: the subject teachers, the class teachers, or the admin? Is the principal the only one who approves? |
+| 3 | How are Grade 00, Grade 0 and Grade RR reported today: marks, or written comments per development area? |
+| 3 | Term 4 2026 closing date and Term 1 2027 opening date, which go on the report. Is there a school stamp we can photograph? |
+| 3 | When do Term 4 reports go home? This is the real deadline. |
 | 4 | Who should receive an absence note: the class teacher, the office, or both? |
 | 5 | Fee amounts per grade, any discount for paying per term or per year, and how parents pay today (reference used, cash). Is there a debtors list now? |
 | 5 | Who records payments and who confirms them? (Earlier: the admin clerk receives, the principal confirms.) |
-| 1 | Do Grade 00, Grade 0, Grade RR and Grade R also have one class teacher each? Which subjects are taught in Grades 4 to 7? |
-| 6 | Does "calendar" mean the weekly timetable of periods, a calendar of tests and events, or both? Who builds the timetable today, each teacher or the principal? How many periods a day, and what times? |
-| 7 | Who captures marks: teachers in the system with the principal approving, or the admin typing in results the principal approved on paper? |
-| 7 | Which promotion rules do they apply per phase? |
+| 6 | Who builds the timetable today, each teacher or the principal? How many periods a day, and what times? |

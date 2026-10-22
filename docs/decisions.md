@@ -101,3 +101,17 @@ Agreed at the pilot school with its administrator. These extend the decisions ab
 Out until proven needed: push notifications, SMS, email delivery provider, card payments, Skoolo
 super-admin console (verification is one SQL statement until then), school fees, reporting,
 custom forms per school, app store builds.
+
+## Amendments, 2026-10-22 (afternoon): the school's feature list
+
+The full plan and its reasoning are in `docs/roadmap.md`; the policy research is in
+`docs/report-card-spec.md`.
+
+| # | Decision | Why |
+|---|---|---|
+| 22 | **One roadmap stage at a time**, each passing the definition of done in the `skoolo` skill before the next begins. Stage 0 hardens what exists first. | Asked for by the developer: make what exists work best, then add feature by feature, each tested and working. |
+| 23 | **Classes, subjects and teaching assignments are set up by each school's admin.** Whether a grade has one class teacher or subject teachers is a school setting (the pilot school: class teacher to Grade 3, subject teachers from Grade 4). | Multi-tenant; other schools draw the line elsewhere. |
+| 24 | **Skoolo generates report cards from marks** the school captures, following the National Protocol for Assessment (contents) and the NPPPR (scale and promotion guidelines). Term marks are typed in directly first; individual assessments come later. | The school has marks, not report files, so uploading PDFs would not help. Term 4 reports are the deadline. |
+| 25 | **The principal approves results in Skoolo before any report is published**, and published reports are locked and versioned. | Request 5, and the protocol's rule that reports must be free of errors, with the school management team responsible. |
+| 26 | **A report card is never withheld for any reason, including unpaid fees.** | National Protocol for Assessment 25(13). Must hold when fees arrive in Stage 5. |
+| 27 | **Learners are imported from the school's existing Excel list** with validation before anything is saved. | The school already keeps the list; retyping hundreds of learners would stop adoption. |

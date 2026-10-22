@@ -80,6 +80,9 @@ half of it.
    the minimum, keep sensitive documents private and admin-only. Schools teach in two ways:
    one class teacher for everything in the younger grades, subject teachers in the older ones.
    Where the line falls is a school setting (Grade 4 at the pilot school), never a constant.
+   Report cards follow the National Protocol for Assessment and the NPPPR
+   (`docs/report-card-spec.md`), and a report is never withheld for any reason, unpaid fees
+   included.
 
 7. **Boring and working beats clever.** Solo developer, pilot already live. Prefer a migration
    and a plain Angular page over a new abstraction. No feature flags, no "for later" scaffolding.
@@ -122,8 +125,9 @@ half of it.
 ## What comes next
 
 The order is in `docs/roadmap.md` and is not re-decided at the start of each session. In short:
-Stage 0 makes what exists solid, then learners and classes, connecting parents, report delivery,
-home-school messages, school fees, teacher timetables, and assessment results.
+Stage 0 makes what exists solid, then learners, classes and subjects, connecting parents, term
+reports generated from marks, home-school messages, school fees, teacher timetables and calendars,
+and assessment detail.
 
 Outside the roadmap for now: a Skoolo super-admin screen for verifying schools (one SQL statement
 until then), card or instant EFT payments, app store builds.
