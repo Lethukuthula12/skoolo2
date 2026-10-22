@@ -282,3 +282,26 @@ Two rules added to the skill and CLAUDE.md (decisions 28-30):
    enrolment access. Unspecified product behaviour is asked or flagged, never invented and buried.
 
 Roadmap pruned of questions that only ask the school for their own data.
+
+## 2026-10-22 — Hardening tenant and role separation
+
+Audited the live database: all 15 public tables have RLS enabled with policies, all 18 SECURITY
+DEFINER functions pin `search_path`, both views are `security_invoker`. Two gaps closed by
+migration `20261022000600_tighten_separation.sql`:
+
+- `school_application_counts` moved from `is_school_staff` to `is_school_admin`, so a teacher
+  cannot pull even aggregate application counts.
+- Grade availability counted applications under the caller's own row security, so anonymous
+  visitors saw every grade as available and parents saw wrong counts. The count now comes from a
+  SECURITY DEFINER function `period_grade_taken` that returns only a number, so availability is
+  accurate and identical for everyone and never leaks a row. Verified: an anonymous REST call now
+  reports the true places taken.
+
+Added a regression guard, `supabase/tests/rls_coverage.sql`, run by `npm run test:rls`: it fails
+if any public base table has RLS disabled, any SECURITY DEFINER function lacks a pinned
+search_path, or any public view is not security_invoker. Proven to bite: disabling RLS on a table
+inside a rolled-back transaction fails the guard, and RLS is restored by the rollback.
+
+So the guarantee against a separation regression is now two tests that must pass before release:
+one proves isolation on real data, the other proves the catalog shape that makes isolation
+possible. A new table that forgets RLS, or a view that forgets security_invoker, fails the build.

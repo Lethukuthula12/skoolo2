@@ -1215,6 +1215,10 @@ export type Database = {
         Args: { p_application_id: string }
         Returns: undefined
       }
+      period_grade_taken: {
+        Args: { p_period_grade_id: string }
+        Returns: number
+      }
       period_school_id: { Args: { p_period_id: string }; Returns: string }
       school_application_counts: {
         Args: { p_school_id: string }

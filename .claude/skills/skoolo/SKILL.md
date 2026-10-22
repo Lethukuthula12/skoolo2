@@ -123,9 +123,11 @@ half of it.
 - **Hosting**: Cloudflare Workers with static assets, redeploying from `main` on every push.
   Parent app <https://skoolo-app.lethufzikhali.workers.dev>, portal
   <https://skoolo-schools.lethufzikhali.workers.dev>. See `docs/deploy.md`.
-- **Tests**: `npm run test:rls` runs `supabase/tests/tenant_isolation.sql`, which proves cross-school
-  isolation and role enforcement against the linked project and rolls back. Extend it with every
-  new school-owned table or RPC.
+- **Tests**: `npm run test:rls` runs two files against the linked project and rolls back.
+  `tenant_isolation.sql` builds two schools and proves cross-school isolation and role enforcement
+  (21 checks). `rls_coverage.sql` fails if any public table loses RLS, any SECURITY DEFINER
+  function loses its pinned search_path, or any view stops being security_invoker. Extend the
+  isolation test with every new school-owned table or RPC; the coverage guard catches the rest.
 - **Not yet**: password reset (needs a domain and an email provider); CI wiring for the RLS test.
 
 ## Routine operations
