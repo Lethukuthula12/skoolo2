@@ -335,3 +335,15 @@ portal.
 **Pending (blocked on a domain):** the reset email only delivers once a domain and an email
 provider (Resend free tier) are wired into Supabase SMTP. Until then the flow is complete but the
 link does not arrive. Re-enabling sign-up confirmation waits on the same email setup.
+
+## 2026-10-22 — Demo accounts and the teacher's place in the portal
+
+Kept demo data for testing rather than deleting it, and documented the logins in
+`docs/demo-accounts.md`: a parent (with a completed application), an administrator, and a new
+teacher account (`skoolo.pilot.teacher@outlook.com`) linked to Newborn as `staff`.
+
+Confirmed the teacher's experience answers "what happens to the teacher": teachers and admins share
+the one school portal; a teacher signs in and lands on the Home placeholder with only a Home nav
+item and no enrolment access (verified: `isAdmin` false, nav `['Home']`). There is no separate
+teacher app; their tools (class register, marks, timetable, messages) appear in the portal as
+later stages land. The demo accounts are disposable and must be removed before real users.
