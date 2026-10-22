@@ -17,14 +17,17 @@ declare
   v_aA uuid := gen_random_uuid(); v_tA uuid := gen_random_uuid(); v_pA uuid := gen_random_uuid();
   v_aB uuid := gen_random_uuid(); v_tB uuid := gen_random_uuid(); v_pB uuid := gen_random_uuid();
   v_iv uuid := gen_random_uuid(); v_iv2 uuid := gen_random_uuid();
+  v_tA2 uuid := gen_random_uuid();
   v_emailAA text := 'admin.a@test.skoolo';  v_emailTA text := 'teacher.a@test.skoolo'; v_emailPA text := 'parent.a@test.skoolo';
   v_emailAB text := 'admin.b@test.skoolo';  v_emailTB text := 'teacher.b@test.skoolo'; v_emailPB text := 'parent.b@test.skoolo';
   v_emailIv text := 'invitee@test.skoolo';  v_emailIv2 text := 'invitee2@test.skoolo';
+  v_emailTA2 text := 'teacher.a2@test.skoolo';
   v_schoolA uuid; v_schoolB uuid;
   v_periodA uuid; v_periodB uuid; v_pgA uuid; v_pgB uuid;
   v_learnerA uuid; v_learnerA2 uuid; v_learnerB uuid;
   v_appA uuid; v_appB uuid;
-  v_staffA uuid; v_code text; v_codeIv text; v_codeExpired text;
+  v_staffA uuid; v_staffTA2 uuid; v_code text; v_codeTA2 text; v_codeIv text; v_codeExpired text;
+  v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
   -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
@@ -36,7 +39,8 @@ begin
     (v_tB, v_emailTB, json_build_object('full_name','Teacher B','phone','0820000005')),
     (v_pB, v_emailPB, json_build_object('full_name','Parent B','phone','0820000006')),
     (v_iv, v_emailIv, json_build_object('full_name','Invitee','phone','0820000007')),
-    (v_iv2, v_emailIv2, json_build_object('full_name','Invitee Two','phone','0820000008'));
+    (v_iv2, v_emailIv2, json_build_object('full_name','Invitee Two','phone','0820000008')),
+    (v_tA2, v_emailTA2, json_build_object('full_name','Teacher A2','phone','0820000009'));
 
   -- From here on, behave as an ordinary authenticated client.
   set local role authenticated;
@@ -67,6 +71,25 @@ begin
     returning id into v_appA;
   insert into public.application_documents (application_id, document_type, storage_path, file_name, mime_type)
     values (v_appA, 'birth_certificate', v_appA || '/birth/f.png', 'f.png', 'image/png');
+
+  -- 2b) Stage 1 register for school A: a second teacher, a class taught by teacher A, a subject,
+  --     a school-owned learner in that class and a guardian.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  insert into public.staff_members (school_id, first_name, last_name, position, email)
+    values (v_schoolA, 'Teacher', 'A2', 'Teacher', v_emailTA2) returning id into v_staffTA2;
+  insert into public.staff_invites (school_id, staff_member_id, email, full_name, role, code)
+    values (v_schoolA, v_staffTA2, v_emailTA2, 'Teacher A2', 'staff', '') returning code into v_codeTA2;
+  insert into public.classes (school_id, academic_year, grade_code, name, class_teacher_id)
+    values (v_schoolA, 2027, 'GR', 'RA', v_staffA) returning id into v_classA;   -- teacher A is class teacher
+  insert into public.subjects (school_id, grade_code, name, language_level, sort_order)
+    values (v_schoolA, 'GR', 'Home Language', 'home', 1) returning id into v_subjectA;
+  insert into public.learners (school_id, current_class_id, first_name, last_name, date_of_birth)
+    values (v_schoolA, v_classA, 'Roll', 'Learner', '2019-03-03') returning id into v_rollLearnerA;
+  insert into public.learner_guardians (learner_id, full_name, relationship, phone, is_primary)
+    values (v_rollLearnerA, 'Mama Roll', 'Mother', '0825550000', true) returning id into v_guardianA;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  perform public.accept_staff_invite(v_codeTA2);  -- teacher A2 becomes staff of A, teaching nothing
 
   -- 3) Build school B.
   perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
@@ -111,6 +134,22 @@ begin
   if n <> 0 then v_fail := v_fail || 'admin B sees A''s bank account'; end if;
 
   v_checks := v_checks + 1;
+  select count(*) into n from public.classes where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s classes'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.subjects where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s subjects'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s register learners'; end if;
+
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learner_guardians where id = v_guardianA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s learner guardians'; end if;
+
+  v_checks := v_checks + 1;
   update public.applications set staff_note = 'hacked' where id = v_appA;
   get diagnostics n = row_count;
   if n <> 0 then v_fail := v_fail || 'admin B updated A''s application'; end if;
@@ -152,6 +191,25 @@ begin
     v_fail := v_fail || 'teacher A changed a status';
   exception when others then null;  -- expected: admin only
   end;
+
+  -- ===================== ROLE: teachers see only their own classes' learners =====================
+  -- Teacher A is the class teacher of the class holding the roll learner: must see it.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where id = v_rollLearnerA;
+  if n < 1 then v_fail := v_fail || 'class teacher cannot see a learner in their own class'; end if;
+
+  -- Teacher A2 is staff of the same school but teaches no class: must not see that learner.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where id = v_rollLearnerA;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees a learner in a class they do not teach'; end if;
+
+  -- Teacher B (other school) must not see school A's register learner.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tB, 'role','authenticated','email', v_emailTB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learners where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'teacher B sees school A''s register learners'; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.

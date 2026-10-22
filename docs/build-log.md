@@ -347,3 +347,35 @@ the one school portal; a teacher signs in and lands on the Home placeholder with
 item and no enrolment access (verified: `isAdmin` false, nav `['Home']`). There is no separate
 teacher app; their tools (class register, marks, timetable, messages) appear in the portal as
 later stages land. The demo accounts are disposable and must be removed before real users.
+
+## 2026-10-23 — Stage 1 (part 1): the register data model
+
+The secure foundation for learners, classes and subjects, set up by the school's admin. Two
+migrations:
+
+- **subjects** per school and grade (with a language level for languages); **classes** per year
+  and grade with a class teacher; **class_subject_teachers** for the subject-teaching grades;
+  **learner_guardians** for a learner's contacts. The **learners** table now doubles as the
+  school register: `parent_id` is nullable, `school_id`, `current_class_id`, `admission_number`
+  and `years_in_phase` added, the identity rule relaxed from "exactly one" to "not both" so young
+  learners without an ID can be imported, and `learners_has_owner` keeps every learner tied to a
+  parent or a school.
+- **Teaching model as a school setting:** `schools.subject_teaching_from_grade` (default Grade 4).
+  Below it one class teacher; at and above it, subject teachers via `class_subject_teachers`.
+- **Row security:** admins manage their school's subjects, classes, assignments, register learners
+  and guardians; any staff may read the class and subject lists; a teacher sees a register learner
+  only through `teaches_class` (class teacher or subject teacher of that learner's class); parents
+  keep access to their own learners and guardians. Helpers `class_school_id`, `learner_school_id`,
+  `learner_parent_id`, `teaches_class`, all SECURITY DEFINER with pinned search_path.
+- **seed_default_subjects(school)**: offers the CAPS subjects for each grade in the school's range
+  (admin-only, idempotent); the admin edits them after. FET grades 10–12 are left for the admin.
+- **enrol_application(application, class)**: places an accepted applicant's learner into the
+  register and a class and marks the application accepted.
+
+Tests: `npm run test:rls` now at 28 isolation checks plus the coverage guard. New checks prove a
+second school's admin sees none of school A's classes, subjects, register learners or guardians;
+the class teacher sees a learner in their class; a teacher of a different class in the same school
+does not; and a teacher of another school sees no register learners.
+
+Next in Stage 1: the admin screens (subjects setup, classes and teacher assignment, learner import
+from Excel, learner CRUD, class-list export) and the teacher's class view.
