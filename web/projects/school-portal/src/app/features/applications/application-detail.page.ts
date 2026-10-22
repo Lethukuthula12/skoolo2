@@ -60,9 +60,13 @@ import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badg
             <section class="card">
               <h2>Parent or guardian</h2>
               <dl class="facts">
-                <dt>Name</dt><dd>{{ a.parent.full_name }}</dd>
-                <dt>Phone</dt><dd><a [href]="'tel:' + a.parent.phone">{{ a.parent.phone }}</a></dd>
+                <dt>Name</dt><dd>{{ a.guardian_full_name || a.parent.full_name }}@if (a.guardian_relationship) { <span class="muted">({{ a.guardian_relationship }})</span> }</dd>
+                @if (a.guardian_identity_number) { <dt>ID / passport</dt><dd>{{ a.guardian_identity_number }}</dd> }
+                <dt>Phone</dt><dd><a [href]="'tel:' + (a.guardian_phone || a.parent.phone)">{{ a.guardian_phone || a.parent.phone }}</a></dd>
                 <dt>Email</dt><dd><a [href]="'mailto:' + a.parent.email">{{ a.parent.email }}</a></dd>
+                @if (a.guardian_full_name && a.guardian_full_name !== a.parent.full_name) {
+                  <dt>Account holder</dt><dd>{{ a.parent.full_name }} · {{ a.parent.phone }}</dd>
+                }
                 <dt>Address</dt>
                 <dd>{{ a.address_line }}@if (a.suburb) {, {{ a.suburb }}}<br />{{ a.town }}, {{ a.province }} {{ a.postal_code }}</dd>
                 <dt>School transport</dt>

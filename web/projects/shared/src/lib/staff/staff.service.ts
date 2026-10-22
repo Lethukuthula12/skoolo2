@@ -2,6 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { injectSupabase } from '../supabase-client';
 import type {
   Application, ApplicationDocument, ApplicationStatus, EnrolmentPeriod, Learner, PeriodGrade, Profile, School,
+  StaffMember, StaffMemberInsert,
 } from '../models';
 import type { Database, TablesInsert, TablesUpdate } from '../database.types';
 
@@ -214,5 +215,33 @@ export class StaffService {
       .single();
     if (error) throw error;
     return data;
+  }
+
+  // ----- Staff register ------------------------------------------------------
+
+  async staffMembers(): Promise<StaffMember[]> {
+    const { data, error } = await this.client
+      .from('staff_members')
+      .select('*')
+      .eq('school_id', this.requireSchoolId())
+      .order('last_name')
+      .order('first_name');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async saveStaffMember(member: Omit<StaffMemberInsert, 'school_id'>): Promise<StaffMember> {
+    const { data, error } = await this.client
+      .from('staff_members')
+      .upsert({ ...member, school_id: this.requireSchoolId() })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteStaffMember(id: string): Promise<void> {
+    const { error } = await this.client.from('staff_members').delete().eq('id', id);
+    if (error) throw error;
   }
 }

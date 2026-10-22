@@ -78,8 +78,23 @@
 
       @case ('address') {
         <form class="form-card" [formGroup]="addressForm" (ngSubmit)="next()">
-          <h2>Where you live</h2>
-          <p class="hint">Step 2 of 3. The learner's home address.</p>
+          <h2>About you</h2>
+          <p class="hint">Step 2 of 3. The parent or guardian making this application, and the learner's home address.</p>
+
+          <ion-input label="Your full name" labelPlacement="floating" fill="outline" formControlName="guardianFullName" autocomplete="name" errorText="Your full name is required" />
+          <ion-select label="Relationship to the learner" labelPlacement="floating" fill="outline" interface="action-sheet" formControlName="guardianRelationship" cancelText="Cancel">
+            @for (r of relationships; track r) {
+              <ion-select-option [value]="r">{{ r }}</ion-select-option>
+            }
+          </ion-select>
+          @if (addressForm.controls.guardianRelationship.touched && addressForm.controls.guardianRelationship.invalid) {
+            <p class="error-text">Please choose your relationship to the learner.</p>
+          }
+          <ion-input label="Your ID or passport number" labelPlacement="floating" fill="outline" formControlName="guardianIdentityNumber" inputmode="text"
+                     [errorText]="addressForm.controls.guardianIdentityNumber.hasError('saIdentityNumber') ? 'That ID number is not valid. Please check it.' : 'Your ID or passport number is required'" />
+          <ion-input label="Your cellphone number" labelPlacement="floating" fill="outline" formControlName="guardianPhone" type="tel" inputmode="tel" autocomplete="tel" errorText="Enter a South African cellphone number" />
+
+          <h3>Where the learner lives</h3>
 
           <ion-input label="Street address" labelPlacement="floating" fill="outline" formControlName="addressLine" autocomplete="street-address" errorText="Street address is required" />
           <ion-input label="Suburb" labelPlacement="floating" fill="outline" formControlName="suburb" />
@@ -130,6 +145,13 @@
               </ion-label>
             </ion-item>
             <ion-item><ion-label><p>Date of birth</p><h3>{{ learnerForm.value.dateOfBirth }}</h3></ion-label></ion-item>
+            <ion-item>
+              <ion-label>
+                <p>Parent or guardian</p>
+                <h3>{{ addressForm.value.guardianFullName }} ({{ addressForm.value.guardianRelationship }})</h3>
+                <p>{{ addressForm.value.guardianIdentityNumber }} · {{ addressForm.value.guardianPhone }}</p>
+              </ion-label>
+            </ion-item>
             <ion-item>
               <ion-label>
                 <p>Address</p>

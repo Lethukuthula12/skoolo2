@@ -74,7 +74,7 @@
                   <div><dt><ion-icon name="location-outline" /></dt><dd>{{ school.street_address }}</dd></div>
                 }
                 @if (school.phone) {
-                  <div><dt><ion-icon name="call-outline" /></dt><dd><a [href]="'tel:' + school.phone">{{ school.phone }}</a></dd></div>
+                  <div><dt><ion-icon name="call-outline" /></dt><dd><a [href]="'tel:' + school.phone">{{ school.phone }}</a>@if (school.secondary_phone) { · <a [href]="'tel:' + school.secondary_phone">{{ school.secondary_phone }}</a> }</dd></div>
                 }
                 @if (school.website) {
                   <div><dt><ion-icon name="globe-outline" /></dt><dd><a [href]="school.website" target="_blank" rel="noopener">{{ school.website }}</a></dd></div>

@@ -143,3 +143,40 @@ production builds, and the real school details once they arrive.
 - After the first deploy: set `site_url` and `additional_redirect_urls` in `supabase/config.toml`
   to the live URLs and run `npx supabase config push`.
 - Real school details, fee, capacities and bank account, to be entered in the portal.
+
+## 2026-10-22 — Day 5 (morning): the school's details and three requests from the admin
+
+Details gathered at the school and entered directly in the live database (not in migrations):
+display name Newborn Christian Primary School, tagline, Olakeni Area, Mbazwana, KwaZulu-Natal,
+two phone numbers, legal entity Newborn Christian Academy (Pty) Ltd with company, NPO and tax
+references, Capitec Business account, once-off enrolment fee R520, payment instructions allowing
+cash at the office and two working days for confirmation. Grade structure 00, 0, RR, R, 1–7.
+The 2027 period is **draft** because the school said enrolment is closed right now; the admin
+opens it from Enrolment settings when ready. Capacities are blank until the admin sets them.
+
+Built in response to what the admin asked for:
+
+| Request | Built |
+|---|---|
+| Grade 0 as a level of its own | `G0` added between Grade 00 and Grade RR; grade order renumbered. |
+| Parent info and ID on the application | Step 2 now opens with the applying parent or guardian: full name and phone prefilled from the account, relationship, ID or passport number (Luhn-checked when 13 digits). Stored per application and shown on the portal's application page. |
+| Staff register with name, surname, class, ID, address, phone | `staff_members` table with RLS, and a Staff register page in the portal: list, search, add, edit, remove. Logins stay separate; this is the record of everyone who works at the school. |
+| Legal identity of the school | `legal_name`, `company_registration`, `npo_registration`, `tax_reference`, `secondary_phone` on `schools`, editable under School profile. Second phone shows in the parent app. |
+
+Verified in the browser: portal Staff register page and form; parent app step 2 with the new
+fields and Grade 0 in the dropdown (period opened for two minutes, then set back to draft).
+
+### Notes
+
+- School fees (monthly, termly or yearly) are outside the pilot. Only the once-off enrolment fee
+  is collected through the app.
+- The dev server for the parent app served a stale bundle after a transient type error during
+  type regeneration; a restart fixed it. If a change does not show up, restart `ng serve` before
+  debugging the code.
+- Still unconfirmed with the school: whether "Grade 0" is a level distinct from Grade R (built as
+  distinct), and the exact account holder name on the Capitec account (entered as the legal name).
+
+### Still to collect
+
+Names, emails and cellphones of the principal, admin clerk and teachers who will sign in, so real
+logins can replace the test staff account. The school badge image.

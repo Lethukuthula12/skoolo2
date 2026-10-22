@@ -23,6 +23,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/enrolment/enrolment-settings.page').then((m) => m.EnrolmentSettingsPage),
       },
       {
+        path: 'staff',
+        loadComponent: () => import('./features/staff/staff-register.page').then((m) => m.StaffRegisterPage),
+      },
+      {
         path: 'school',
         loadComponent: () => import('./features/school/school-profile.page').then((m) => m.SchoolProfilePage),
       },

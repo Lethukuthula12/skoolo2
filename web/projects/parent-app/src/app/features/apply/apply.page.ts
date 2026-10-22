@@ -8,9 +8,19 @@ import {
   IonSelectOption, IonSpinner, IonTextarea, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
 import {
-  ApplicationError, ApplicationService, GradeAvailability, PROVINCES, Province, SchoolDirectoryEntry,
-  SchoolDirectoryService, dateOfBirthFromIdentityNumber, genderFromIdentityNumber, saIdentityNumberValidator,
+  ApplicationError, ApplicationService, AuthService, GUARDIAN_RELATIONSHIPS, GradeAvailability, PROVINCES, Province,
+  SchoolDirectoryEntry, SchoolDirectoryService, dateOfBirthFromIdentityNumber, genderFromIdentityNumber,
+  isValidSaIdentityNumber, saIdentityNumberValidator,
 } from '@skoolo/shared';
+import type { AbstractControl, ValidationErrors } from '@angular/forms';
+
+/** The guardian may hold an SA ID (13 digits, Luhn-checked) or a passport (anything else, 5+ chars). */
+function guardianIdentityValidator(control: AbstractControl<string>): ValidationErrors | null {
+  const value = (control.value ?? '').trim();
+  if (!value) return null;
+  if (/^\d{13}$/.test(value)) return isValidSaIdentityNumber(value) ? null : { saIdentityNumber: true };
+  return value.length >= 5 ? null : { minlength: true };
+}
 
 type Step = 'learner' | 'address' | 'review';
 const STEPS: Step[] = ['learner', 'address', 'review'];
@@ -33,8 +43,10 @@ export class ApplyPage {
   private readonly applications = inject(ApplicationService);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
+  private readonly auth = inject(AuthService);
 
   protected readonly provinces = PROVINCES;
+  protected readonly relationships = GUARDIAN_RELATIONSHIPS;
   protected readonly school = signal<SchoolDirectoryEntry | null>(null);
   protected readonly grades = signal<GradeAvailability[]>([]);
   protected readonly loading = signal(true);
@@ -61,6 +73,10 @@ export class ApplyPage {
   });
 
   protected readonly addressForm = this.formBuilder.group({
+    guardianFullName: ['', [Validators.required, Validators.minLength(3)]],
+    guardianRelationship: ['', Validators.required],
+    guardianIdentityNumber: ['', [Validators.required, guardianIdentityValidator]],
+    guardianPhone: ['', [Validators.required, Validators.pattern(/^(\+27|0)\d{9}$/)]],
     addressLine: ['', Validators.required],
     suburb: [''],
     town: ['', Validators.required],
@@ -96,6 +112,13 @@ export class ApplyPage {
       passport.updateValueAndValidity();
     });
     this.learnerForm.controls.identityType.setValue('sa_id');
+
+    // Prefill the guardian from the account; the parent can change it if someone else is applying.
+    const meta = this.auth.user()?.user_metadata ?? {};
+    this.addressForm.patchValue({
+      guardianFullName: (meta['full_name'] as string | undefined) ?? '',
+      guardianPhone: (meta['phone'] as string | undefined) ?? '',
+    });
 
     // A valid ID number tells us the birth date and sex: prefill, parent can still change them.
     this.learnerForm.controls.identityNumber.valueChanges.subscribe((value) => {
@@ -169,6 +192,12 @@ export class ApplyPage {
         usesSchoolTransport: address.usesTransport === '' ? null : address.usesTransport === 'yes',
         transportProviderName: address.usesTransport === 'yes' ? address.transportProvider.trim() || null : null,
         parentNote: address.parentNote.trim() || null,
+        guardian: {
+          fullName: address.guardianFullName.trim(),
+          relationship: address.guardianRelationship,
+          identityNumber: address.guardianIdentityNumber.trim(),
+          phone: address.guardianPhone.trim(),
+        },
       });
       await this.router.navigate(['/applications', application.id, 'documents'], { replaceUrl: true });
     } catch (error) {

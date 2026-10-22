@@ -22,6 +22,7 @@ export interface NewApplication {
   usesSchoolTransport: boolean | null;
   transportProviderName: string | null;
   parentNote: string | null;
+  guardian: { fullName: string; relationship: string; identityNumber: string; phone: string };
 }
 
 /** Error hints raised by the database triggers, surfaced for friendly messages. */
@@ -65,6 +66,10 @@ export class ApplicationService {
         uses_school_transport: input.usesSchoolTransport,
         transport_provider_name: input.transportProviderName,
         parent_note: input.parentNote,
+        guardian_full_name: input.guardian.fullName,
+        guardian_relationship: input.guardian.relationship,
+        guardian_identity_number: input.guardian.identityNumber || null,
+        guardian_phone: input.guardian.phone,
       })
       .select()
       .single();

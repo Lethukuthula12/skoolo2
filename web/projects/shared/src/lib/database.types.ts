@@ -139,6 +139,10 @@ export type Database = {
         Row: {
           address_line: string
           created_at: string
+          guardian_full_name: string
+          guardian_identity_number: string | null
+          guardian_phone: string
+          guardian_relationship: string
           id: string
           learner_id: string
           marked_paid_at: string | null
@@ -165,6 +169,10 @@ export type Database = {
         Insert: {
           address_line: string
           created_at?: string
+          guardian_full_name?: string
+          guardian_identity_number?: string | null
+          guardian_phone?: string
+          guardian_relationship?: string
           id?: string
           learner_id: string
           marked_paid_at?: string | null
@@ -191,6 +199,10 @@ export type Database = {
         Update: {
           address_line?: string
           created_at?: string
+          guardian_full_name?: string
+          guardian_identity_number?: string | null
+          guardian_phone?: string
+          guardian_relationship?: string
           id?: string
           learner_id?: string
           marked_paid_at?: string | null
@@ -646,6 +658,7 @@ export type Database = {
       schools: {
         Row: {
           badge_url: string | null
+          company_registration: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -653,19 +666,24 @@ export type Database = {
           id: string
           is_claimed: boolean
           is_verified: boolean
+          legal_name: string | null
           lowest_grade: string | null
           name: string
+          npo_registration: string | null
           phone: string | null
           province: Database["public"]["Enums"]["sa_province"] | null
+          secondary_phone: string | null
           slug: string
           street_address: string | null
           tagline: string | null
+          tax_reference: string | null
           town: string
           updated_at: string
           website: string | null
         }
         Insert: {
           badge_url?: string | null
+          company_registration?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -673,19 +691,24 @@ export type Database = {
           id?: string
           is_claimed?: boolean
           is_verified?: boolean
+          legal_name?: string | null
           lowest_grade?: string | null
           name: string
+          npo_registration?: string | null
           phone?: string | null
           province?: Database["public"]["Enums"]["sa_province"] | null
+          secondary_phone?: string | null
           slug: string
           street_address?: string | null
           tagline?: string | null
+          tax_reference?: string | null
           town?: string
           updated_at?: string
           website?: string | null
         }
         Update: {
           badge_url?: string | null
+          company_registration?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -693,13 +716,17 @@ export type Database = {
           id?: string
           is_claimed?: boolean
           is_verified?: boolean
+          legal_name?: string | null
           lowest_grade?: string | null
           name?: string
+          npo_registration?: string | null
           phone?: string | null
           province?: Database["public"]["Enums"]["sa_province"] | null
+          secondary_phone?: string | null
           slug?: string
           street_address?: string | null
           tagline?: string | null
+          tax_reference?: string | null
           town?: string
           updated_at?: string
           website?: string | null
@@ -718,6 +745,72 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "grades"
             referencedColumns: ["code"]
+          },
+        ]
+      }
+      staff_members: {
+        Row: {
+          address: string | null
+          class_assigned: string | null
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          identity_number: string | null
+          is_active: boolean
+          last_name: string
+          notes: string | null
+          phone: string | null
+          position: string
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          class_assigned?: string | null
+          created_at?: string
+          email?: string | null
+          first_name: string
+          id?: string
+          identity_number?: string | null
+          is_active?: boolean
+          last_name: string
+          notes?: string | null
+          phone?: string | null
+          position?: string
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          class_assigned?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          identity_number?: string | null
+          is_active?: boolean
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_members_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -780,6 +873,7 @@ export type Database = {
           opens_at: string | null
           phone: string | null
           province: Database["public"]["Enums"]["sa_province"] | null
+          secondary_phone: string | null
           slug: string | null
           street_address: string | null
           tagline: string | null

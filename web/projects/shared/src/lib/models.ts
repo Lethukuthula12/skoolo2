@@ -54,3 +54,15 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
 export const REQUIRED_DOCUMENT_TYPES: readonly DocumentType[] = [
   'birth_certificate', 'parent_identity', 'proof_of_address',
 ];
+
+export type StaffMember = Tables<'staff_members'>;
+export type StaffMemberInsert = TablesInsert<'staff_members'>;
+
+export const GUARDIAN_RELATIONSHIPS: readonly string[] = [
+  'Mother', 'Father', 'Grandmother', 'Grandfather', 'Aunt', 'Uncle', 'Legal guardian', 'Other',
+];
+
+export const STAFF_POSITIONS: readonly string[] = [
+  'Principal', 'Deputy principal', 'Teacher', 'Admin clerk', 'Bursar', 'Receptionist', 'Groundsman',
+  'Cleaner', 'Security', 'Driver', 'Cook', 'Other',
+];

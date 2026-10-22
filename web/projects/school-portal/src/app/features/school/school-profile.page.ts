@@ -4,7 +4,8 @@ import { Grade, PROVINCES, Province, SchoolDirectoryService, StaffService } from
 
 interface SchoolForm {
   name: string; tagline: string; description: string; lowest_grade: string; highest_grade: string;
-  street_address: string; town: string; province: Province | ''; phone: string; email: string; website: string; badge_url: string;
+  street_address: string; town: string; province: Province | ''; phone: string; secondary_phone: string; email: string; website: string; badge_url: string;
+  legal_name: string; company_registration: string; npo_registration: string; tax_reference: string;
 }
 
 interface BankForm {
@@ -49,9 +50,18 @@ interface BankForm {
             </select>
           </div>
           <div class="field"><label for="phone">Phone</label><input id="phone" type="tel" [(ngModel)]="s.phone" name="phone" /></div>
+          <div class="field"><label for="phone2">Second phone</label><input id="phone2" type="tel" [(ngModel)]="s.secondary_phone" name="phone2" /></div>
           <div class="field"><label for="email">Email</label><input id="email" type="email" [(ngModel)]="s.email" name="email" /></div>
           <div class="field wide"><label for="website">Website</label><input id="website" type="url" [(ngModel)]="s.website" name="website" placeholder="https://" /></div>
           <div class="field wide"><label for="badge">Badge image URL</label><input id="badge" type="url" [(ngModel)]="s.badge_url" name="badge" placeholder="https://… (a square PNG works best)" /></div>
+        </div>
+        <h3>Legal details</h3>
+        <p class="muted small">Not shown to parents. Used on receipts and official correspondence.</p>
+        <div class="form-grid">
+          <div class="field wide"><label for="legal">Registered legal name</label><input id="legal" type="text" [(ngModel)]="s.legal_name" name="legal" placeholder="e.g. Newborn Christian Academy (Pty) Ltd" /></div>
+          <div class="field"><label for="coreg">Company registration</label><input id="coreg" type="text" [(ngModel)]="s.company_registration" name="coreg" /></div>
+          <div class="field"><label for="npo">NPO registration</label><input id="npo" type="text" [(ngModel)]="s.npo_registration" name="npo" /></div>
+          <div class="field"><label for="tax">Taxpayer reference</label><input id="tax" type="text" [(ngModel)]="s.tax_reference" name="tax" /></div>
         </div>
         <div><button class="btn btn-primary" type="submit" [disabled]="busy()">Save profile</button></div>
       </form>
@@ -90,7 +100,8 @@ export class SchoolProfilePage {
   // after loading is what triggers a render in zoneless mode.
   protected readonly school = signal<SchoolForm>({
     name: '', tagline: '', description: '', lowest_grade: 'G00', highest_grade: 'G7',
-    street_address: '', town: '', province: '', phone: '', email: '', website: '', badge_url: '',
+    street_address: '', town: '', province: '', phone: '', secondary_phone: '', email: '', website: '', badge_url: '',
+    legal_name: '', company_registration: '', npo_registration: '', tax_reference: '',
   });
   protected readonly bank = signal<BankForm>({
     account_holder: '', bank_name: '', account_type: 'Cheque', account_number: '', branch_code: '',
@@ -113,6 +124,11 @@ export class SchoolProfilePage {
         town: s.town.trim(),
         province: s.province || null,
         phone: s.phone.trim() || null,
+        secondary_phone: s.secondary_phone.trim() || null,
+        legal_name: s.legal_name.trim() || null,
+        company_registration: s.company_registration.trim() || null,
+        npo_registration: s.npo_registration.trim() || null,
+        tax_reference: s.tax_reference.trim() || null,
         email: s.email.trim() || null,
         website: s.website.trim() || null,
         badge_url: s.badge_url.trim() || null,
@@ -143,7 +159,9 @@ export class SchoolProfilePage {
         name: s.name, tagline: s.tagline ?? '', description: s.description ?? '',
         lowest_grade: s.lowest_grade ?? 'G00', highest_grade: s.highest_grade ?? 'G7',
         street_address: s.street_address ?? '', town: s.town, province: s.province ?? '',
-        phone: s.phone ?? '', email: s.email ?? '', website: s.website ?? '', badge_url: s.badge_url ?? '',
+        phone: s.phone ?? '', secondary_phone: s.secondary_phone ?? '', email: s.email ?? '', website: s.website ?? '', badge_url: s.badge_url ?? '',
+        legal_name: s.legal_name ?? '', company_registration: s.company_registration ?? '', npo_registration: s.npo_registration ?? '',
+        tax_reference: s.tax_reference ?? '',
       });
     }
     const b = await this.staff.bankAccount();
