@@ -211,6 +211,21 @@ begin
   select count(*) into n from public.learners where school_id = v_schoolA;
   if n <> 0 then v_fail := v_fail || 'teacher B sees school A''s register learners'; end if;
 
+  -- my_classes() returns only the caller's own classes.
+  v_checks := v_checks + 1;
+  select count(*) into n from public.my_classes() where id = v_classA;
+  if n <> 0 then v_fail := v_fail || 'teacher B''s my_classes includes school A''s class'; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.my_classes() where id = v_classA;
+  if n < 1 then v_fail := v_fail || 'class teacher''s my_classes omits their own class'; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.my_classes();
+  if n <> 0 then v_fail := v_fail || 'a teacher with no class gets classes from my_classes'; end if;
+
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.
   perform set_config('request.jwt.claims', json_build_object('sub', v_pA, 'role','authenticated','email', v_emailPA)::text, true);

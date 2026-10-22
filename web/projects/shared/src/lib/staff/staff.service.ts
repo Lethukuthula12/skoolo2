@@ -584,6 +584,36 @@ export class StaffService {
     const { error } = await this.client.from('learner_guardians').delete().eq('id', id);
     if (error) throw error;
   }
+
+  // ----- Teacher's own classes ----------------------------------------------
+
+  /** The classes the signed-in teacher teaches (class teacher or subject teacher). */
+  async myClasses(): Promise<MyClass[]> {
+    const { data, error } = await this.client.rpc('my_classes');
+    if (error) throw error;
+    return (data ?? []) as MyClass[];
+  }
+
+  /** Learners in one class. Row security limits a teacher to classes they teach. */
+  async classLearners(classId: string): Promise<Learner[]> {
+    const { data, error } = await this.client
+      .from('learners')
+      .select('*')
+      .eq('current_class_id', classId)
+      .order('last_name')
+      .order('first_name');
+    if (error) throw error;
+    return data ?? [];
+  }
+}
+
+export interface MyClass {
+  id: string;
+  school_id: string;
+  academic_year: number;
+  grade_code: string;
+  name: string;
+  is_class_teacher: boolean;
 }
 
 export type ClassRow = SchoolClass & {

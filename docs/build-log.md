@@ -408,3 +408,22 @@ so its register starts clean for the real admin. The enrolment application is un
 
 Still in Stage 1: the teacher's own class view, replacing today's Home placeholder, so a teacher
 sees the classes they teach and their learners.
+
+## 2026-10-23 — Stage 1 (part 3): the teacher's class view
+
+A teacher cannot read the staff register, so `public.my_classes()` (SECURITY DEFINER, filtered to
+`auth.uid()`) returns the classes they teach, as class teacher or subject teacher, with nothing
+from any other user or school. The portal Home page became the teacher's dashboard: it lists their
+classes with a class-teacher / subject-teacher badge and learner count, and opening a class shows a
+read-only roster (name, date of birth, age, gender). Guardians stay admin-only.
+
+Verified end to end: signed in as the teacher, Home showed their Grade 4 A class flagged as class
+teacher with 2 learners, the roster listed them, and the nav held only Home. The isolation test
+grew to 31 checks, including that `my_classes()` returns the class teacher's own class, nothing for
+a teacher with no class, and none of another school's classes.
+
+A small demo was kept so the teacher login shows something: a Grade 4 A class at the pilot school
+with the teacher assigned and two learners. Remove it before real use if preferred.
+
+Stage 1 is built and verified across admin and teacher roles. It meets the definition of done
+except the last line, a real person using it: the admin importing the school's actual learners.

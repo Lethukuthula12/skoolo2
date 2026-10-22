@@ -1478,6 +1478,17 @@ export type Database = {
         Args: { p_application_id: string }
         Returns: undefined
       }
+      my_classes: {
+        Args: never
+        Returns: {
+          academic_year: number
+          grade_code: string
+          id: string
+          is_class_teacher: boolean
+          name: string
+          school_id: string
+        }[]
+      }
       period_grade_taken: {
         Args: { p_period_grade_id: string }
         Returns: number
