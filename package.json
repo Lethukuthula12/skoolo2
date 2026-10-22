@@ -3,12 +3,15 @@
   "private": true,
   "description": "Skoolo enrolment platform: Supabase backend, Ionic parent app, Angular school portal.",
   "scripts": {
-    "install:web": "npm --prefix web install",
+    "install:web": "npm --prefix web ci --no-audit --no-fund",
     "start:parent": "npm --prefix web run start:parent",
     "start:portal": "npm --prefix web run start:portal",
-    "build:parent": "npm --prefix web run build:parent",
-    "build:portal": "npm --prefix web run build:portal",
+    "build:parent": "npm --prefix web ci --no-audit --no-fund && npm --prefix web run build:parent",
+    "build:portal": "npm --prefix web ci --no-audit --no-fund && npm --prefix web run build:portal",
     "db:push": "supabase db push",
     "gen:types": "npm --prefix web run gen:types"
+  },
+  "engines": {
+    "node": ">=20.19 <25"
   }
 }
