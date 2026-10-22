@@ -43,6 +43,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/learners/learners.page').then((m) => m.LearnersPage),
       },
       {
+        path: 'reports',
+        loadComponent: () => import('./features/reports/reports.page').then((m) => m.ReportsPage),
+      },
+      {
         path: 'staff',
         loadComponent: () => import('./features/staff/staff-register.page').then((m) => m.StaffRegisterPage),
       },

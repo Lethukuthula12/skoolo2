@@ -1,9 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { injectSupabase } from '../supabase-client';
 import type {
-  Application, ApplicationDocument, ApplicationStatus, ClassSubjectTeacher, EnrolmentPeriod, Learner,
-  LearnerGuardian, LearnerGuardianInsert, LearnerInsert, PeriodGrade, Profile, Province, School, SchoolClass,
-  SchoolClassInsert, StaffMember, StaffMemberInsert,
+  AcademicTerm, Application, ApplicationDocument, ApplicationStatus, ClassSubjectTeacher, EnrolmentPeriod, Learner,
+  LearnerGuardian, LearnerGuardianInsert, LearnerInsert, PeriodGrade, Profile, Province, ReportCard, ReportMark,
+  School, SchoolClass, SchoolClassInsert, StaffMember, StaffMemberInsert,
 } from '../models';
 import type { Database, Tables, TablesInsert, TablesUpdate } from '../database.types';
 
@@ -627,7 +627,82 @@ export class StaffService {
     if (error) throw error;
     return data ?? [];
   }
+
+  // ----- Term reports --------------------------------------------------------
+
+  async academicTerms(year: number): Promise<AcademicTerm[]> {
+    const { data, error } = await this.client
+      .from('academic_terms')
+      .select('*')
+      .eq('school_id', this.requireSchoolId())
+      .eq('academic_year', year)
+      .order('term_number');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async saveTerm(term: Omit<TablesInsert<'academic_terms'>, 'school_id'> & { id?: string }): Promise<AcademicTerm> {
+    const { data, error } = await this.client
+      .from('academic_terms')
+      .upsert({ ...term, school_id: this.requireSchoolId() }, { onConflict: 'school_id,academic_year,term_number' })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async ensureTermReports(classId: string, term: number): Promise<number> {
+    const { data, error } = await this.client.rpc('ensure_term_reports', { p_class_id: classId, p_term: term });
+    if (error) throw error;
+    return data ?? 0;
+  }
+
+  async classReports(classId: string, year: number, term: number): Promise<ReportCardFull[]> {
+    const { data, error } = await this.client
+      .from('report_cards')
+      .select(`*, learner:learners(first_name, last_name, date_of_birth, identity_number, passport_number),
+               report_marks(*, subjects(id, name, sort_order, language_level, grade_code))`)
+      .eq('class_id', classId)
+      .eq('academic_year', year)
+      .eq('term_number', term);
+    if (error) throw error;
+    return ((data ?? []) as unknown as ReportCardFull[]).sort((a, b) =>
+      (a.learner?.last_name ?? '').localeCompare(b.learner?.last_name ?? ''),
+    );
+  }
+
+  async saveMark(reportCardId: string, subjectId: string, mark: number | null): Promise<void> {
+    const { error } = await this.client.rpc('save_mark', { p_report_card_id: reportCardId, p_subject_id: subjectId, p_mark: mark as number });
+    if (error) throw error;
+  }
+
+  async setReportMeta(reportCardId: string, daysAbsent: number | null, teacherComment: string | null): Promise<void> {
+    const { error } = await this.client.rpc('set_report_meta', {
+      p_report_card_id: reportCardId, p_days_absent: daysAbsent as number, p_teacher_comment: teacherComment as string,
+    });
+    if (error) throw error;
+  }
+
+  async approveClassReports(classId: string, term: number): Promise<number> {
+    const { data, error } = await this.client.rpc('approve_class_reports', { p_class_id: classId, p_term: term });
+    if (error) throw error;
+    return data ?? 0;
+  }
+
+  async publishClassReports(classId: string, term: number): Promise<number> {
+    const { data, error } = await this.client.rpc('publish_class_reports', { p_class_id: classId, p_term: term });
+    if (error) throw error;
+    return data ?? 0;
+  }
 }
+
+export type ReportMarkFull = ReportMark & {
+  subjects: { id: string; name: string; sort_order: number; language_level: string | null; grade_code: string } | null;
+};
+export type ReportCardFull = ReportCard & {
+  learner: { first_name: string; last_name: string; date_of_birth: string; identity_number: string | null; passport_number: string | null } | null;
+  report_marks: ReportMarkFull[];
+};
 
 export interface MyClass {
   id: string;

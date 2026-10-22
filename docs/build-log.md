@@ -472,3 +472,26 @@ its marks, and an unrelated parent still cannot.
 
 Next in Stage 3: the mark-capture grid and approval in the portal, the report card PDF, delivery to
 parents in the app, and the schedule export with pass/fail filters.
+
+## 2026-10-23 — Stage 3 (part 2): the report screens
+
+Portal **Reports** page (admins and teachers, for their classes): pick a class and term, create the
+term's reports, and capture a mark per learner per subject in a grid, with days absent and a
+teacher comment. Marks save as you type and show the national level. An admin approves (locking
+the marks) and publishes (notifying connected parents). A per-learner **Report** button prints a
+CAPS-style report card: school header and stamp, learner and term details, subjects with percentage,
+level and description, attendance, comments, the level legend and signature lines. **Export
+schedule** writes the class to Excel with marks, averages and a promotion outcome, filterable by
+whether each learner meets the CAPS promotion guideline for the phase.
+
+Parent app: each child on **My children** opens a reports page listing their published reports, each
+expandable to the marks table, levels, comments and a level legend.
+
+Verified end to end in the browser: as admin, created Grade 4 reports, captured marks (average 65.9,
+outcome "Meets"), approved and published; as the connected parent, the published Term 1 report
+appeared with its marks, while the report stayed invisible before publishing. The 48-check
+isolation suite still passes.
+
+Known small refinement: the parent report omits the class name because classes are staff-only under
+RLS; school, term and marks all show. Stage 3 is built; the definition of done's last line is the
+school capturing a real class's Term 4 marks.

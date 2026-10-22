@@ -194,6 +194,20 @@ export class ApplicationService {
     return (data ?? []) as MyChild[];
   }
 
+  /** A child's published reports, newest first. Row security returns only published ones. */
+  async childReports(learnerId: string): Promise<ChildReport[]> {
+    const { data, error } = await this.client
+      .from('report_cards')
+      .select(`*, report_marks(*, subjects(name, sort_order, language_level)),
+               classes(name, grade_code), schools:school_id(name, stamp_url)`)
+      .eq('learner_id', learnerId)
+      .eq('status', 'published')
+      .order('academic_year', { ascending: false })
+      .order('term_number', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as unknown as ChildReport[];
+  }
+
   /** Redeem a family code to connect to a child. Returns the child, or throws a friendly message. */
   async redeemFamilyCode(code: string, relationship?: string): Promise<{ first_name: string; last_name: string; school_name: string }> {
     const { data, error } = await this.client.rpc('redeem_family_code', {
@@ -240,4 +254,22 @@ export interface MyChild {
   school_name: string | null;
   class_name: string | null;
   grade_label: string | null;
+}
+
+export interface ChildReportMark {
+  mark: number | null;
+  comment: string | null;
+  subjects: { name: string; sort_order: number; language_level: string | null } | null;
+}
+export interface ChildReport {
+  id: string;
+  academic_year: number;
+  term_number: number;
+  days_absent: number | null;
+  teacher_comment: string | null;
+  principal_comment: string | null;
+  published_at: string | null;
+  report_marks: ChildReportMark[];
+  classes: { name: string; grade_code: string } | null;
+  schools: { name: string; stamp_url: string | null } | null;
 }

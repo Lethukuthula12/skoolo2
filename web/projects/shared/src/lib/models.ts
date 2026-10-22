@@ -80,3 +80,29 @@ export const LANGUAGE_LEVEL_LABELS: Record<string, string> = {
   first_additional: 'First Additional Language',
   second_additional: 'Second Additional Language',
 };
+
+export type AcademicTerm = Tables<'academic_terms'>;
+export type ReportCard = Tables<'report_cards'>;
+export type ReportMark = Tables<'report_marks'>;
+export type ReportStatus = Enums<'report_status'>;
+
+export const ACHIEVEMENT_LEVELS: { level: number; description: string; band: string }[] = [
+  { level: 7, description: 'Outstanding achievement', band: '80–100' },
+  { level: 6, description: 'Meritorious achievement', band: '70–79' },
+  { level: 5, description: 'Substantial achievement', band: '60–69' },
+  { level: 4, description: 'Adequate achievement', band: '50–59' },
+  { level: 3, description: 'Moderate achievement', band: '40–49' },
+  { level: 2, description: 'Elementary achievement', band: '30–39' },
+  { level: 1, description: 'Not achieved', band: '0–29' },
+];
+
+export function achievementLevel(mark: number | null): number | null {
+  if (mark === null || mark === undefined) return null;
+  if (mark >= 80) return 7; if (mark >= 70) return 6; if (mark >= 60) return 5;
+  if (mark >= 50) return 4; if (mark >= 40) return 3; if (mark >= 30) return 2;
+  return 1;
+}
+
+export function achievementDescription(level: number | null): string {
+  return ACHIEVEMENT_LEVELS.find((a) => a.level === level)?.description ?? '';
+}

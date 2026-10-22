@@ -1,0 +1,109 @@
+<div class="stack">
+  <div class="toolbar">
+    <div>
+      <h1>Term reports</h1>
+      <p class="muted">Capture a mark per subject, then the principal approves and publishes to parents.</p>
+    </div>
+  </div>
+
+  @if (notice()) { <p class="ok">{{ notice() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (classOptions().length === 0) {
+    <div class="card empty">
+      You have no classes to report on for {{ year() }}. An administrator sets up classes on the Classes page.
+    </div>
+  } @else {
+    <div class="card stack">
+      <div class="toolbar wrap">
+        <label class="row">Class
+          <select [ngModel]="selectedClassId()" (ngModelChange)="selectedClassId.set($event); loadReports()">
+            @for (c of classOptions(); track c.id) { <option [value]="c.id">{{ c.grade_code }} {{ c.name }}</option> }
+          </select>
+        </label>
+        <label class="row">Term
+          <select [ngModel]="term()" (ngModelChange)="changeTerm(+$event)">
+            @for (t of [1,2,3,4]; track t) { <option [value]="t">Term {{ t }}</option> }
+          </select>
+        </label>
+        <span class="spacer"></span>
+        @if (reports().length > 0) {
+          @if (allPublished()) { <span class="badge badge-success">Published</span> }
+          @else if (anyApproved() && !anyDraft()) { <span class="badge badge-warning">Approved</span> }
+          @else { <span class="badge badge-muted">Draft</span> }
+        }
+      </div>
+
+      @if (reports().length === 0) {
+        <div class="empty">
+          No reports for this class and term yet.
+          <div><button class="btn btn-primary" type="button" (click)="createReports()" [disabled]="busy()">Create reports</button></div>
+        </div>
+      } @else {
+        <div class="toolbar wrap">
+          @if (anyDraft()) {
+            <button class="btn btn-outline btn-sm" type="button" (click)="createReports()" [disabled]="busy()" title="Add any new learners">Refresh learners</button>
+          }
+          @if (isAdmin() && anyDraft()) {
+            <button class="btn btn-primary btn-sm" type="button" (click)="approve()" [disabled]="busy()">Approve</button>
+          }
+          @if (isAdmin() && anyApproved()) {
+            <button class="btn btn-success btn-sm" type="button" (click)="publish()" [disabled]="busy()">Publish to parents</button>
+          }
+          <span class="spacer"></span>
+          <select [ngModel]="filterOutcome()" (ngModelChange)="filterOutcome.set($event)" class="sm">
+            <option value="all">All learners</option>
+            <option value="pass">Meets promotion</option>
+            <option value="fail">Does not meet</option>
+          </select>
+          <button class="btn btn-outline btn-sm" type="button" (click)="exportSchedule()">Export schedule</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data grid">
+            <thead>
+              <tr>
+                <th class="sticky">Learner</th>
+                @for (s of subjectColumns(); track s.id) { <th class="c" [title]="s.name">{{ s.name }}</th> }
+                <th class="c">Avg</th>
+                <th class="c">Absent</th>
+                <th>Comment</th>
+                <th class="c">Outcome</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of filteredReports(); track r.id) {
+                <tr>
+                  <td class="sticky"><strong>{{ r.learner?.last_name }}, {{ r.learner?.first_name }}</strong></td>
+                  @for (s of subjectColumns(); track s.id) {
+                    <td class="c mark">
+                      <input type="number" min="0" max="100" [value]="markFor(r, s.id) ?? ''" [disabled]="r.status !== 'draft'"
+                             (change)="onMark(r, s.id, $any($event.target).value)" />
+                    </td>
+                  }
+                  <td class="c">{{ average(r) ?? '—' }}</td>
+                  <td class="c abs">
+                    <input type="number" min="0" [value]="r.days_absent ?? ''" [disabled]="r.status !== 'draft'"
+                           (change)="onAbsent(r, $any($event.target).value)" />
+                  </td>
+                  <td class="comment">
+                    <input type="text" [value]="r.teacher_comment ?? ''" [disabled]="r.status !== 'draft'"
+                           (change)="onComment(r, $any($event.target).value)" placeholder="Optional" />
+                  </td>
+                  <td class="c">
+                    <span class="badge" [class.badge-success]="outcomeLabel(r) === 'Meets'" [class.badge-danger]="outcomeLabel(r) === 'Does not meet'" [class.badge-muted]="outcomeLabel(r) === '—'">{{ outcomeLabel(r) }}</span>
+                  </td>
+                  <td><button class="btn btn-ghost btn-sm" type="button" (click)="printReport(r)">Report</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="muted small">Marks are saved as you type. Levels follow the national 7-point scale. Only administrators can approve and publish.</p>
+      }
+    </div>
+  }
+</div>

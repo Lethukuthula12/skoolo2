@@ -3,12 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
+import { RouterLink } from '@angular/router';
 import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/shared';
 
 @Component({
   selector: 'app-children-page',
   imports: [
-    ReactiveFormsModule,
+    ReactiveFormsModule, RouterLink,
     IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `
@@ -30,7 +31,7 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
           </div>
         } @else {
           @for (c of children(); track c.id) {
-            <article class="form-card child">
+            <article class="form-card child" [routerLink]="['/child', c.id]">
               <div class="avatar">{{ initials(c) }}</div>
               <div>
                 <h2>{{ c.first_name }} {{ c.last_name }}</h2>
@@ -38,6 +39,7 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
                   @if (c.school_name) { {{ c.school_name }} }
                   @if (c.grade_label) { · {{ c.grade_label }}@if (c.class_name) { {{ c.class_name }} } }
                 </p>
+                <p class="view">View reports ›</p>
               </div>
             </article>
           }
@@ -60,7 +62,9 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
   styles: `
     .child { display: flex; align-items: center; gap: 14px; }
     .child h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+    .child { cursor: pointer; }
     .child p { margin: 2px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.9rem; }
+    .child .view { color: var(--ion-color-primary); font-weight: 600; margin-top: 4px; }
     .avatar { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--ion-color-primary); color: #fff; font-weight: 700; flex-shrink: 0; }
     .form-card { display: grid; gap: 14px; }
     h2 { margin: 0; font-size: 1.2rem; font-weight: 700; }
