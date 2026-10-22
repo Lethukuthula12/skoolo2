@@ -7,7 +7,7 @@ edge servers in Johannesburg and Cape Town, and the same account can hold the do
 The repository carries everything the host needs:
 
 - `package.json` at the root installs the web dependencies and builds each app.
-- `.node-version` pins Node 20.
+- `.node-version` pins Node 22 for the host build (Wrangler needs 22; Angular 20 supports it).
 - `wrangler.jsonc` deploys the parent app; `wrangler.portal.jsonc` deploys the portal. Both serve
   the built folder as static assets with single-page-app routing.
 - `_headers` in each app's `public/` folder keeps the service worker files uncached.
