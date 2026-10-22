@@ -7,12 +7,13 @@ export class SchoolDirectoryService {
   private readonly client = injectSupabase();
   private gradesCache: Grade[] | null = null;
 
-  /** Schools matching a name or town search, open-for-registration schools first. */
+  /** Schools matching a name or town search: open for registration first, then schools on Skoolo, then the rest. */
   async search(term: string): Promise<SchoolDirectoryEntry[]> {
     let query = this.client
       .from('school_directory')
       .select('*')
       .order('is_open_for_registration', { ascending: false })
+      .order('is_claimed', { ascending: false })
       .order('name');
     const cleaned = term.trim().replace(/[,()%]/g, '');
     if (cleaned) {
