@@ -678,3 +678,16 @@ stayed locked and untouched, which is the intended behaviour. Both apps build cl
 
 Stage 7 complete to the backbone-and-screens line; the live-on-a-phone and real-use steps of the
 definition of done remain.
+
+## Portal reskin, Phase 1 — design foundation
+
+Began a visual refresh of the school portal, adapting a dashboard aesthetic (soft rounded cards,
+Poppins, an indigo primary with a coral accent) rebuilt in our own tokens — not copied from any
+template. All of it themes from the one central stylesheet (`school-portal/src/styles.scss`), so the
+whole portal restyled at once: a Skoolo-tuned indigo brand (#3a41c4) with a coral accent (#fb7d5b),
+deep-indigo headings (#303972), a faint-lavender background, 18px cards with a soft diffuse shadow,
+and Poppins loaded from Google Fonts. The shared primitives were upgraded (rounder buttons with a
+tinted shadow, a new .btn-accent and .badge-accent, a softer table treatment, and icon-ready stat
+tiles that still stack correctly without an icon via :has()). Verified in the browser: Poppins
+active, brand and active-nav pill indigo, cards at 18px, no console errors. Shell reskin, a new
+dashboard home and parent-app alignment follow in later phases.
