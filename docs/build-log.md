@@ -691,3 +691,13 @@ tinted shadow, a new .btn-accent and .badge-accent, a softer table treatment, an
 tiles that still stack correctly without an icon via :has()). Verified in the browser: Poppins
 active, brand and active-nav pill indigo, cards at 18px, no console errors. Shell reskin, a new
 dashboard home and parent-app alignment follow in later phases.
+
+## Portal reskin, Phase 2 — the shell
+
+Reskinned the portal shell. The sidebar is now a data-driven icon nav: each item has an inline line
+icon (Feather, MIT) beside its label, the active item is a filled indigo pill with a soft shadow, and
+hover is the soft-brand tint. Added a slim sticky top bar that carries the signed-in person (name,
+role and an initials avatar) and the Sign out button, moved out of the sidebar. On a phone the sidebar
+becomes a horizontal scrolling icon strip (icon over label, each item sized to its label so nothing
+overlaps) and the top bar compacts. Verified at desktop and 375px with no console errors; a clean
+production build. Next: a dashboard home (Phase 3) and parent-app alignment (Phase 4).
