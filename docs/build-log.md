@@ -750,3 +750,12 @@ with the rest of the theme on the school row, so the same RLS and per-school sco
 toggling to dark restyles every page, Save persists it (dark survived a reload from the database), and
 reset returns to the light default; both apps build clean. The pilot school is left on the light
 default.
+
+## Shell layout fix — full-height sidebar
+
+The sidebar used position:sticky, which a browser clips on tall pages (e.g. Enrolment) once the page
+scrolls — the dark panel ended partway down with empty space below and the nav scrolled oddly. Replaced
+it with the standard dashboard frame: the shell is a fixed 100vh column, the header and sidebar stay
+put, and only the content area scrolls. On phones it reverts to normal page flow (a fixed 100vh frame
+fights the mobile URL bar). Verified on the tall Enrolment page (sidebar fills full height, header
+fixed, content scrolls) and on mobile.

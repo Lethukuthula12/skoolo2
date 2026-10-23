@@ -57,11 +57,12 @@ interface NavItem { label: string; link: string; icon: string; }
     </div>
   `,
   styles: `
-    .shell { display: flex; flex-direction: column; min-height: 100vh; }
+    /* Fixed viewport frame: header and sidebar stay put, only the content scrolls. */
+    .shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
     /* Full-width brand header */
     .topbar {
-      position: sticky; top: 0; z-index: 10;
+      flex: none; z-index: 10;
       display: flex; align-items: center; gap: 16px; height: 64px; padding: 0 24px;
       background: var(--header-bg); color: #fff;
     }
@@ -84,7 +85,7 @@ interface NavItem { label: string; link: string; icon: string; }
     /* Dark sidebar + content */
     .body { display: grid; grid-template-columns: 248px minmax(0, 1fr); flex: 1; min-height: 0; }
     .sidebar {
-      background: var(--sidebar-bg); padding: 16px 14px; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;
+      background: var(--sidebar-bg); padding: 16px 14px; height: 100%; overflow-y: auto;
       display: flex; flex-direction: column; gap: 4px;
     }
     .school { color: var(--sidebar-school); font-size: 0.8rem; padding: 4px 10px 12px; }
@@ -99,23 +100,25 @@ interface NavItem { label: string; link: string; icon: string; }
     nav a:hover { background: var(--sidebar-hover); color: var(--sidebar-ink-hover); }
     nav a.active { background: var(--brand); color: #fff; font-weight: 600; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25); }
 
-    .content { padding: 24px; max-width: 1200px; width: 100%; min-width: 0; }
+    .content { padding: 24px; width: 100%; min-width: 0; height: 100%; overflow-y: auto; }
     .banner { background: var(--warning-soft); color: var(--warning); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.95rem; }
 
     @media (max-width: 900px) {
-      .topbar { padding: 0 16px; gap: 12px; }
+      /* Back to normal page flow on phones (a fixed 100vh frame fights the mobile URL bar). */
+      .shell { height: auto; min-height: 100vh; overflow: visible; }
+      .topbar { position: sticky; top: 0; padding: 0 16px; gap: 12px; }
       .topbar .brand { width: auto; }
       .topbar .page-title { display: none; }
       .who { display: none; }
 
       .body { grid-template-columns: minmax(0, 1fr); }
-      .sidebar { position: static; height: auto; flex-direction: column; padding: 10px 10px 6px; gap: 8px; }
+      .sidebar { height: auto; overflow: visible; flex-direction: column; padding: 10px 10px 6px; gap: 8px; }
       .school { display: none; }
       nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
       nav a { flex: 0 0 auto; flex-direction: column; gap: 4px; align-items: center; padding: 8px 12px; white-space: nowrap; }
       nav a .lbl { font-size: 0.66rem; }
       nav a.active { box-shadow: none; }
-      .content { padding: 16px; }
+      .content { height: auto; overflow: visible; padding: 16px; }
     }
   `,
 })
