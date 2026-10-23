@@ -899,3 +899,12 @@ changes presentation, navigation and client error handling, not queries, databas
 rules. The final production build and theme checks already passed; no application source changed in
 this documentation update, so those checks need not be repeated. The Supabase coverage connection
 error and pending visual verification remain recorded limitations, not passing checks.
+
+## 2026-10-23 — Push each completed change
+
+In response to the production-push approval question, the user instructed that every change must
+be pushed. Updated CLAUDE.md and the decisions log to require committing and pushing each completed
+logical change, with standing approval for the configured deployment. This authorises publishing
+the saved parent redesign and release-rule changes after disclosure of the outstanding visual
+verification and Supabase coverage connection error. The previously recorded successful production
+build remains applicable; this turn changes documentation only.

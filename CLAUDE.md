@@ -76,6 +76,12 @@ the current state of the system.
 ## Working style
 - One roadmap stage at a time (`docs/roadmap.md`). Do not start the next stage until the current one
   meets the definition of done in the `skoolo` skill. Bugs in shipped work come before new work.
-- Commit at the end of every working session and push to `origin/main`. This machine is temporary.
+- After every completed logical change, run the applicable checks, commit it and push to
+  `origin/main` before reporting completion. Do not leave completed changes only on this machine
+  or wait until the end of a session to push them.
+- The user has given standing approval for these pushes and the configured deployment they trigger.
+  Do not ask for repeat approval for work within the authorised scope. Platform approval controls
+  still apply. Verify that the push succeeded; if it is blocked, report the exact blocker and the
+  saved local commit instead of claiming the change is published.
 - When a requirement is ambiguous, state the assumption in one line and keep going.
 - Append decisions and completed milestones to `docs/build-log.md`.

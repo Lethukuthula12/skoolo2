@@ -127,3 +127,10 @@ changes need a diff review. The detailed criteria live in CLAUDE.md.
 A blocked browser or unrelated infrastructure check is recorded honestly and does not prevent an
 otherwise verified UI release. This does not waive the real-device and school-use acceptance criteria
 for completing a roadmap stage, or override platform permissions.
+
+## Amendment, 2026-10-23 — Push every completed change
+
+The user requires every completed logical change to be committed and pushed to `origin/main`,
+after its applicable checks, rather than saved only locally until the end of a session. This is
+standing approval for pushes within the authorised work and their configured deployments. Confirm
+push success before reporting publication; platform approval controls still apply.
