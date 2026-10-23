@@ -228,6 +228,17 @@ export class ApplicationService {
     return { instructions: inst?.[0] ?? null, payments: payments ?? [] };
   }
 
+  /** A child's daily attendance records, newest first (only the parent's own child, by row security). */
+  async childAttendance(learnerId: string): Promise<AttendanceRecord[]> {
+    const { data, error } = await this.client
+      .from('attendance_records')
+      .select('id, attendance_date, status, note')
+      .eq('learner_id', learnerId)
+      .order('attendance_date', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as AttendanceRecord[];
+  }
+
   /** Notices for this parent's children's schools (everyone / parents audience), pinned first. */
   async parentNotices(): Promise<ParentNotice[]> {
     const { data, error } = await this.client
@@ -332,6 +343,13 @@ export interface SchoolEvent {
   notes: string | null;
   school_id: string;
   schools: { name: string } | null;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  attendance_date: string;
+  status: string;
+  note: string | null;
 }
 
 export interface ParentNotice {

@@ -2698,6 +2698,7 @@ export type Database = {
       }
       is_connected_parent: { Args: { p_learner_id: string }; Returns: boolean }
       is_learner_staff: { Args: { p_learner_id: string }; Returns: boolean }
+      is_my_child: { Args: { p_learner_id: string }; Returns: boolean }
       is_my_staff_member: {
         Args: { p_staff_member_id: string }
         Returns: boolean

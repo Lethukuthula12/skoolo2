@@ -811,3 +811,14 @@ Parent app: a Notices screen (reached from My children) listing the school's par
 pinned first. Verified: posted a pinned "everyone" notice in the portal and it appeared; the parent
 read path is proven by the isolation suite and the page builds clean (a live parent screenshot was
 blocked by a preview auth-guard timing quirk, not a code issue). Both apps build clean.
+
+## Parent attendance view
+
+Closed the attendance loop to families: a connected parent can now read their own child's daily
+attendance (read-only; staff still own the register). Added an is_my_child helper and a single RLS
+select policy on attendance_records for the learner's parent or linked guardian; the staff-only write
+path is unchanged. Isolation suite now at 112 checks — the connected parent reads their child's record,
+and an unrelated parent cannot. Parent app: a per-child Attendance screen (reached from My children)
+showing the attendance rate, present/late/absent totals and the recent days with status badges.
+Verified end to end: a learner marked absent in the portal register showed in the parent's summary
+(0% rate, 1 absent, the right date). Both apps build clean.

@@ -713,16 +713,22 @@ begin
   select count(*) into n from public.attendance_records where id = v_attendA;
   if n <> 0 then v_fail := v_fail || 'a teacher sees attendance for a class they do not teach'::text; end if;
 
-  -- Another school and a connected parent see no attendance.
+  -- Another school sees no attendance.
   perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.attendance_records where id = v_attendA;
   if n <> 0 then v_fail := v_fail || 'admin B sees school A''s attendance'::text; end if;
 
+  -- The connected parent reads their own child's attendance; an unrelated parent cannot.
   perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.attendance_records where id = v_attendA;
-  if n <> 0 then v_fail := v_fail || 'a parent sees attendance'::text; end if;
+  if n < 1 then v_fail := v_fail || 'a connected parent cannot see their child''s attendance'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.attendance_records where id = v_attendA;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees a child''s attendance'::text; end if;
 
   -- Admin A reads the register for their school.
   perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
