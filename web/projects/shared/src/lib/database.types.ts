@@ -39,6 +39,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      absence_reports: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          created_at: string
+          document_path: string | null
+          end_date: string
+          id: string
+          learner_id: string
+          note: string | null
+          reason: string
+          reported_by: string | null
+          school_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["absence_status"]
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          document_path?: string | null
+          end_date: string
+          id?: string
+          learner_id: string
+          note?: string | null
+          reason?: string
+          reported_by?: string | null
+          school_id: string
+          start_date: string
+          status?: Database["public"]["Enums"]["absence_status"]
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          document_path?: string | null
+          end_date?: string
+          id?: string
+          learner_id?: string
+          note?: string | null
+          reason?: string
+          reported_by?: string | null
+          school_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["absence_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "absence_reports_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "absence_reports_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "absence_reports_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "absence_reports_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "absence_reports_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       academic_terms: {
         Row: {
           academic_year: number
@@ -671,6 +755,65 @@ export type Database = {
           },
           {
             foreignKeyName: "learners_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_threads: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          last_message_at: string
+          learner_id: string
+          school_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_message_at?: string
+          learner_id: string
+          school_id: string
+          subject?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_message_at?: string
+          learner_id?: string
+          school_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_threads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
@@ -1428,6 +1571,45 @@ export type Database = {
           },
         ]
       }
+      thread_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string | null
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_id?: string | null
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_id?: string | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thread_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thread_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       period_grade_availability: {
@@ -1551,6 +1733,10 @@ export type Database = {
       }
       achievement_description: { Args: { p_level: number }; Returns: string }
       achievement_level: { Args: { p_mark: number }; Returns: number }
+      acknowledge_absence: {
+        Args: { p_absence_id: string }
+        Returns: undefined
+      }
       application_message: {
         Args: {
           p_application: Database["public"]["Tables"]["applications"]["Row"]
@@ -1563,6 +1749,7 @@ export type Database = {
         Args: { p_class_id: string; p_term: number }
         Returns: number
       }
+      can_access_learner: { Args: { p_learner_id: string }; Returns: boolean }
       can_edit_class_reports: { Args: { p_class_id: string }; Returns: boolean }
       can_read_report: { Args: { p_report_card_id: string }; Returns: boolean }
       claim_school: {
@@ -1684,6 +1871,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_connected_parent: { Args: { p_learner_id: string }; Returns: boolean }
+      is_learner_staff: { Args: { p_learner_id: string }; Returns: boolean }
       is_school_admin: { Args: { p_school_id: string }; Returns: boolean }
       is_school_staff: { Args: { p_school_id: string }; Returns: boolean }
       is_valid_sa_identity_number: {
@@ -1695,6 +1884,10 @@ export type Database = {
       mark_application_paid: {
         Args: { p_application_id: string }
         Returns: undefined
+      }
+      message_class: {
+        Args: { p_body: string; p_class_id: string; p_subject: string }
+        Returns: number
       }
       my_children: {
         Args: never
@@ -1719,11 +1912,23 @@ export type Database = {
           school_id: string
         }[]
       }
+      notify_learner_staff: {
+        Args: { p_body: string; p_learner_id: string; p_subject: string }
+        Returns: undefined
+      }
+      notify_thread_counterparts: {
+        Args: { p_body: string; p_thread_id: string }
+        Returns: undefined
+      }
       period_grade_taken: {
         Args: { p_period_grade_id: string }
         Returns: number
       }
       period_school_id: { Args: { p_period_id: string }; Returns: string }
+      post_message: {
+        Args: { p_body: string; p_thread_id: string }
+        Returns: undefined
+      }
       publish_class_reports: {
         Args: { p_class_id: string; p_term: number }
         Returns: number
@@ -1739,6 +1944,17 @@ export type Database = {
       }
       regenerate_family_code: {
         Args: { p_learner_id: string }
+        Returns: string
+      }
+      report_absence: {
+        Args: {
+          p_document_path?: string
+          p_end: string
+          p_learner_id: string
+          p_note?: string
+          p_reason: string
+          p_start: string
+        }
         Returns: string
       }
       save_mark: {
@@ -1772,13 +1988,19 @@ export type Database = {
         Returns: undefined
       }
       staff_school_ids: { Args: never; Returns: string[] }
+      start_thread: {
+        Args: { p_body: string; p_learner_id: string; p_subject: string }
+        Returns: string
+      }
       teaches_class: { Args: { p_class_id: string }; Returns: boolean }
+      thread_learner: { Args: { p_thread_id: string }; Returns: string }
       withdraw_application: {
         Args: { p_application_id: string }
         Returns: undefined
       }
     }
     Enums: {
+      absence_status: "reported" | "acknowledged"
       application_status:
         | "submitted"
         | "under_review"
@@ -1938,6 +2160,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      absence_status: ["reported", "acknowledged"],
       application_status: [
         "submitted",
         "under_review",

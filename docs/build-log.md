@@ -495,3 +495,25 @@ isolation suite still passes.
 Known small refinement: the parent report omits the class name because classes are staff-only under
 RLS; school, term and marks all show. Stage 3 is built; the definition of done's last line is the
 school capturing a real class's Term 4 marks.
+
+## 2026-10-23 — Stage 4 (part 1): absences and messages backbone
+
+Everything is keyed to a learner; who may see it is the school's admins, the teachers of the
+learner's class, and the learner's connected parents (`can_access_learner`).
+
+- **absence_reports**: a connected parent reports (dates, reason, optional note and a doctor's-note
+  file in the private `absence-notes` bucket); the class teachers and admins are notified and can
+  acknowledge, which messages the parent back. `report_absence` and `acknowledge_absence` enforce
+  the roles.
+- **message_threads / thread_messages**: two-way threads about a learner. `start_thread`,
+  `post_message` and `message_class` (a private thread per learner in a class) are open to a staff
+  member of the class or a connected parent; posting notifies the other side through the inbox.
+- All reads gated by RLS to the people entitled to the learner; all writes go through the functions.
+
+Isolation suite now at 60 checks. New ones prove: a connected parent reports an absence; an
+unrelated parent cannot report or see it; the class teacher sees and acknowledges it while a teacher
+of another class cannot; a teacher starts a thread, the connected parent reads and replies, and
+neither an unrelated parent nor another school's admin can see it.
+
+Next in Stage 4: the screens — report an absence and the message threads in the parent app, and the
+absence queue, acknowledge, and messaging a parent or class in the portal.

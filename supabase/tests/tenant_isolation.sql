@@ -29,6 +29,7 @@ declare
   v_appA uuid; v_appB uuid;
   v_staffA uuid; v_staffTA2 uuid; v_code text; v_codeTA2 text; v_codeIv text; v_codeExpired text;
   v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid; v_reportA uuid;
+  v_absenceA uuid; v_threadA uuid;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
   -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
@@ -343,6 +344,79 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.report_cards where id = v_reportA;
   if n <> 0 then v_fail := v_fail || 'an unrelated parent sees a published report'; end if;
+
+  -- ===================== STAGE 4: absences and messages =====================
+  -- The connected parent reports an absence for their child.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    v_absenceA := public.report_absence(v_rollLearnerA, '2027-02-01', '2027-02-03', 'Flu');
+  exception when others then
+    v_fail := v_fail || format('connected parent cannot report an absence: %s', sqlerrm);
+  end;
+
+  -- An unrelated parent cannot report for this child, nor see the absence.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.report_absence(v_rollLearnerA, '2027-02-01', '2027-02-02', 'x');
+    v_fail := v_fail || 'an unrelated parent reported an absence';
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'NOT_PARENT' then v_fail := v_fail || format('absence wrong hint: %s', v_hint); end if;
+  end;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.absence_reports where id = v_absenceA;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the absence'; end if;
+
+  -- The class teacher sees and acknowledges the absence; a teacher of another class cannot.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.absence_reports where id = v_absenceA;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees an absence for a class they do not teach'; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.absence_reports where id = v_absenceA;
+  if n < 1 then v_fail := v_fail || 'the class teacher cannot see the absence'; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.acknowledge_absence(v_absenceA);
+  exception when others then
+    v_fail := v_fail || format('class teacher cannot acknowledge an absence: %s', sqlerrm);
+  end;
+
+  -- Threads: the class teacher starts one; the connected parent can read and reply; others cannot.
+  v_checks := v_checks + 1;
+  begin
+    v_threadA := public.start_thread(v_rollLearnerA, 'Reading', 'Please hear your child read tonight.');
+  exception when others then
+    v_fail := v_fail || format('teacher cannot start a thread: %s', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.message_threads where id = v_threadA;
+  if n < 1 then v_fail := v_fail || 'the connected parent cannot see the thread'; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.thread_messages where thread_id = v_threadA;
+  if n < 1 then v_fail := v_fail || 'the connected parent cannot see the thread message'; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.post_message(v_threadA, 'Thank you, we will.');
+  exception when others then
+    v_fail := v_fail || format('the connected parent cannot reply: %s', sqlerrm);
+  end;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.message_threads where id = v_threadA;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the thread'; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.message_threads where id = v_threadA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s thread'; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.
