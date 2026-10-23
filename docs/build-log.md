@@ -712,3 +712,14 @@ items. All of it reads from existing services (applications, learners, staff reg
 calendar), so no backend changed. The signed-in landing now routes admins to /dashboard; teachers are
 still sent to their home by the admin guard. Verified with the pilot data (2 learners, 2 staff, 1
 application, R22 800 owed) and a clean build.
+
+## Portal reskin, Phase 2b — Akademi frame (dark sidebar + brand header)
+
+Took the portal frame closer to the reference. A full-width brand-indigo header now spans the top,
+carrying the Skoolo wordmark, the live page title (derived from the route) and the profile (name,
+role, initials avatar and a translucent Sign out). Below it the sidebar is a dark navy panel with
+light nav text, an indigo active pill and the icon nav. On a phone the header compacts (page title
+hidden) and the sidebar becomes a dark horizontal icon strip; the stat tiles go single-column so
+large values (fees owed) are never clipped. Also enlarged the stat-tile icon to a filled colour
+circle with a white glyph (fixing the earlier value/label run-together). Verified desktop and mobile,
+no console errors, clean build.

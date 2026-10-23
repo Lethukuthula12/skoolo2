@@ -1,6 +1,8 @@
 import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter, map, startWith } from 'rxjs';
 import { AuthService, StaffService } from '@skoolo/shared';
 
 interface NavItem { label: string; link: string; icon: string; }
@@ -10,31 +12,32 @@ interface NavItem { label: string; link: string; icon: string; }
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <div class="shell">
-      <aside class="sidebar">
+      <header class="topbar">
         <div class="brand">Skoolo</div>
-        <div class="school">{{ staff.currentSchool()?.name }}</div>
-        <nav>
-          @for (item of nav(); track item.link) {
-            <a [routerLink]="item.link" routerLinkActive="active">
-              <span class="ico" [innerHTML]="icon(item.icon)"></span>
-              <span class="lbl">{{ item.label }}</span>
-            </a>
-          }
-        </nav>
-      </aside>
-
-      <div class="main-col">
-        <header class="topbar">
-          <span class="spacer"></span>
-          <div class="profile">
-            <div class="who">
-              <div class="name">{{ fullName() }}</div>
-              <div class="role">{{ staff.isAdmin() ? 'Administrator' : 'Teacher' }}</div>
-            </div>
-            <div class="avatar">{{ initials() }}</div>
-            <button class="btn btn-outline btn-sm" type="button" (click)="signOut()">Sign out</button>
+        <div class="page-title">{{ pageTitle() }}</div>
+        <span class="spacer"></span>
+        <div class="profile">
+          <div class="who">
+            <div class="name">{{ fullName() }}</div>
+            <div class="role">{{ staff.isAdmin() ? 'Administrator' : 'Teacher' }}</div>
           </div>
-        </header>
+          <div class="avatar">{{ initials() }}</div>
+          <button class="signout" type="button" (click)="signOut()">Sign out</button>
+        </div>
+      </header>
+
+      <div class="body">
+        <aside class="sidebar">
+          <div class="school">{{ staff.currentSchool()?.name }}</div>
+          <nav>
+            @for (item of nav(); track item.link) {
+              <a [routerLink]="item.link" routerLinkActive="active">
+                <span class="ico" [innerHTML]="icon(item.icon)"></span>
+                <span class="lbl">{{ item.label }}</span>
+              </a>
+            }
+          </nav>
+        </aside>
 
         <main class="content">
           @if (staff.currentSchool(); as school) {
@@ -51,52 +54,64 @@ interface NavItem { label: string; link: string; icon: string; }
     </div>
   `,
   styles: `
-    .shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+    .shell { display: flex; flex-direction: column; min-height: 100vh; }
 
-    .sidebar {
-      background: #fff; border-right: 1px solid var(--line); padding: 22px 16px;
-      display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    /* Full-width brand header */
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 16px; height: 64px; padding: 0 24px;
+      background: var(--brand); color: #fff;
     }
-    .brand { font-weight: 800; font-size: 1.4rem; color: var(--brand); letter-spacing: -0.02em; }
-    .school { font-size: 0.85rem; color: var(--muted); margin: 2px 0 18px; }
+    .topbar .brand { font-weight: 800; font-size: 1.35rem; color: #fff; letter-spacing: -0.02em; width: 200px; }
+    .topbar .page-title { font-size: 1.1rem; font-weight: 600; color: #fff; }
+    .topbar .spacer { flex: 1; }
+    .profile { display: flex; align-items: center; gap: 12px; }
+    .who { text-align: right; line-height: 1.2; }
+    .who .name { font-weight: 600; font-size: 0.9rem; color: #fff; }
+    .who .role { font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; flex: none;
+      background: rgba(255, 255, 255, 0.2); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
+    .signout {
+      border: 1px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.12); color: #fff;
+      font: inherit; font-weight: 600; font-size: 0.85rem; padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer;
+      transition: background 120ms ease;
+      &:hover { background: rgba(255, 255, 255, 0.24); }
+    }
+
+    /* Dark sidebar + content */
+    .body { display: grid; grid-template-columns: 248px minmax(0, 1fr); flex: 1; min-height: 0; }
+    .sidebar {
+      background: #22223d; padding: 16px 14px; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .school { color: rgba(255, 255, 255, 0.5); font-size: 0.8rem; padding: 4px 10px 12px; }
     nav { display: grid; gap: 4px; }
     nav a {
       display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px; border-radius: 12px; color: var(--muted); text-decoration: none;
+      padding: 11px 14px; border-radius: 12px; color: rgba(255, 255, 255, 0.66); text-decoration: none;
       font-weight: 500; font-size: 0.94rem; transition: background 120ms ease, color 120ms ease;
     }
     nav a .ico { width: 20px; height: 20px; flex: none; display: grid; place-items: center; }
     nav a .ico ::ng-deep svg { width: 20px; height: 20px; display: block; }
-    nav a:hover { background: var(--brand-soft); color: var(--brand); }
-    nav a.active { background: var(--brand); color: #fff; font-weight: 600; box-shadow: 0 8px 18px rgba(58, 65, 196, 0.28); }
-
-    .main-col { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
-    .topbar {
-      position: sticky; top: 0; z-index: 5;
-      display: flex; align-items: center; gap: 12px; padding: 12px 24px;
-      background: rgba(245, 246, 252, 0.8); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
-    }
-    .profile { display: flex; align-items: center; gap: 12px; }
-    .who { text-align: right; line-height: 1.2; }
-    .who .name { font-weight: 600; font-size: 0.9rem; color: var(--title); }
-    .who .role { font-size: 0.75rem; color: var(--muted); }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; flex: none;
-      background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
+    nav a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+    nav a.active { background: var(--brand); color: #fff; font-weight: 600; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25); }
 
     .content { padding: 24px; max-width: 1200px; width: 100%; min-width: 0; }
     .banner { background: var(--warning-soft); color: var(--warning); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.95rem; }
 
     @media (max-width: 900px) {
-      .shell { grid-template-columns: minmax(0, 1fr); }
-      .sidebar { position: static; height: auto; flex-direction: column; padding: 12px 12px 8px; border-right: none; border-bottom: 1px solid var(--line); gap: 8px; }
-      .brand { font-size: 1.25rem; }
+      .topbar { padding: 0 16px; gap: 12px; }
+      .topbar .brand { width: auto; }
+      .topbar .page-title { display: none; }
+      .who { display: none; }
+
+      .body { grid-template-columns: minmax(0, 1fr); }
+      .sidebar { position: static; height: auto; flex-direction: column; padding: 10px 10px 6px; gap: 8px; }
       .school { display: none; }
       nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
       nav a { flex: 0 0 auto; flex-direction: column; gap: 4px; align-items: center; padding: 8px 12px; white-space: nowrap; }
       nav a .lbl { font-size: 0.66rem; }
       nav a.active { box-shadow: none; }
-      .topbar { padding: 10px 16px; }
-      .who { display: none; }
       .content { padding: 16px; }
     }
   `,
@@ -134,6 +149,22 @@ export class ShellComponent {
   ];
 
   protected readonly nav = computed(() => (this.staff.isAdmin() ? this.adminNav : this.teacherNav));
+
+  // The current URL, to show the page name in the header.
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+  protected readonly pageTitle = computed(() => {
+    const path = (this.url() ?? '').split('?')[0];
+    const match = [...this.adminNav, ...this.teacherNav].find((i) => path === i.link || path.startsWith(i.link + '/'));
+    return match?.label ?? '';
+  });
+
   protected readonly fullName = computed(() => this.auth.user()?.user_metadata?.['full_name'] || this.auth.user()?.email || '');
   protected readonly initials = computed(() => {
     const name = this.fullName();
