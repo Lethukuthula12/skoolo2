@@ -778,3 +778,19 @@ name. Isolation suite updated to the shared model (now 98 checks): staff add/see
 staff-only event, another teacher sees both, a connected parent sees the parent-visible one but not the
 staff-only one, and another school and an unrelated parent see nothing. Verified end to end: added
 events in the portal month grid; the connected parent saw the parent-visible ones. Both apps build clean.
+
+## Daily attendance register
+
+Added a daily attendance register — the class's own affirmative record of who was present, separate
+from the parent-reported absences of Stage 4. One record per learner per day (present / absent / late)
+in attendance_records, with school_id and the marker stamped by a trigger that also keeps the learner
+inside the class. RLS reuses can_edit_class_reports, so the class's teachers and the school's admins
+take and read the register and nobody else sees it (staff-only for now; parent-facing attendance
+summaries are a sensible follow-up). Isolation suite now at 104 checks: the class teacher marks a
+learner, a learner not in the class is refused, and a teacher of another class, another school and a
+connected parent all see nothing.
+
+Portal: an Attendance page (admin + teacher nav) with a class and date picker; every learner starts
+present and the teacher flips the exceptions with present/absent/late segments; live counts, "mark all
+present", save, and an Excel export of the day's register. Verified end to end: marked a learner absent
+and another late, saved, and the register reloaded with the same marks. Builds clean.

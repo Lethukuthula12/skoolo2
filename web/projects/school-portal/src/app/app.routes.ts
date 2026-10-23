@@ -64,6 +64,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/messages/absences.page').then((m) => m.AbsencesPage),
       },
       {
+        path: 'attendance',
+        loadComponent: () => import('./features/attendance/attendance.page').then((m) => m.AttendancePage),
+      },
+      {
         path: 'fees',
         canActivate: [adminGuard],
         loadComponent: () => import('./features/fees/fees.page').then((m) => m.FeesPage),

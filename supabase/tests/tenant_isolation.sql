@@ -31,7 +31,7 @@ declare
   v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid; v_reportA uuid;
   v_absenceA uuid; v_threadA uuid;
   v_feeAccountA uuid; v_feePaymentA uuid; v_balance numeric;
-  v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid; v_calStaffOnly uuid;
+  v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid; v_calStaffOnly uuid; v_attendA uuid;
   v_assess1 uuid; v_assess2 uuid; v_report2 uuid; v_tmark numeric;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
@@ -683,6 +683,51 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.assessment_scores where assessment_id = v_assess1;
   if n <> 0 then v_fail := v_fail || 'a parent sees assessment scores'::text; end if;
+
+  -- ===================== ATTENDANCE REGISTER =====================
+  -- The class teacher marks the roll learner present.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    insert into public.attendance_records (class_id, learner_id, attendance_date, status)
+      values (v_classA, v_rollLearnerA, '2027-02-01', 'present') returning id into v_attendA;
+  exception when others then
+    v_fail := v_fail || format('class teacher cannot take the register: %s', sqlerrm);
+  end;
+
+  -- A learner who is not in the class cannot be marked.
+  v_checks := v_checks + 1;
+  begin
+    insert into public.attendance_records (class_id, learner_id, attendance_date, status)
+      values (v_classA, v_learnerA, '2027-02-01', 'absent');
+    v_fail := v_fail || 'attendance accepted for a learner not in the class'::text;
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'NOT_IN_CLASS' then v_fail := v_fail || format('not-in-class wrong hint: %s', v_hint); end if;
+  end;
+
+  -- A teacher of another class cannot see or mark it.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.attendance_records where id = v_attendA;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees attendance for a class they do not teach'::text; end if;
+
+  -- Another school and a connected parent see no attendance.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.attendance_records where id = v_attendA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s attendance'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.attendance_records where id = v_attendA;
+  if n <> 0 then v_fail := v_fail || 'a parent sees attendance'::text; end if;
+
+  -- Admin A reads the register for their school.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.attendance_records where id = v_attendA;
+  if n < 1 then v_fail := v_fail || 'admin A cannot see the register'::text; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.

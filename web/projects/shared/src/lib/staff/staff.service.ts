@@ -931,6 +931,28 @@ export class StaffService {
     if (error) throw new Error(this.assessmentError((error as { hint?: string }).hint, error.message));
   }
 
+  // ----- Daily attendance register (Stage 8) ---------------------------------
+
+  async classAttendance(classId: string, date: string): Promise<Tables<'attendance_records'>[]> {
+    const { data, error } = await this.client
+      .from('attendance_records')
+      .select('*')
+      .eq('class_id', classId)
+      .eq('attendance_date', date);
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  /** Save the register: one row per learner. school_id and marked_by are set server-side. */
+  async saveAttendance(
+    rows: { class_id: string; learner_id: string; attendance_date: string; status: string; note?: string | null }[],
+  ): Promise<void> {
+    const { error } = await this.client
+      .from('attendance_records')
+      .upsert(rows as unknown as TablesInsert<'attendance_records'>[], { onConflict: 'learner_id,attendance_date' });
+    if (error) throw error;
+  }
+
   private assessmentError(hint: string | undefined, fallback: string): string {
     switch (hint) {
       case 'OVER_MAX': return 'That score is more than the assessment’s maximum.';
