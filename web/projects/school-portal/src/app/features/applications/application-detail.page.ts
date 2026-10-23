@@ -13,7 +13,7 @@ import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badg
   imports: [DatePipe, FormsModule, RouterLink],
   template: `
     @if (loading()) {
-      <p class="muted">Loading…</p>
+      <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
     } @else if (!app()) {
       <div class="card">
         <p>Application not found.</p>

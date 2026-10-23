@@ -9,4 +9,4 @@ select.sm { width: auto; }
 .grid td.mark input { width: 56px; text-align: center; padding: 5px; }
 .grid td.abs input { width: 50px; text-align: center; padding: 5px; }
 .grid td.comment input { width: 160px; padding: 5px; }
-.grid input:disabled { background: #f6f7fb; color: var(--ink); border-color: transparent; }
+.grid input:disabled { background: var(--surface-2); color: var(--ink); border-color: transparent; opacity: 1; }

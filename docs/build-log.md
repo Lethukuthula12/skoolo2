@@ -908,3 +908,26 @@ logical change, with standing approval for the configured deployment. This autho
 the saved parent redesign and release-rule changes after disclosure of the outstanding visual
 verification and Supabase coverage connection error. The previously recorded successful production
 build remains applicable; this turn changes documentation only.
+
+## 2026-10-23 — Portal navigation and visual foundation
+
+- Replaced the flat navigation with expandable school-work sections, preserving the existing admin
+  and teacher link sets. Added a mobile navigation drawer, account menu, and calendar/notices shortcuts.
+- Moved school appearance into the header and replaced the continuously spinning gear with a native
+  dialog drawer. Drawers use modal keyboard handling, Escape, backdrop dismissal and reduced-motion
+  styles. Theme-save errors now appear in the drawer.
+- Refined page/card spacing, headings, controls, table headings, status colours, focus indicators,
+  empty states and loading placeholders. Defaults use an indigo sidebar and light header; saved
+  school colours remain respected. Corrected dark report fields and contrast for theme-dependent
+  buttons, message bubbles, navigation and attendance states.
+
+Verification: development and production portal builds passed. Production reports warnings for the
+525.04 kB initial bundle (500 kB warning threshold) and 5.02 kB shell stylesheet (4 kB warning threshold);
+error budgets were not exceeded or changed. `node web/scripts/check-portal-presentation.mjs` passed
+against the actual ThemeService: 13 accents in both modes, header/sidebar contrast, dark report input
+contrast, invalid values, preview cancellation and cached school branding. `git diff --check` passed.
+No schema, query scope or permission rules changed; a fresh database suite is outside this UI release.
+
+Browser tooling denied the reference and local/deployed portal origins under its security policy.
+Desktop/mobile layout, drawer motion, keyboard interactions and live deployment remain visually
+unverified. These are recorded limitations, not passing acceptance checks.

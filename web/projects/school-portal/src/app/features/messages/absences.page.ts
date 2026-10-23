@@ -22,7 +22,7 @@ import { AbsenceRow, MessagingService } from '@skoolo/shared';
           <span class="muted small">{{ shown().length }} of {{ absences().length }}</span>
         </div>
         @if (loading()) {
-          <p class="muted">Loading…</p>
+          <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
         } @else if (shown().length === 0) {
           <div class="empty">No absences{{ pendingOnly() ? ' waiting' : '' }}.</div>
         } @else {

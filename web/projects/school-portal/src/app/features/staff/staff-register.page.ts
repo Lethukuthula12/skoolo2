@@ -137,7 +137,7 @@ const EMPTY_FORM: StaffForm = {
           <span class="muted small">{{ filtered().length }} of {{ members().length }}</span>
         </div>
         @if (loading()) {
-          <p class="muted">Loading…</p>
+          <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
         } @else if (members().length === 0) {
           <div class="empty">No staff recorded yet. Add the principal, admin clerk and teachers to start.</div>
         } @else {

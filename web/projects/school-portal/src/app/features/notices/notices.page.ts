@@ -48,7 +48,7 @@ const AUDIENCE_LABELS: Record<string, string> = { all: 'Everyone', staff: 'Staff
       }
 
       @if (loading()) {
-        <p class="muted">Loading…</p>
+        <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
       } @else if (items().length === 0) {
         <div class="empty">No notices yet.</div>
       } @else {

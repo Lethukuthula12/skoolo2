@@ -45,7 +45,7 @@ interface ClassOption { id: string; grade_code: string; name: string; }
 
       <div class="columns">
         <div class="card stack list">
-          @if (loading()) { <p class="muted">Loading…</p> }
+          @if (loading()) { <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div> }
           @else if (threads().length === 0) { <div class="empty">No conversations yet.</div> }
           @else {
             @for (t of threads(); track t.id) {
@@ -87,7 +87,7 @@ interface ClassOption { id: string; grade_code: string; name: string; }
     .list .thread:hover { background: var(--bg); } .list .thread.active { background: var(--brand-soft); }
     .messages { display: grid; gap: 8px; max-height: 50vh; overflow-y: auto; }
     .bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; background: var(--bg); justify-self: start; }
-    .bubble.mine { background: var(--brand); color: #fff; justify-self: end; }
+    .bubble.mine { background: var(--brand); color: var(--brand-contrast); justify-self: end; }
     .bubble p { margin: 0; white-space: pre-wrap; } .bubble .when { font-size: 0.72rem; opacity: 0.7; }
     .composer { display: flex; gap: 8px; align-items: end; } .composer textarea { flex: 1; }
     select, .field { width: 100%; }

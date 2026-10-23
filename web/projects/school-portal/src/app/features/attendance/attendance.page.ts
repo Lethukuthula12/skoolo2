@@ -35,7 +35,7 @@ interface ClassOption { id: string; label: string; }
       @if (error()) { <p class="error">{{ error() }}</p> }
 
       @if (loading()) {
-        <p class="muted">Loading…</p>
+        <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
       } @else if (!selectedClassId()) {
         <div class="empty">Choose a class to take the register.</div>
       } @else if (learners().length === 0) {
@@ -88,9 +88,9 @@ interface ClassOption { id: string; label: string; }
     .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--card); }
     .opt { border: none; background: transparent; padding: 7px 14px; font: inherit; font-weight: 600; font-size: 0.85rem; color: var(--muted); cursor: pointer; border-left: 1px solid var(--line); }
     .opt:first-child { border-left: none; }
-    .opt.on.present { background: var(--success); color: #fff; }
-    .opt.on.absent { background: var(--danger); color: #fff; }
-    .opt.on.late { background: var(--warning); color: #fff; }
+    .opt.on.present { background: var(--success-soft); color: var(--success); }
+    .opt.on.absent { background: var(--danger-soft); color: var(--danger); }
+    .opt.on.late { background: var(--warning-soft); color: var(--warning); }
   `,
 })
 export class AttendancePage {

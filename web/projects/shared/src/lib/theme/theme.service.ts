@@ -9,7 +9,7 @@ export interface Theme {
   mode: 'light' | 'dark';
 }
 
-export const DEFAULT_THEME: Theme = { primary: '#3a41c4', header: '#3a41c4', sidebar: '#22223d', mode: 'light' };
+export const DEFAULT_THEME: Theme = { primary: '#5145b5', header: '#ffffff', sidebar: '#4d44a8', mode: 'light' };
 
 /** Swatches offered in the customizer. */
 export const PRIMARY_SWATCHES = ['#3a41c4', '#5b4bd6', '#6610f2', '#00ada3', '#1f6fe8', '#1e8e5a', '#e2544b', '#fb7d5b', '#c3891c', '#14213d'];
@@ -71,15 +71,23 @@ export class ThemeService {
     const s = this.doc.documentElement.style;
     s.setProperty('--brand', t.primary);
     s.setProperty('--brand-dark', darken(t.primary, 0.14));
-    s.setProperty('--brand-soft', rgba(t.primary, 0.08));
+    s.setProperty('--brand-hover-contrast', foreground(darken(t.primary, 0.14)));
+    s.setProperty('--brand-soft', rgba(t.primary, t.mode === 'dark' ? 0.18 : 0.08));
+    s.setProperty('--brand-contrast', foreground(t.primary));
+    s.setProperty('--brand-ink', readable(t.primary, t.mode === 'dark' ? '#20223c' : '#ffffff'));
     s.setProperty('--ring', rgba(t.primary, 0.25));
     s.setProperty('--header-bg', t.header);
+    const headerInk = foreground(t.header);
+    s.setProperty('--header-ink', headerInk);
+    s.setProperty('--header-muted', headerInk);
+    s.setProperty('--header-control', headerInk === '#ffffff' ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.05)');
     s.setProperty('--sidebar-bg', t.sidebar);
     // The sidebar text must follow the sidebar's own lightness (it can be white too).
-    const dark = isDark(t.sidebar);
-    s.setProperty('--sidebar-ink', dark ? 'rgba(255, 255, 255, 0.66)' : '#5b6478');
-    s.setProperty('--sidebar-ink-hover', dark ? '#ffffff' : t.primary);
-    s.setProperty('--sidebar-school', dark ? 'rgba(255, 255, 255, 0.5)' : '#8a8fab');
+    const sidebarInk = foreground(t.sidebar);
+    const dark = sidebarInk === '#ffffff';
+    s.setProperty('--sidebar-ink', sidebarInk);
+    s.setProperty('--sidebar-ink-hover', sidebarInk);
+    s.setProperty('--sidebar-school', sidebarInk);
     s.setProperty('--sidebar-hover', dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)');
 
     // Light or dark content area. Dark mode overrides the surface/text tokens; light removes the
@@ -90,13 +98,18 @@ export class ThemeService {
       s.setProperty('--surface-2', '#2a2c48');
       s.setProperty('--title', '#eef0fb');
       s.setProperty('--ink', '#c9cde6');
-      s.setProperty('--muted', '#9398bb');
+      s.setProperty('--muted', '#acb1cc');
+      s.setProperty('--table-head', '#292b49');
+      s.setProperty('--success', '#74d6a6');
+      s.setProperty('--warning', '#f6cc76');
+      s.setProperty('--danger', '#ff919c');
+      s.setProperty('--accent-dark', '#ffae96');
       s.setProperty('--line', 'rgba(255, 255, 255, 0.09)');
       s.setProperty('--shadow', '0 6px 20px rgba(0, 0, 0, 0.35)');
       s.setProperty('--shadow-lg', '0 12px 32px rgba(0, 0, 0, 0.45)');
       s.setProperty('color-scheme', 'dark');
     } else {
-      for (const p of ['--bg', '--card', '--surface-2', '--title', '--ink', '--muted', '--line', '--shadow', '--shadow-lg', 'color-scheme']) {
+      for (const p of ['--bg', '--card', '--surface-2', '--title', '--ink', '--muted', '--table-head', '--success', '--warning', '--danger', '--accent-dark', '--line', '--shadow', '--shadow-lg', 'color-scheme']) {
         s.removeProperty(p);
       }
     }
@@ -134,8 +147,26 @@ function rgba(hex: string, alpha: number): string {
   const [r, g, b] = hexToRgb(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
-function isDark(hex: string): boolean {
-  const [r, g, b] = hexToRgb(hex);
-  // Perceived luminance (0–255); below ~140 reads as a dark surface needing light text.
-  return (0.299 * r + 0.587 * g + 0.114 * b) < 140;
+function luminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex).map(channel => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return r * 0.2126 + g * 0.7152 + b * 0.0722;
+}
+function contrast(a: string, b: string): number {
+  const x = luminance(a), y = luminance(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+function foreground(background: string): string {
+  return contrast(background, '#ffffff') >= 4.5 ? '#ffffff' : '#000000';
+}
+function readable(color: string, surface: string): string {
+  let result = color;
+  const lighten = luminance(surface) < 0.5;
+  for (let step = 0; step < 40 && contrast(result, surface) < 5; step++) {
+    const channels = hexToRgb(result).map(c => Math.round(lighten ? c + (255 - c) * 0.12 : c * 0.88));
+    result = `#${channels.map(c => c.toString(16).padStart(2, '0')).join('')}`;
+  }
+  return result;
 }

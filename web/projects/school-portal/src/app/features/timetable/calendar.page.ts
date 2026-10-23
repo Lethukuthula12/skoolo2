@@ -32,7 +32,7 @@ interface EventForm { id: string | null; title: string; kind: CalendarKind; star
         </div>
 
         @if (loading()) {
-          <p class="muted">Loading…</p>
+          <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
         } @else {
           <div class="cal">
             <div class="dow" aria-hidden="true">

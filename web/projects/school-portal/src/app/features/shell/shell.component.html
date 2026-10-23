@@ -1,0 +1,52 @@
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" [routerLink]="staff.isAdmin() ? '/dashboard' : '/home'"><span class="brand-mark">S</span>skoolo<span class="brand-dot">.</span></a>
+    <ng-container *ngTemplateOutlet="navigation" />
+    <p class="sidebar-foot">Home and school, connected.</p>
+  </aside>
+
+  <header class="topbar">
+    <button class="icon-button mobile-toggle" type="button" aria-label="Open navigation" (click)="mobileOpen.set(true)"><span aria-hidden="true">☰</span></button>
+    <div class="page-heading"><span class="eyebrow">{{ activeGroup() }}</span><strong>{{ pageTitle() }}</strong></div>
+    <div class="header-actions">
+      <a class="icon-button" routerLink="/calendar" aria-label="School calendar" title="School calendar"><span class="ico" [innerHTML]="icon('calendar')"></span></a>
+      <a class="icon-button" routerLink="/notices" aria-label="School notices" title="School notices"><span class="ico" [innerHTML]="icon('bell')"></span></a>
+      @if (staff.isAdmin()) { <app-theme-customizer /> }
+      <details #profileMenu class="profile-menu" (keydown.escape)="profileMenu.open = false">
+        <summary aria-label="Your account"><span class="avatar">{{ initials() }}</span><span class="who"><strong>{{ fullName() }}</strong><small>{{ staff.isAdmin() ? 'Administrator' : 'Teacher' }}</small></span><span class="profile-chevron" aria-hidden="true">⌄</span></summary>
+        <div class="profile-panel"><strong>{{ fullName() }}</strong><span>{{ staff.currentSchool()?.name }}</span><button type="button" class="btn btn-outline" (click)="profileMenu.open = false; signOut()">Sign out</button></div>
+      </details>
+    </div>
+  </header>
+
+  <main class="content" id="portal-content">
+    @if (staff.currentSchool(); as school) {
+      @if (!school.is_verified) {
+        <div class="banner"><strong>Waiting for Skoolo to verify {{ school.name }}.</strong><span>Parents can see your listing but cannot apply yet. You can continue setting up your school.</span></div>
+      }
+    }
+    <router-outlet />
+  </main>
+</div>
+
+<app-portal-drawer title="School navigation" [open]="mobileOpen()" [navigation]="true" (closed)="mobileOpen.set(false)">
+  <ng-container *ngTemplateOutlet="navigation" />
+</app-portal-drawer>
+
+<ng-template #navigation>
+  <div class="school"><span class="school-symbol" aria-hidden="true"><span class="ico" [innerHTML]="icon('building')"></span></span><div><strong>{{ staff.currentSchool()?.name }}</strong><small>School portal</small></div></div>
+  <nav aria-label="School navigation">
+    @for (group of groups(); track group.label) {
+      @if (group.label === 'Overview') {
+        @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="mobileOpen.set(false)"><span class="ico" [innerHTML]="icon(item.icon)"></span><span>{{ item.label }}</span></a> }
+      } @else {
+        <section class="nav-group">
+          <button class="group-toggle" type="button" [attr.aria-expanded]="groupOpen(group.label)" (click)="toggleGroup(group.label)"><span>{{ group.label }}</span><span class="chevron" [class.expanded]="groupOpen(group.label)" aria-hidden="true">⌄</span></button>
+          <div class="group-items" [class.expanded]="groupOpen(group.label)" [attr.inert]="groupOpen(group.label) ? null : ''"><div>
+            @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="mobileOpen.set(false)"><span class="ico" [innerHTML]="icon(item.icon)"></span><span>{{ item.label }}</span></a> }
+          </div></div>
+        </section>
+      }
+    }
+  </nav>
+</ng-template>

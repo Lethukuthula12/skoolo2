@@ -1,126 +1,20 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { AuthService, StaffService, ThemeService } from '@skoolo/shared';
 import { ThemeCustomizerComponent } from './theme-customizer.component';
+import { PortalDrawerComponent } from '../../ui/portal-drawer.component';
 
 interface NavItem { label: string; link: string; icon: string; }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ThemeCustomizerComponent],
-  template: `
-    <div class="shell">
-      <header class="topbar">
-        <div class="brand">Skoolo</div>
-        <div class="page-title">{{ pageTitle() }}</div>
-        <span class="spacer"></span>
-        <div class="profile">
-          <div class="who">
-            <div class="name">{{ fullName() }}</div>
-            <div class="role">{{ staff.isAdmin() ? 'Administrator' : 'Teacher' }}</div>
-          </div>
-          <div class="avatar">{{ initials() }}</div>
-          <button class="signout" type="button" (click)="signOut()">Sign out</button>
-        </div>
-      </header>
-
-      <div class="body">
-        <aside class="sidebar">
-          <div class="school">{{ staff.currentSchool()?.name }}</div>
-          <nav>
-            @for (item of nav(); track item.link) {
-              <a [routerLink]="item.link" routerLinkActive="active">
-                <span class="ico" [innerHTML]="icon(item.icon)"></span>
-                <span class="lbl">{{ item.label }}</span>
-              </a>
-            }
-          </nav>
-        </aside>
-
-        <main class="content">
-          @if (staff.currentSchool(); as school) {
-            @if (!school.is_verified) {
-              <div class="banner">
-                <strong>Waiting for Skoolo to verify {{ school.name }}.</strong>
-                Parents can see your listing but cannot apply until it is verified. You can set up everything in the meantime.
-              </div>
-            }
-          }
-          <router-outlet />
-        </main>
-      </div>
-
-      @if (staff.isAdmin()) { <app-theme-customizer /> }
-    </div>
-  `,
-  styles: `
-    /* Fixed viewport frame: header and sidebar stay put, only the content scrolls. */
-    .shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-    /* Full-width brand header */
-    .topbar {
-      flex: none; z-index: 10;
-      display: flex; align-items: center; gap: 16px; height: 64px; padding: 0 24px;
-      background: var(--header-bg); color: #fff;
-    }
-    .topbar .brand { font-weight: 800; font-size: 1.35rem; color: #fff; letter-spacing: -0.02em; width: 200px; }
-    .topbar .page-title { font-size: 1.1rem; font-weight: 600; color: #fff; }
-    .topbar .spacer { flex: 1; }
-    .profile { display: flex; align-items: center; gap: 12px; }
-    .who { text-align: right; line-height: 1.2; }
-    .who .name { font-weight: 600; font-size: 0.9rem; color: #fff; }
-    .who .role { font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; flex: none;
-      background: rgba(255, 255, 255, 0.2); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
-    .signout {
-      border: 1px solid rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.12); color: #fff;
-      font: inherit; font-weight: 600; font-size: 0.85rem; padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer;
-      transition: background 120ms ease;
-      &:hover { background: rgba(255, 255, 255, 0.24); }
-    }
-
-    /* Dark sidebar + content */
-    .body { display: grid; grid-template-columns: 248px minmax(0, 1fr); flex: 1; min-height: 0; }
-    .sidebar {
-      background: var(--sidebar-bg); padding: 16px 14px; height: 100%; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .school { color: var(--sidebar-school); font-size: 0.8rem; padding: 4px 10px 12px; }
-    nav { display: grid; gap: 4px; }
-    nav a {
-      display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px; border-radius: 12px; color: var(--sidebar-ink); text-decoration: none;
-      font-weight: 500; font-size: 0.94rem; transition: background 120ms ease, color 120ms ease;
-    }
-    nav a .ico { width: 20px; height: 20px; flex: none; display: grid; place-items: center; }
-    nav a .ico ::ng-deep svg { width: 20px; height: 20px; display: block; }
-    nav a:hover { background: var(--sidebar-hover); color: var(--sidebar-ink-hover); }
-    nav a.active { background: var(--brand); color: #fff; font-weight: 600; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25); }
-
-    .content { padding: 24px; width: 100%; min-width: 0; height: 100%; overflow-y: auto; }
-    .banner { background: var(--warning-soft); color: var(--warning); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.95rem; }
-
-    @media (max-width: 900px) {
-      /* Back to normal page flow on phones (a fixed 100vh frame fights the mobile URL bar). */
-      .shell { height: auto; min-height: 100vh; overflow: visible; }
-      .topbar { position: sticky; top: 0; padding: 0 16px; gap: 12px; }
-      .topbar .brand { width: auto; }
-      .topbar .page-title { display: none; }
-      .who { display: none; }
-
-      .body { grid-template-columns: minmax(0, 1fr); }
-      .sidebar { height: auto; overflow: visible; flex-direction: column; padding: 10px 10px 6px; gap: 8px; }
-      .school { display: none; }
-      nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
-      nav a { flex: 0 0 auto; flex-direction: column; gap: 4px; align-items: center; padding: 8px 12px; white-space: nowrap; }
-      nav a .lbl { font-size: 0.66rem; }
-      nav a.active { box-shadow: none; }
-      .content { height: auto; overflow: visible; padding: 16px; }
-    }
-  `,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet, ThemeCustomizerComponent, PortalDrawerComponent],
+  templateUrl: './shell.component.html',
+  styleUrl: './shell.component.scss',
 })
 export class ShellComponent {
   protected readonly staff = inject(StaffService);
@@ -128,10 +22,36 @@ export class ShellComponent {
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly theme = inject(ThemeService);
+  private readonly profileMenu = viewChild<ElementRef<HTMLDetailsElement>>('profileMenu');
+  protected readonly mobileOpen = signal(false);
+  private readonly expanded = signal<Record<string, boolean>>({});
+  private readonly sections = [
+    { label: 'Overview', links: ['/dashboard', '/home'] },
+    { label: 'Enrolment', links: ['/applications', '/enrolment'] },
+    { label: 'Academics', links: ['/learners', '/classes', '/attendance', '/reports', '/assessments', '/timetable'] },
+    { label: 'Communication', links: ['/messages', '/notices', '/absences', '/calendar'] },
+    { label: 'Finance', links: ['/fees'] },
+    { label: 'Administration', links: ['/staff', '/school'] },
+  ];
+  protected readonly groups = computed(() => this.sections.map(section => ({
+    label: section.label, items: section.links.flatMap(link => this.nav().filter(item => item.link === link)),
+  })).filter(group => group.items.length > 0));
+  protected readonly activeGroup = computed(() => this.groups().find(group =>
+    group.items.some(item => this.url().split('?')[0] === item.link || this.url().startsWith(item.link + '/')))?.label ?? 'School portal');
+  protected groupOpen(label: string): boolean { return this.expanded()[label] ?? (label === this.activeGroup()); }
+  protected toggleGroup(label: string): void { this.expanded.update(value => ({ ...value, [label]: !this.groupOpen(label) })); }
+  @HostListener('document:click', ['$event'])
+  protected closeProfileOutside(event: MouseEvent): void {
+    const menu = this.profileMenu()?.nativeElement;
+    if (menu && !menu.contains(event.target as Node)) menu.open = false;
+  }
+  @HostListener('window:resize')
+  protected closeMobileOnDesktop(): void { if (window.innerWidth > 900) this.mobileOpen.set(false); }
 
   constructor() {
     // Apply the signed-in school's saved theme (and re-apply whenever the school changes).
     effect(() => this.theme.applyFromSchool(this.staff.currentSchool()));
+    effect(() => { this.url(); this.expanded.set({}); this.mobileOpen.set(false); });
   }
 
   private readonly adminNav: NavItem[] = [

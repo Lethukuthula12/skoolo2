@@ -31,7 +31,7 @@ interface GradeRow {
       @if (error()) { <p class="error">{{ error() }}</p> }
 
       @if (loading()) {
-        <p class="muted">Loading…</p>
+        <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
       } @else if (periods().length === 0) {
         <div class="card empty">No enrolment period yet. Create one to start accepting applications.</div>
       } @else {
