@@ -67,6 +67,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/children/child-fees.page').then((m) => m.ChildFeesPage),
   },
   {
+    path: 'calendar',
+    canActivate: [signedInGuard],
+    loadComponent: () => import('./features/children/school-calendar.page').then((m) => m.SchoolCalendarPage),
+  },
+  {
     path: 'inbox',
     canActivate: [signedInGuard],
     loadComponent: () => import('./features/inbox/inbox.page').then((m) => m.InboxPage),

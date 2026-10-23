@@ -31,7 +31,7 @@ declare
   v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid; v_reportA uuid;
   v_absenceA uuid; v_threadA uuid;
   v_feeAccountA uuid; v_feePaymentA uuid; v_balance numeric;
-  v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid;
+  v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid; v_calStaffOnly uuid;
   v_assess1 uuid; v_assess2 uuid; v_report2 uuid; v_tmark numeric;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
@@ -555,33 +555,61 @@ begin
   select count(*) into n from public.timetable_lessons where id = v_lessonA;
   if n < 1 then v_fail := v_fail || 'admin A cannot see their school''s timetable'::text; end if;
 
-  -- Calendar items: a teacher keeps their own; admin oversees; others see nothing.
+  -- Shared school calendar: any staff member adds; all staff see; connected parents see the
+  -- parent-visible events only; another school sees nothing.
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
   v_checks := v_checks + 1;
   begin
-    insert into public.calendar_items (staff_member_id, class_id, subject_id, title, kind, event_date)
-      values (v_staffA, v_classA, v_subjectA, 'Spelling test', 'test', '2027-02-10') returning id into v_calItemA;
+    insert into public.calendar_items (school_id, class_id, subject_id, title, kind, event_date)
+      values (v_schoolA, v_classA, v_subjectA, 'Spelling test', 'test', '2027-02-10') returning id into v_calItemA;
   exception when others then
-    v_fail := v_fail || format('a teacher cannot add a calendar item: %s', sqlerrm);
+    v_fail := v_fail || format('a teacher cannot add a calendar event: %s', sqlerrm);
   end;
-  v_checks := v_checks + 1;
-  select count(*) into n from public.calendar_items where id = v_calItemA;
-  if n < 1 then v_fail := v_fail || 'a teacher cannot see their own calendar item'::text; end if;
 
-  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
-  v_checks := v_checks + 1;
-  select count(*) into n from public.calendar_items where id = v_calItemA;
-  if n <> 0 then v_fail := v_fail || 'a teacher sees another teacher''s calendar item'::text; end if;
-
+  -- An admin (no staff row) posts a staff-only event.
   perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
   v_checks := v_checks + 1;
+  begin
+    insert into public.calendar_items (school_id, title, kind, event_date, parent_visible)
+      values (v_schoolA, 'Staff meeting', 'event', '2027-02-11', false) returning id into v_calStaffOnly;
+  exception when others then
+    v_fail := v_fail || format('an admin cannot add a calendar event: %s', sqlerrm);
+  end;
+
+  -- Another teacher at the school sees both events (shared).
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.calendar_items where id in (v_calItemA, v_calStaffOnly);
+  if n < 2 then v_fail := v_fail || 'a teacher does not see the shared school calendar'::text; end if;
+
+  -- The connected parent sees the parent-visible event but not the staff-only one.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
   select count(*) into n from public.calendar_items where id = v_calItemA;
-  if n < 1 then v_fail := v_fail || 'admin A cannot see the school''s calendar item'::text; end if;
+  if n < 1 then v_fail := v_fail || 'a connected parent cannot see a parent-visible event'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.calendar_items where id = v_calStaffOnly;
+  if n <> 0 then v_fail := v_fail || 'a parent sees a staff-only event'::text; end if;
+
+  -- An unrelated parent and another school see nothing.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.calendar_items where id in (v_calItemA, v_calStaffOnly);
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees another school''s calendar'::text; end if;
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
   v_checks := v_checks + 1;
-  select count(*) into n from public.calendar_items where id = v_calItemA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s calendar item'::text; end if;
+  select count(*) into n from public.calendar_items where id in (v_calItemA, v_calStaffOnly);
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s calendar'::text; end if;
+
+  -- A teacher from another school cannot add an event to school A.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tB, 'role','authenticated','email', v_emailTB)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    insert into public.calendar_items (school_id, title, kind, event_date) values (v_schoolA, 'Sneaky', 'event', '2027-03-01');
+    v_fail := v_fail || 'a teacher from another school added an event'::text;
+  exception when others then null;
+  end;
 
   -- ===================== STAGE 7: assessment detail =====================
   -- Teacher A (the class teacher) captures two weighted assessments for Term 2 and the roll learner's

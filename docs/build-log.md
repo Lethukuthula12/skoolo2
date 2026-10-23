@@ -759,3 +759,22 @@ it with the standard dashboard frame: the shell is a fixed 100vh column, the hea
 put, and only the content area scrolls. On phones it reverts to normal page flow (a fixed 100vh frame
 fights the mobile URL bar). Verified on the tall Enrolment page (sidebar fills full height, header
 fixed, content scrolls) and on mobile.
+
+## Shared school calendar (replaces the teacher-only calendar)
+
+Reworked the calendar into one shared school calendar, decided with the developer: any staff member
+(admin, principal or teacher) adds events and all staff see them; connected parents see the ones
+marked visible to parents. Data model: calendar_items gains created_by (+ denormalised created_by_name
+so the author shows without reading profiles) and parent_visible; staff_member_id is now optional (an
+admin has no staff row). New RLS: staff read and add the whole school calendar, the author or any admin
+edits/deletes, and connected parents read parent-visible events for their child's school (via a new
+parent_at_school helper). The fill trigger stamps the author and keeps class/subject links in-school.
+
+Portal: the calendar page is now a month grid — click a day to open a panel with that day's events and
+an add form (title, kind, time, optional class, "visible to parents", notes); events show as chips on
+the grid with the author, and the author or an admin can edit/delete. Parent app: a "School calendar"
+screen (reached from My children) lists upcoming parent-visible events grouped by date, with the school
+name. Isolation suite updated to the shared model (now 98 checks): staff add/see all, an admin posts a
+staff-only event, another teacher sees both, a connected parent sees the parent-visible one but not the
+staff-only one, and another school and an unrelated parent see nothing. Verified end to end: added
+events in the portal month grid; the connected parent saw the parent-visible ones. Both apps build clean.

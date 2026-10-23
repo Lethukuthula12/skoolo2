@@ -550,13 +550,16 @@ export type Database = {
         Row: {
           class_id: string | null
           created_at: string
+          created_by: string | null
+          created_by_name: string | null
           ends_at: string | null
           event_date: string
           id: string
           kind: string
           notes: string | null
+          parent_visible: boolean
           school_id: string
-          staff_member_id: string
+          staff_member_id: string | null
           starts_at: string | null
           subject_id: string | null
           title: string
@@ -565,13 +568,16 @@ export type Database = {
         Insert: {
           class_id?: string | null
           created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
           ends_at?: string | null
           event_date: string
           id?: string
           kind?: string
           notes?: string | null
+          parent_visible?: boolean
           school_id: string
-          staff_member_id: string
+          staff_member_id?: string | null
           starts_at?: string | null
           subject_id?: string | null
           title: string
@@ -580,13 +586,16 @@ export type Database = {
         Update: {
           class_id?: string | null
           created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
           ends_at?: string | null
           event_date?: string
           id?: string
           kind?: string
           notes?: string | null
+          parent_visible?: boolean
           school_id?: string
-          staff_member_id?: string
+          staff_member_id?: string | null
           starts_at?: string | null
           subject_id?: string | null
           title?: string
@@ -598,6 +607,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -2615,6 +2631,7 @@ export type Database = {
         Args: { p_body: string; p_thread_id: string }
         Returns: undefined
       }
+      parent_at_school: { Args: { p_school_id: string }; Returns: boolean }
       period_grade_taken: {
         Args: { p_period_grade_id: string }
         Returns: number

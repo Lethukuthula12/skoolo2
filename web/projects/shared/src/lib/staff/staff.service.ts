@@ -856,17 +856,23 @@ export class StaffService {
     return (data ?? []) as unknown as CalendarItemRow[];
   }
 
-  async addCalendarItem(item: Omit<TablesInsert<'calendar_items'>, 'school_id' | 'staff_member_id'>): Promise<Tables<'calendar_items'>> {
-    const staffMemberId = await this.myStaffMemberId();
-    if (!staffMemberId) throw new Error('You are not a teacher at this school.');
+  /** Add an event to the shared school calendar (any staff member; the author is stamped server-side). */
+  async addCalendarItem(
+    item: Omit<TablesInsert<'calendar_items'>, 'school_id' | 'staff_member_id' | 'created_by' | 'created_by_name'>,
+  ): Promise<Tables<'calendar_items'>> {
     const { data, error } = await this.client
       .from('calendar_items')
-      // school_id is filled by the trigger; staff_member_id ties the item to this teacher.
-      .insert({ ...item, staff_member_id: staffMemberId, school_id: this.requireSchoolId() })
+      .insert({ ...item, school_id: this.requireSchoolId() })
       .select()
       .single();
     if (error) throw error;
     return data;
+  }
+
+  /** Edit an event (the author, or any admin). */
+  async updateCalendarItem(id: string, changes: TablesUpdate<'calendar_items'>): Promise<void> {
+    const { error } = await this.client.from('calendar_items').update(changes).eq('id', id);
+    if (error) throw error;
   }
 
   async deleteCalendarItem(id: string): Promise<void> {

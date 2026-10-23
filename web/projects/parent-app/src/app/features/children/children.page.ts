@@ -17,6 +17,9 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
       <ion-toolbar color="primary">
         <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
         <ion-title>My children</ion-title>
+        <ion-buttons slot="end">
+          <ion-button [routerLink]="['/calendar']"><ion-icon slot="icon-only" name="calendar-outline" /></ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 

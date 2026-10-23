@@ -228,6 +228,18 @@ export class ApplicationService {
     return { instructions: inst?.[0] ?? null, payments: payments ?? [] };
   }
 
+  /** Upcoming parent-visible events on the school calendars of this parent's children. */
+  async schoolEvents(): Promise<SchoolEvent[]> {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await this.client
+      .from('calendar_items')
+      .select('id, title, kind, event_date, starts_at, notes, school_id, schools:school_id(name)')
+      .gte('event_date', today)
+      .order('event_date');
+    if (error) throw error;
+    return (data ?? []) as unknown as SchoolEvent[];
+  }
+
   /** Redeem a family code to connect to a child. Returns the child, or throws a friendly message. */
   async redeemFamilyCode(code: string, relationship?: string): Promise<{ first_name: string; last_name: string; school_name: string }> {
     const { data, error } = await this.client.rpc('redeem_family_code', {
@@ -298,4 +310,15 @@ export type FeeInstructions = Database['public']['Functions']['fee_payment_instr
 export interface FeeStatement {
   instructions: FeeInstructions | null;
   payments: FeePayment[];
+}
+
+export interface SchoolEvent {
+  id: string;
+  title: string;
+  kind: string;
+  event_date: string;
+  starts_at: string | null;
+  notes: string | null;
+  school_id: string;
+  schools: { name: string } | null;
 }
