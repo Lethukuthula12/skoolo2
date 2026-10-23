@@ -701,3 +701,14 @@ role and an initials avatar) and the Sign out button, moved out of the sidebar. 
 becomes a horizontal scrolling icon strip (icon over label, each item sized to its label so nothing
 overlaps) and the top bar compacts. Verified at desktop and 375px with no console errors; a clean
 production build. Next: a dashboard home (Phase 3) and parent-app alignment (Phase 4).
+
+## Portal reskin, Phase 3 — admin dashboard home
+
+Gave administrators a real landing page instead of dropping straight into Applications. The new
+Dashboard (first item in the admin nav, home icon) shows four icon stat tiles — Learners, Staff,
+Applications and money owed in fees — each a coloured chip linking to its section, and three widgets:
+recent applications with status badges, learners in arrears with balances, and upcoming calendar
+items. All of it reads from existing services (applications, learners, staff register, fee balances,
+calendar), so no backend changed. The signed-in landing now routes admins to /dashboard; teachers are
+still sent to their home by the admin guard. Verified with the pilot data (2 learners, 2 staff, 1
+application, R22 800 owed) and a clean build.

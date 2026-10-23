@@ -13,7 +13,12 @@ export const routes: Routes = [
     canActivate: [staffGuard],
     loadComponent: () => import('./features/shell/shell.component').then((m) => m.ShellComponent),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'applications' },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
+      },
       {
         path: 'home',
         loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage),

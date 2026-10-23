@@ -108,6 +108,7 @@ export class ShellComponent {
   private readonly sanitizer = inject(DomSanitizer);
 
   private readonly adminNav: NavItem[] = [
+    { label: 'Dashboard', link: '/dashboard', icon: 'home' },
     { label: 'Applications', link: '/applications', icon: 'inbox' },
     { label: 'Enrolment settings', link: '/enrolment', icon: 'sliders' },
     { label: 'Classes & subjects', link: '/classes', icon: 'book' },
