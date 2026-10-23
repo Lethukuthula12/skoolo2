@@ -180,19 +180,20 @@ table.data {
   &:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
   &.active { border-color: var(--brand); }
   .icon {
-    flex: none; width: 46px; height: 46px; border-radius: 14px;
-    display: grid; place-items: center; font-size: 1.3rem;
-    background: var(--brand-soft); color: var(--brand);
+    flex: none; width: 54px; height: 54px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--brand); color: #fff;
   }
-  .icon.accent { background: var(--accent-soft); color: var(--accent-dark); }
-  .icon.success { background: var(--success-soft); color: var(--success); }
-  .icon.warning { background: var(--warning-soft); color: var(--warning); }
-  .body { min-width: 0; }
-  .label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
-  .value { font-size: 1.6rem; font-weight: 700; color: var(--title); line-height: 1.1; }
+  .icon svg { width: 24px; height: 24px; }
+  .icon.accent { background: var(--accent); color: #fff; }
+  .icon.success { background: var(--success); color: #fff; }
+  .icon.warning { background: var(--warning); color: #fff; }
+  .body { min-width: 0; display: grid; gap: 1px; }
+  .label { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+  .value { font-size: 1.7rem; font-weight: 700; color: var(--title); line-height: 1.15; white-space: nowrap; }
 }
 /* icon-led variant (dashboard): chip on the left, text stacked on the right */
-.stat:has(.icon) { flex-direction: row; align-items: center; gap: 14px; }
+.stat:has(.icon) { flex-direction: row; align-items: center; gap: 14px; padding: 20px; }
 
 .empty { text-align: center; color: var(--muted); padding: 40px 16px; }
 

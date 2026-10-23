@@ -21,19 +21,19 @@ import {
         <div class="stats">
           <a class="stat" routerLink="/learners">
             <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-            <span class="body"><span class="value">{{ learnerCount() }}</span><span class="label">Learners</span></span>
+            <span class="body"><span class="label">Learners</span><span class="value">{{ learnerCount() }}</span></span>
           </a>
           <a class="stat" routerLink="/staff">
             <span class="icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
-            <span class="body"><span class="value">{{ staffCount() }}</span><span class="label">Staff</span></span>
+            <span class="body"><span class="label">Staff</span><span class="value">{{ staffCount() }}</span></span>
           </a>
           <a class="stat" routerLink="/applications">
             <span class="icon success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>
-            <span class="body"><span class="value">{{ applicationsTotal() }}</span><span class="label">Applications</span></span>
+            <span class="body"><span class="label">Applications</span><span class="value">{{ applicationsTotal() }}</span></span>
           </a>
           <a class="stat" routerLink="/fees">
             <span class="icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
-            <span class="body"><span class="value">{{ money(arrearsTotal()) }}</span><span class="label">Owed in fees</span></span>
+            <span class="body"><span class="label">Owed in fees</span><span class="value">{{ money(arrearsTotal()) }}</span></span>
           </a>
         </div>
 
