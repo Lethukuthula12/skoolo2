@@ -576,3 +576,29 @@ two accounts, recorded and confirmed a R1 200 payment; the balance dropped to R1
 parent's statement showed R10 800 owing, reference FEE-MAYW5J, the school's Capitec details and the
 confirmed R1 200. Schema unchanged since the backbone's 68-check isolation pass, so this increment is
 frontend plus the one read-only RPC.
+
+## Stage 6 backbone — timetables and calendars with RLS
+
+Three school-owned tables. **school_periods**: the school day as an ordered list of periods and
+breaks, set by the admin. **timetable_lessons**: one class+subject taught by one teacher in one
+(weekday, period) slot; two unique constraints make clashes impossible — a class holds one lesson
+per slot, a teacher teaches one lesson per slot. **calendar_items**: a teacher's dated items (test,
+assignment, outing, event), with the school derived from the owning staff member by a trigger that
+also keeps any class/subject link inside that school.
+
+Write path: teachers place and remove their own lessons through `place_lesson` (validates they teach
+the class — class teacher below the subject-teaching grade, assigned subject teacher at and above it
+— that the subject fits the grade, and that the period is not a break; the unique constraints refuse
+a clash with a TEACHER_BUSY / CLASS_BUSY hint) and `remove_lesson`. `my_timetable(year)` returns the
+signed-in teacher's week. Admins oversee the whole school's timetable directly.
+
+RLS: admins manage everything; a teacher reads only their own lessons and keeps only their own
+calendar items; another school and other teachers see nothing. Because the staff register is
+admin-only, the teacher-ownership check is a SECURITY DEFINER helper (`is_my_staff_member`), not an
+inline subquery a teacher could not run. Isolation suite now at 84 checks, proving a teacher cannot
+place a lesson for a class they do not teach, a clash is refused, a break cannot hold a lesson, and
+neither another teacher nor another school sees a lesson or calendar item.
+
+Next in Stage 6: the screens — the admin day-structure setup, the teacher's weekly timetable grid
+(place and remove lessons, print, export to .ics) and calendar, and the admin's per-teacher and
+per-class timetable views.

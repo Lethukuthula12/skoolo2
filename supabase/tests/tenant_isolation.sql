@@ -31,6 +31,7 @@ declare
   v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid; v_reportA uuid;
   v_absenceA uuid; v_threadA uuid;
   v_feeAccountA uuid; v_feePaymentA uuid; v_balance numeric;
+  v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
   -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
@@ -124,49 +125,49 @@ begin
 
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where id = v_learnerA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s learner'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s learner'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.application_documents where application_id = v_appA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s documents'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s documents'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.staff_members where school_id = v_schoolA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s staff register'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s staff register'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.staff_invites where school_id = v_schoolA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s invites'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s invites'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.school_bank_accounts where school_id = v_schoolA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s bank account'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s bank account'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.classes where school_id = v_schoolA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s classes'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s classes'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.subjects where school_id = v_schoolA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s subjects'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s subjects'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where school_id = v_schoolA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s register learners'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s register learners'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.learner_guardians where id = v_guardianA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees A''s learner guardians'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees A''s learner guardians'::text; end if;
 
   v_checks := v_checks + 1;
   update public.applications set staff_note = 'hacked' where id = v_appA;
   get diagnostics n = row_count;
-  if n <> 0 then v_fail := v_fail || 'admin B updated A''s application'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B updated A''s application'::text; end if;
 
   v_checks := v_checks + 1;
   begin
     perform public.confirm_application_payment(v_appA);
-    v_fail := v_fail || 'admin B confirmed payment on A''s application';
+    v_fail := v_fail || 'admin B confirmed payment on A''s application'::text;
   exception when others then null;  -- expected: not found for this school
   end;
 
@@ -174,7 +175,7 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where id = v_learnerA;
-  if n <> 0 then v_fail := v_fail || 'parent B sees parent A''s learner'; end if;
+  if n <> 0 then v_fail := v_fail || 'parent B sees parent A''s learner'::text; end if;
 
   -- ===================== ROLE: teacher has no enrolment access =====================
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
@@ -185,19 +186,19 @@ begin
 
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where id = v_learnerA;
-  if n <> 0 then v_fail := v_fail || 'teacher A sees an applicant learner'; end if;
+  if n <> 0 then v_fail := v_fail || 'teacher A sees an applicant learner'::text; end if;
 
   v_checks := v_checks + 1;
   begin
     perform public.confirm_application_payment(v_appA);
-    v_fail := v_fail || 'teacher A confirmed a payment';
+    v_fail := v_fail || 'teacher A confirmed a payment'::text;
   exception when others then null;  -- expected: admin only
   end;
 
   v_checks := v_checks + 1;
   begin
     perform public.set_application_status(v_appA, 'accepted');
-    v_fail := v_fail || 'teacher A changed a status';
+    v_fail := v_fail || 'teacher A changed a status'::text;
   exception when others then null;  -- expected: admin only
   end;
 
@@ -206,34 +207,34 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where id = v_rollLearnerA;
-  if n < 1 then v_fail := v_fail || 'class teacher cannot see a learner in their own class'; end if;
+  if n < 1 then v_fail := v_fail || 'class teacher cannot see a learner in their own class'::text; end if;
 
   -- Teacher A2 is staff of the same school but teaches no class: must not see that learner.
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where id = v_rollLearnerA;
-  if n <> 0 then v_fail := v_fail || 'a teacher sees a learner in a class they do not teach'; end if;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees a learner in a class they do not teach'::text; end if;
 
   -- Teacher B (other school) must not see school A's register learner.
   perform set_config('request.jwt.claims', json_build_object('sub', v_tB, 'role','authenticated','email', v_emailTB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where school_id = v_schoolA;
-  if n <> 0 then v_fail := v_fail || 'teacher B sees school A''s register learners'; end if;
+  if n <> 0 then v_fail := v_fail || 'teacher B sees school A''s register learners'::text; end if;
 
   -- my_classes() returns only the caller's own classes.
   v_checks := v_checks + 1;
   select count(*) into n from public.my_classes() where id = v_classA;
-  if n <> 0 then v_fail := v_fail || 'teacher B''s my_classes includes school A''s class'; end if;
+  if n <> 0 then v_fail := v_fail || 'teacher B''s my_classes includes school A''s class'::text; end if;
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.my_classes() where id = v_classA;
-  if n < 1 then v_fail := v_fail || 'class teacher''s my_classes omits their own class'; end if;
+  if n < 1 then v_fail := v_fail || 'class teacher''s my_classes omits their own class'::text; end if;
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.my_classes();
-  if n <> 0 then v_fail := v_fail || 'a teacher with no class gets classes from my_classes'; end if;
+  if n <> 0 then v_fail := v_fail || 'a teacher with no class gets classes from my_classes'::text; end if;
 
   -- ===================== STAGE 2: family linking =====================
   perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
@@ -241,7 +242,7 @@ begin
   v_checks := v_checks + 1;
   begin
     perform public.redeem_family_code('WRONGCOD');
-    v_fail := v_fail || 'a wrong family code was accepted';
+    v_fail := v_fail || 'a wrong family code was accepted'::text;
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint;
     if v_hint <> 'CODE_NOT_FOUND' then v_fail := v_fail || format('wrong family code: wrong hint %s', v_hint); end if;
@@ -256,34 +257,34 @@ begin
 
   v_checks := v_checks + 1;
   select count(*) into n from public.my_children() where id = v_rollLearnerA;
-  if n < 1 then v_fail := v_fail || 'linked parent does not see their child in my_children'; end if;
+  if n < 1 then v_fail := v_fail || 'linked parent does not see their child in my_children'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where id = v_rollLearnerA;  -- via the linked-guardian policy
-  if n < 1 then v_fail := v_fail || 'linked parent cannot read their child''s learner row'; end if;
+  if n < 1 then v_fail := v_fail || 'linked parent cannot read their child''s learner row'::text; end if;
 
   -- A different parent is not connected to this child.
   perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.my_children() where id = v_rollLearnerA;
-  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the child in my_children'; end if;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the child in my_children'::text; end if;
 
   v_checks := v_checks + 1;
   select count(*) into n from public.learners where id = v_rollLearnerA;
-  if n <> 0 then v_fail := v_fail || 'an unrelated parent can read the child''s learner row'; end if;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent can read the child''s learner row'::text; end if;
 
   -- The school sees the link.
   perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learner_guardians where learner_id = v_rollLearnerA and user_id is not null;
-  if n < 1 then v_fail := v_fail || 'the school does not see the linked guardian account'; end if;
+  if n < 1 then v_fail := v_fail || 'the school does not see the linked guardian account'::text; end if;
 
   -- ===================== STAGE 3: term reports =====================
   -- Admin A creates the term-1 reports for the class.
   perform public.ensure_term_reports(v_classA, 1);
   select id into v_reportA from public.report_cards where learner_id = v_rollLearnerA and term_number = 1;
   v_checks := v_checks + 1;
-  if v_reportA is null then v_fail := v_fail || 'ensure_term_reports did not create a report'; end if;
+  if v_reportA is null then v_fail := v_fail || 'ensure_term_reports did not create a report'::text; end if;
 
   -- Teacher A (teaches the class) may capture a mark.
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
@@ -298,11 +299,11 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.report_cards where id = v_reportA;
-  if n <> 0 then v_fail := v_fail || 'a teacher sees reports for a class they do not teach'; end if;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees reports for a class they do not teach'::text; end if;
   v_checks := v_checks + 1;
   begin
     perform public.save_mark(v_reportA, v_subjectA, 10);
-    v_fail := v_fail || 'a teacher captured a mark for a class they do not teach';
+    v_fail := v_fail || 'a teacher captured a mark for a class they do not teach'::text;
   exception when others then null;
   end;
 
@@ -310,20 +311,20 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.report_cards where id = v_reportA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s report'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s report'::text; end if;
 
   -- The connected parent cannot see the report while it is a draft.
   perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.report_cards where id = v_reportA;
-  if n <> 0 then v_fail := v_fail || 'a parent sees a report before it is published'; end if;
+  if n <> 0 then v_fail := v_fail || 'a parent sees a report before it is published'::text; end if;
 
   -- A teacher cannot approve; an admin can.
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
   v_checks := v_checks + 1;
   begin
     perform public.approve_class_reports(v_classA, 1);
-    v_fail := v_fail || 'a teacher approved reports';
+    v_fail := v_fail || 'a teacher approved reports'::text;
   exception when others then null;
   end;
 
@@ -335,16 +336,16 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.report_cards where id = v_reportA;
-  if n < 1 then v_fail := v_fail || 'a parent cannot see their child''s published report'; end if;
+  if n < 1 then v_fail := v_fail || 'a parent cannot see their child''s published report'::text; end if;
   v_checks := v_checks + 1;
   select count(*) into n from public.report_marks where report_card_id = v_reportA;
-  if n < 1 then v_fail := v_fail || 'a parent cannot see the published report''s marks'; end if;
+  if n < 1 then v_fail := v_fail || 'a parent cannot see the published report''s marks'::text; end if;
 
   -- An unrelated parent still cannot see the published report.
   perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.report_cards where id = v_reportA;
-  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees a published report'; end if;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees a published report'::text; end if;
 
   -- ===================== STAGE 4: absences and messages =====================
   -- The connected parent reports an absence for their child.
@@ -361,25 +362,25 @@ begin
   v_checks := v_checks + 1;
   begin
     perform public.report_absence(v_rollLearnerA, '2027-02-01', '2027-02-02', 'x');
-    v_fail := v_fail || 'an unrelated parent reported an absence';
+    v_fail := v_fail || 'an unrelated parent reported an absence'::text;
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint;
     if v_hint <> 'NOT_PARENT' then v_fail := v_fail || format('absence wrong hint: %s', v_hint); end if;
   end;
   v_checks := v_checks + 1;
   select count(*) into n from public.absence_reports where id = v_absenceA;
-  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the absence'; end if;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the absence'::text; end if;
 
   -- The class teacher sees and acknowledges the absence; a teacher of another class cannot.
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.absence_reports where id = v_absenceA;
-  if n <> 0 then v_fail := v_fail || 'a teacher sees an absence for a class they do not teach'; end if;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees an absence for a class they do not teach'::text; end if;
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.absence_reports where id = v_absenceA;
-  if n < 1 then v_fail := v_fail || 'the class teacher cannot see the absence'; end if;
+  if n < 1 then v_fail := v_fail || 'the class teacher cannot see the absence'::text; end if;
   v_checks := v_checks + 1;
   begin
     perform public.acknowledge_absence(v_absenceA);
@@ -398,10 +399,10 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.message_threads where id = v_threadA;
-  if n < 1 then v_fail := v_fail || 'the connected parent cannot see the thread'; end if;
+  if n < 1 then v_fail := v_fail || 'the connected parent cannot see the thread'::text; end if;
   v_checks := v_checks + 1;
   select count(*) into n from public.thread_messages where thread_id = v_threadA;
-  if n < 1 then v_fail := v_fail || 'the connected parent cannot see the thread message'; end if;
+  if n < 1 then v_fail := v_fail || 'the connected parent cannot see the thread message'::text; end if;
   v_checks := v_checks + 1;
   begin
     perform public.post_message(v_threadA, 'Thank you, we will.');
@@ -412,12 +413,12 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.message_threads where id = v_threadA;
-  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the thread'; end if;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the thread'::text; end if;
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.message_threads where id = v_threadA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s thread'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s thread'::text; end if;
 
   -- ===================== STAGE 5: school fees =====================
   perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
@@ -434,23 +435,23 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
-  if n < 1 then v_fail := v_fail || 'the parent cannot see their child''s fee account'; end if;
+  if n < 1 then v_fail := v_fail || 'the parent cannot see their child''s fee account'::text; end if;
   v_checks := v_checks + 1;
   select count(*) into n from public.fee_payments where id = v_feePaymentA;
-  if n < 1 then v_fail := v_fail || 'the parent cannot see their child''s payment'; end if;
+  if n < 1 then v_fail := v_fail || 'the parent cannot see their child''s payment'::text; end if;
   v_checks := v_checks + 1;
   select balance into v_balance from public.fee_account_balances where account_id = v_feeAccountA;
-  if v_balance is distinct from 7000 then v_fail := v_fail || 'the parent sees a wrong balance'; end if;
+  if v_balance is distinct from 7000 then v_fail := v_fail || 'the parent sees a wrong balance'::text; end if;
 
   -- A teacher of the class may not see fees; nor record a payment.
   perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
-  if n <> 0 then v_fail := v_fail || 'a teacher sees fee accounts'; end if;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees fee accounts'::text; end if;
   v_checks := v_checks + 1;
   begin
     perform public.record_fee_payment(v_feeAccountA, 100, 'cash');
-    v_fail := v_fail || 'a teacher recorded a payment';
+    v_fail := v_fail || 'a teacher recorded a payment'::text;
   exception when others then null;
   end;
 
@@ -458,12 +459,128 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
-  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s fee account'; end if;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s fee account'::text; end if;
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
-  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the fee account'; end if;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the fee account'::text; end if;
+
+  -- ===================== STAGE 6: timetables and calendars =====================
+  -- Admin A sets the day structure: one teaching period and one break.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  insert into public.school_periods (school_id, position, name, starts_at, ends_at, is_break)
+    values (v_schoolA, 1, 'Period 1', '08:00', '08:45', false) returning id into v_slotA;
+  insert into public.school_periods (school_id, position, name, starts_at, ends_at, is_break)
+    values (v_schoolA, 2, 'Break', '08:45', '09:00', true) returning id into v_breakA;
+
+  -- The class teacher (Grade R, a class-teacher grade) places one of their lessons.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    v_lessonA := public.place_lesson(v_classA, v_subjectA, v_slotA, 1);
+  exception when others then
+    v_fail := v_fail || format('class teacher cannot place a lesson: %s', sqlerrm);
+  end;
+
+  -- A teacher who does not teach the class cannot place its lessons.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.place_lesson(v_classA, v_subjectA, v_slotA, 2);
+    v_fail := v_fail || 'a teacher placed a lesson for a class they do not teach'::text;
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'NOT_YOUR_CLASS' then v_fail := v_fail || format('wrong-class wrong hint: %s', v_hint); end if;
+  end;
+
+  -- A clash in the same slot is refused.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.place_lesson(v_classA, v_subjectA, v_slotA, 1);
+    v_fail := v_fail || 'a clashing lesson was accepted'::text;
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint not in ('TEACHER_BUSY', 'CLASS_BUSY') then v_fail := v_fail || format('clash wrong hint: %s', v_hint); end if;
+  end;
+
+  -- A break period cannot hold a lesson.
+  v_checks := v_checks + 1;
+  begin
+    perform public.place_lesson(v_classA, v_subjectA, v_breakA, 3);
+    v_fail := v_fail || 'a lesson was placed in a break'::text;
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'BAD_PERIOD' then v_fail := v_fail || format('break wrong hint: %s', v_hint); end if;
+  end;
+
+  -- my_timetable returns the teacher's own lesson.
+  v_checks := v_checks + 1;
+  select count(*) into n from public.my_timetable(2027) where id = v_lessonA;
+  if n < 1 then v_fail := v_fail || 'the teacher''s my_timetable omits their lesson'::text; end if;
+
+  -- Another teacher (same school) cannot see the lesson row, nor remove it.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.timetable_lessons where id = v_lessonA;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees another teacher''s lesson'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.remove_lesson(v_lessonA);
+    v_fail := v_fail || 'a teacher removed another teacher''s lesson'::text;
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'NOT_YOURS' then v_fail := v_fail || format('remove wrong hint: %s', v_hint); end if;
+  end;
+
+  -- Another school sees neither the periods nor the lesson, and its my_timetable excludes it.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tB, 'role','authenticated','email', v_emailTB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.my_timetable(2027) where id = v_lessonA;
+  if n <> 0 then v_fail := v_fail || 'teacher B''s my_timetable includes school A''s lesson'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.school_periods where school_id = v_schoolA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s periods'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.timetable_lessons where id = v_lessonA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s lesson'::text; end if;
+
+  -- Admin A oversees their school's whole timetable.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.timetable_lessons where id = v_lessonA;
+  if n < 1 then v_fail := v_fail || 'admin A cannot see their school''s timetable'::text; end if;
+
+  -- Calendar items: a teacher keeps their own; admin oversees; others see nothing.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    insert into public.calendar_items (staff_member_id, class_id, subject_id, title, kind, event_date)
+      values (v_staffA, v_classA, v_subjectA, 'Spelling test', 'test', '2027-02-10') returning id into v_calItemA;
+  exception when others then
+    v_fail := v_fail || format('a teacher cannot add a calendar item: %s', sqlerrm);
+  end;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.calendar_items where id = v_calItemA;
+  if n < 1 then v_fail := v_fail || 'a teacher cannot see their own calendar item'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.calendar_items where id = v_calItemA;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees another teacher''s calendar item'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.calendar_items where id = v_calItemA;
+  if n < 1 then v_fail := v_fail || 'admin A cannot see the school''s calendar item'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.calendar_items where id = v_calItemA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s calendar item'::text; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.
@@ -475,7 +592,7 @@ begin
     insert into public.applications (school_id, period_id, period_grade_id, learner_id, parent_id,
         payment_reference, address_line, town, province)
       values (v_schoolA, v_periodA, v_pgA, v_learnerA2, v_pA, 'X', '1 St', 'Town A', 'Gauteng');
-    v_fail := v_fail || 'full grade accepted a second application';
+    v_fail := v_fail || 'full grade accepted a second application'::text;
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint;
     if v_hint <> 'GRADE_FULL' then v_fail := v_fail || format('full grade wrong hint: %s / %s', v_hint, sqlerrm); end if;
@@ -487,7 +604,7 @@ begin
   v_checks := v_checks + 1;
   begin
     perform public.set_application_status(v_appA, 'accepted'); -- declined -> accepted is illegal
-    v_fail := v_fail || 'illegal status transition accepted';
+    v_fail := v_fail || 'illegal status transition accepted'::text;
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint;
     if v_hint <> 'INVALID_TRANSITION' then v_fail := v_fail || format('transition wrong hint: %s / %s', v_hint, sqlerrm); end if;
@@ -506,7 +623,7 @@ begin
   v_checks := v_checks + 1;
   begin
     perform public.accept_staff_invite(v_codeIv);
-    v_fail := v_fail || 'invite redeemed with the wrong email';
+    v_fail := v_fail || 'invite redeemed with the wrong email'::text;
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint;
     if v_hint <> 'INVITE_EMAIL_MISMATCH' then v_fail := v_fail || format('mismatch wrong hint: %s', v_hint); end if;
@@ -525,7 +642,7 @@ begin
   v_checks := v_checks + 1;
   begin
     perform public.accept_staff_invite(v_codeIv);
-    v_fail := v_fail || 'invite redeemed twice';
+    v_fail := v_fail || 'invite redeemed twice'::text;
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint;
     if v_hint <> 'INVITE_USED' then v_fail := v_fail || format('reuse wrong hint: %s', v_hint); end if;
@@ -536,7 +653,7 @@ begin
   v_checks := v_checks + 1;
   begin
     perform public.accept_staff_invite(v_codeExpired);
-    v_fail := v_fail || 'expired invite redeemed';
+    v_fail := v_fail || 'expired invite redeemed'::text;
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint;
     if v_hint <> 'INVITE_EXPIRED' then v_fail := v_fail || format('expiry wrong hint: %s', v_hint); end if;
@@ -546,12 +663,12 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.applications where school_id = v_schoolA;
-  if n < 1 then v_fail := v_fail || 'admin A cannot read own applications'; end if;
+  if n < 1 then v_fail := v_fail || 'admin A cannot read own applications'::text; end if;
 
   perform set_config('request.jwt.claims', json_build_object('sub', v_pA, 'role','authenticated','email', v_emailPA)::text, true);
   v_checks := v_checks + 1;
   select count(*) into n from public.applications where parent_id = v_pA;
-  if n < 1 then v_fail := v_fail || 'parent A cannot read own application'; end if;
+  if n < 1 then v_fail := v_fail || 'parent A cannot read own application'::text; end if;
 
   -- ===================== RESULT (always rolls back) =====================
   if array_length(v_fail, 1) is null then

@@ -427,6 +427,90 @@ export type Database = {
           },
         ]
       }
+      calendar_items: {
+        Row: {
+          class_id: string | null
+          created_at: string
+          ends_at: string | null
+          event_date: string
+          id: string
+          kind: string
+          notes: string | null
+          school_id: string
+          staff_member_id: string
+          starts_at: string | null
+          subject_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          event_date: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          school_id: string
+          staff_member_id: string
+          starts_at?: string | null
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          event_date?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          school_id?: string
+          staff_member_id?: string
+          starts_at?: string | null
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_items_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_items_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_items_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_items_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_subject_teachers: {
         Row: {
           class_id: string
@@ -1362,6 +1446,57 @@ export type Database = {
           },
         ]
       }
+      school_periods: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          is_break: boolean
+          name: string
+          position: number
+          school_id: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_break?: boolean
+          name: string
+          position: number
+          school_id: string
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_break?: boolean
+          name?: string
+          position?: number
+          school_id?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_periods_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_periods_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_staff: {
         Row: {
           created_at: string
@@ -1830,6 +1965,88 @@ export type Database = {
           },
         ]
       }
+      timetable_lessons: {
+        Row: {
+          academic_year: number
+          class_id: string
+          created_at: string
+          day_of_week: number
+          id: string
+          period_id: string
+          school_id: string
+          subject_id: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year: number
+          class_id: string
+          created_at?: string
+          day_of_week: number
+          id?: string
+          period_id: string
+          school_id: string
+          subject_id: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: number
+          class_id?: string
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          period_id?: string
+          school_id?: string
+          subject_id?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timetable_lessons_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_lessons_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "school_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_lessons_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_lessons_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_lessons_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_lessons_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       fee_account_balances: {
@@ -2190,6 +2407,10 @@ export type Database = {
       }
       is_connected_parent: { Args: { p_learner_id: string }; Returns: boolean }
       is_learner_staff: { Args: { p_learner_id: string }; Returns: boolean }
+      is_my_staff_member: {
+        Args: { p_staff_member_id: string }
+        Returns: boolean
+      }
       is_school_admin: { Args: { p_school_id: string }; Returns: boolean }
       is_school_staff: { Args: { p_school_id: string }; Returns: boolean }
       is_valid_sa_identity_number: {
@@ -2229,6 +2450,23 @@ export type Database = {
           school_id: string
         }[]
       }
+      my_timetable: {
+        Args: { p_year: number }
+        Returns: {
+          class_id: string
+          class_name: string
+          day_of_week: number
+          ends_at: string
+          grade_code: string
+          id: string
+          period_id: string
+          period_name: string
+          period_position: number
+          starts_at: string
+          subject_id: string
+          subject_name: string
+        }[]
+      }
       notify_learner_staff: {
         Args: { p_body: string; p_learner_id: string; p_subject: string }
         Returns: undefined
@@ -2242,6 +2480,15 @@ export type Database = {
         Returns: number
       }
       period_school_id: { Args: { p_period_id: string }; Returns: string }
+      place_lesson: {
+        Args: {
+          p_class_id: string
+          p_day_of_week: number
+          p_period_id: string
+          p_subject_id: string
+        }
+        Returns: string
+      }
       post_message: {
         Args: { p_body: string; p_thread_id: string }
         Returns: undefined
@@ -2274,6 +2521,7 @@ export type Database = {
         Args: { p_learner_id: string }
         Returns: string
       }
+      remove_lesson: { Args: { p_lesson_id: string }; Returns: undefined }
       report_absence: {
         Args: {
           p_document_path?: string
