@@ -1,0 +1,14 @@
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 10px 14px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; }
+.tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+.year { width: 90px; }
+.checkbox { display: inline-flex; gap: 8px; align-items: center; font-weight: 500; }
+.row select, .row input { width: auto; }
+.right { text-align: right; white-space: nowrap; }
+td input { width: 120px; padding: 6px 8px; }
+code { font-size: 0.85rem; }
+.owing { color: var(--danger); } .clear { color: var(--success); }
+tr.detail td { background: #f8f9fd; }
+.pay { display: grid; gap: 12px; }
+.record .row { flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+table.inner { background: #fff; }

@@ -106,3 +106,13 @@ export function achievementLevel(mark: number | null): number | null {
 export function achievementDescription(level: number | null): string {
   return ACHIEVEMENT_LEVELS.find((a) => a.level === level)?.description ?? '';
 }
+
+export type FeeStructure = Tables<'fee_structures'>;
+export type FeeAccount = Tables<'learner_fee_accounts'>;
+export type FeePayment = Tables<'fee_payments'>;
+export type FeePlan = Enums<'fee_plan'>;
+export type FeeBalance = Database['public']['Views']['fee_account_balances']['Row'];
+
+export const FEE_PLAN_LABELS: Record<string, string> = {
+  monthly: 'Monthly', term: 'Per term', year: 'Once for the year',
+};

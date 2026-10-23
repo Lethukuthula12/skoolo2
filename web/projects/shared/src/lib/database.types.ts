@@ -2143,6 +2143,24 @@ export type Database = {
         Args: { p_class_id: string; p_term: number }
         Returns: number
       }
+      fee_payment_instructions: {
+        Args: { p_account_id: string }
+        Returns: {
+          account_holder: string
+          account_number: string
+          account_type: string
+          balance: number
+          bank_name: string
+          branch_code: string
+          monthly: number
+          payment_reference: string
+          plan: Database["public"]["Enums"]["fee_plan"]
+          school_name: string
+          term: number
+          total_due: number
+          total_paid: number
+        }[]
+      }
       generate_family_code: { Args: never; Returns: string }
       generate_fee_reference: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }

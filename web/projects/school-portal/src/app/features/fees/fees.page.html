@@ -1,0 +1,124 @@
+<div class="stack">
+  <div class="toolbar">
+    <div>
+      <h1>Fees</h1>
+      <p class="muted">Set the fee for each grade, set up learner accounts, and record payments.</p>
+    </div>
+    <span class="spacer"></span>
+    <label class="row small">Year
+      <input type="number" class="year" [ngModel]="year()" (ngModelChange)="changeYear($event)" min="2020" max="2100" />
+    </label>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="tab() === 'payments'" (click)="tab.set('payments')">Accounts & payments</button>
+    <button class="tab" [class.active]="tab() === 'setup'" (click)="tab.set('setup')">Fee setup</button>
+  </div>
+
+  @if (notice()) { <p class="ok">{{ notice() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (tab() === 'setup') {
+    <div class="card stack">
+      <h2>Fee per grade for {{ year() }}</h2>
+      <p class="muted small">Enter the full year's fee. A discount applies only when a family pays for the whole year upfront.</p>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Grade</th><th>Annual fee (R)</th><th>Upfront discount (%)</th><th></th></tr></thead>
+          <tbody>
+            @for (g of schoolGrades(); track g.code) {
+              <tr>
+                <td>{{ g.label }}</td>
+                <td><input type="number" min="0" [ngModel]="structFor(g.code).annual" (ngModelChange)="structure()[g.code] = { annual: $event, discount: structFor(g.code).discount }" /></td>
+                <td><input type="number" min="0" max="100" [ngModel]="structFor(g.code).discount" (ngModelChange)="structure()[g.code] = { annual: structFor(g.code).annual, discount: $event }" /></td>
+                <td class="right"><button class="btn btn-outline btn-sm" type="button" (click)="saveStructure(g.code)" [disabled]="busy()">Save</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <div class="card stack">
+      <h2>Set up accounts</h2>
+      <form class="row" (ngSubmit)="createAccounts()">
+        <select [(ngModel)]="newAccounts.classId" name="class">
+          <option value="">Choose a class…</option>
+          @for (c of classes(); track c.id) { <option [value]="c.id">{{ gradeLabel(c.grade_code) }} {{ c.name }}</option> }
+        </select>
+        <select [(ngModel)]="newAccounts.plan" name="plan">
+          <option value="monthly">Monthly</option><option value="term">Per term</option><option value="year">Once for the year</option>
+        </select>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="busy() || !newAccounts.classId">Create accounts</button>
+      </form>
+    </div>
+
+    <div class="card stack">
+      <div class="toolbar">
+        <h2>Accounts</h2>
+        <span class="spacer"></span>
+        <label class="checkbox"><input type="checkbox" [checked]="arrearsOnly()" (change)="arrearsOnly.set($any($event.target).checked)" /> In arrears only</label>
+        <button class="btn btn-outline btn-sm" type="button" (click)="exportArrears()">Export arrears</button>
+      </div>
+      <p class="muted small">Total owed to the school: <strong>{{ money(totalArrears()) }}</strong></p>
+
+      @if (shownAccounts().length === 0) {
+        <div class="empty">No accounts{{ arrearsOnly() ? ' in arrears' : '' }}. Create accounts for a class above.</div>
+      } @else {
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Learner</th><th>Plan</th><th>Reference</th><th>Due</th><th>Paid</th><th>Balance</th><th></th></tr></thead>
+            <tbody>
+              @for (a of shownAccounts(); track a.account_id) {
+                <tr class="clickable" (click)="toggle(a)">
+                  <td><strong>{{ a.learner?.last_name }}, {{ a.learner?.first_name }}</strong></td>
+                  <td>{{ planLabels[a.plan ?? ''] }}</td>
+                  <td><code>{{ a.payment_reference }}</code></td>
+                  <td>{{ money(a.total_due) }}</td>
+                  <td>{{ money(a.total_paid) }}</td>
+                  <td><strong [class.owing]="+a.balance! > 0" [class.clear]="+a.balance! <= 0">{{ money(a.balance) }}</strong></td>
+                  <td class="right"><button class="btn btn-ghost btn-sm" type="button">{{ expandedId() === a.account_id ? 'Close' : 'Payments' }}</button></td>
+                </tr>
+                @if (expandedId() === a.account_id) {
+                  <tr class="detail"><td colspan="7">
+                    <div class="pay">
+                      <form class="record" (ngSubmit)="record(a)">
+                        <strong>Record a payment</strong>
+                        <div class="row">
+                          <input type="number" min="0" step="0.01" [(ngModel)]="paymentForm.amount" name="amt" placeholder="Amount" />
+                          <select [(ngModel)]="paymentForm.method" name="method"><option value="eft">EFT</option><option value="cash">Cash</option></select>
+                          <input type="date" [(ngModel)]="paymentForm.paid_on" name="date" />
+                          <input type="text" [(ngModel)]="paymentForm.reference" name="ref" placeholder="Reference (optional)" />
+                          <button class="btn btn-primary btn-sm" type="submit" [disabled]="busy()">Record</button>
+                        </div>
+                      </form>
+                      @if (payments().length > 0) {
+                        <table class="data inner">
+                          <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th></th></tr></thead>
+                          <tbody>
+                            @for (p of payments(); track p.id) {
+                              <tr>
+                                <td>{{ p.paid_on | date: 'd MMM yyyy' }}</td>
+                                <td>{{ money(p.amount) }}</td>
+                                <td>{{ p.method }}</td>
+                                <td>{{ p.reference }}</td>
+                                <td><span class="badge" [class.badge-success]="p.status === 'confirmed'" [class.badge-warning]="p.status === 'recorded'">{{ p.status === 'confirmed' ? 'Confirmed' : 'Recorded' }}</span></td>
+                                <td class="right">@if (p.status === 'recorded') { <button class="btn btn-primary btn-sm" type="button" (click)="confirm(p, a)" [disabled]="busy()">Confirm</button> }</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      } @else { <p class="muted small">No payments yet.</p> }
+                    </div>
+                  </td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>

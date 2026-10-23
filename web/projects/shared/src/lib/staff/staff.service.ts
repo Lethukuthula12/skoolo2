@@ -694,7 +694,76 @@ export class StaffService {
     if (error) throw error;
     return data ?? 0;
   }
+
+  // ----- Fees ----------------------------------------------------------------
+
+  async feeStructures(year: number): Promise<Tables<'fee_structures'>[]> {
+    const { data, error } = await this.client
+      .from('fee_structures')
+      .select('*')
+      .eq('school_id', this.requireSchoolId())
+      .eq('academic_year', year);
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async setFeeStructure(year: number, grade: string, annual: number, discount: number): Promise<void> {
+    const { error } = await this.client.rpc('set_fee_structure', {
+      p_school_id: this.requireSchoolId(), p_year: year, p_grade: grade, p_annual: annual, p_discount: discount,
+    });
+    if (error) throw error;
+  }
+
+  /** Fee accounts for the year with each learner's balance. */
+  async feeAccounts(year: number): Promise<FeeAccountRow[]> {
+    const { data: balances, error } = await this.client
+      .from('fee_account_balances')
+      .select('*')
+      .eq('academic_year', year);
+    if (error) throw error;
+    const rows = balances ?? [];
+    const ids = rows.map((b) => b.learner_id).filter((id): id is string => !!id);
+    const byId = new Map<string, { first_name: string; last_name: string; current_class_id: string | null }>();
+    if (ids.length > 0) {
+      const { data: learners } = await this.client.from('learners').select('id, first_name, last_name, current_class_id').in('id', ids);
+      for (const l of learners ?? []) byId.set(l.id, l);
+    }
+    return rows.map((b) => ({ ...b, learner: b.learner_id ? byId.get(b.learner_id) ?? null : null })) as FeeAccountRow[];
+  }
+
+  async ensureFeeAccountsForClass(classId: string, year: number, plan: string): Promise<number> {
+    const { data, error } = await this.client.rpc('ensure_fee_accounts_for_class', { p_class_id: classId, p_year: year, p_plan: plan as never });
+    if (error) throw error;
+    return data ?? 0;
+  }
+
+  async accountPayments(accountId: string): Promise<Tables<'fee_payments'>[]> {
+    const { data, error } = await this.client
+      .from('fee_payments')
+      .select('*')
+      .eq('account_id', accountId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async recordFeePayment(accountId: string, amount: number, method: string, reference: string | null, paidOn: string, note: string | null): Promise<void> {
+    const { error } = await this.client.rpc('record_fee_payment', {
+      p_account_id: accountId, p_amount: amount, p_method: method,
+      p_reference: reference ?? undefined, p_paid_on: paidOn, p_note: note ?? undefined,
+    });
+    if (error) throw error;
+  }
+
+  async confirmFeePayment(paymentId: string): Promise<void> {
+    const { error } = await this.client.rpc('confirm_fee_payment', { p_payment_id: paymentId });
+    if (error) throw error;
+  }
 }
+
+export type FeeAccountRow = import('../database.types').Database['public']['Views']['fee_account_balances']['Row'] & {
+  learner: { first_name: string; last_name: string; current_class_id: string | null } | null;
+};
 
 export type ReportMarkFull = ReportMark & {
   subjects: { id: string; name: string; sort_order: number; language_level: string | null; grade_code: string } | null;

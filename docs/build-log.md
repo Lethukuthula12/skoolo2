@@ -560,3 +560,19 @@ a payment; another school's admin and an unrelated parent see nothing.
 
 Next in Stage 5: the screens — fee setup and payments in the portal (record, confirm, arrears
 export), and the statement and balance in the parent app.
+
+## Stage 5 screens — fee setup, payments, arrears, parent statement
+
+The portal **Fees** page (admin only): a Fee setup tab to set each grade's annual fee and upfront
+discount for a year, and an Accounts & payments tab to create accounts for a class on a plan, record
+EFT or cash payments, confirm them, filter to accounts in arrears and export the arrears list to
+Excel. The parent app gains a **Fees** button per child opening a statement: balance owing, the plan,
+the bank details and unique reference to pay by EFT, and the payment history with each payment's
+status. A parent reads the bank details through `fee_payment_instructions` (a SECURITY DEFINER RPC),
+since the bank columns are otherwise admin-only.
+
+Verified end to end against the pilot data: admin set the Grade 4 fee (R12 000, 5% upfront), created
+two accounts, recorded and confirmed a R1 200 payment; the balance dropped to R10 800; the connected
+parent's statement showed R10 800 owing, reference FEE-MAYW5J, the school's Capitec details and the
+confirmed R1 200. Schema unchanged since the backbone's 68-check isolation pass, so this increment is
+frontend plus the one read-only RPC.

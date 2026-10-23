@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { injectSupabase } from '../supabase-client';
 import type {
-  Application, ApplicationDocument, ApplicationInsert, DocumentType, Learner, LearnerInsert, Message,
+  Application, ApplicationDocument, ApplicationInsert, DocumentType, FeePayment, Learner, LearnerInsert, Message,
 } from '../models';
 import type { Database } from '../database.types';
 
@@ -208,6 +208,26 @@ export class ApplicationService {
     return (data ?? []) as unknown as ChildReport[];
   }
 
+  /** A child's fee statement: the balance and bank details, plus the payments so far. */
+  async childFeeStatement(learnerId: string): Promise<FeeStatement | null> {
+    const { data: account, error } = await this.client
+      .from('learner_fee_accounts')
+      .select('id')
+      .eq('learner_id', learnerId)
+      .order('academic_year', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    if (!account) return null;
+    const { data: inst } = await this.client.rpc('fee_payment_instructions', { p_account_id: account.id });
+    const { data: payments } = await this.client
+      .from('fee_payments')
+      .select('*')
+      .eq('account_id', account.id)
+      .order('paid_on', { ascending: false });
+    return { instructions: inst?.[0] ?? null, payments: payments ?? [] };
+  }
+
   /** Redeem a family code to connect to a child. Returns the child, or throws a friendly message. */
   async redeemFamilyCode(code: string, relationship?: string): Promise<{ first_name: string; last_name: string; school_name: string }> {
     const { data, error } = await this.client.rpc('redeem_family_code', {
@@ -272,4 +292,10 @@ export interface ChildReport {
   report_marks: ChildReportMark[];
   classes: { name: string; grade_code: string } | null;
   schools: { name: string; stamp_url: string | null } | null;
+}
+
+export type FeeInstructions = Database['public']['Functions']['fee_payment_instructions']['Returns'][number];
+export interface FeeStatement {
+  instructions: FeeInstructions | null;
+  payments: FeePayment[];
 }

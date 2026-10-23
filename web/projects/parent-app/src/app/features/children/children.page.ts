@@ -46,6 +46,7 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
                 <ion-button fill="outline" size="small" [routerLink]="['/child', c.id]">Reports</ion-button>
                 <ion-button fill="outline" size="small" [routerLink]="['/child', c.id, 'messages']">Messages</ion-button>
                 <ion-button fill="outline" size="small" [routerLink]="['/child', c.id, 'absence']">Report absence</ion-button>
+                <ion-button fill="outline" size="small" [routerLink]="['/child', c.id, 'fees']">Fees</ion-button>
               </div>
             </article>
           }
