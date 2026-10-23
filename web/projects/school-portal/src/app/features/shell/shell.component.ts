@@ -19,6 +19,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
             <a routerLink="/classes" routerLinkActive="active">Classes & subjects</a>
             <a routerLink="/learners" routerLinkActive="active">Learners</a>
             <a routerLink="/reports" routerLinkActive="active">Reports</a>
+            <a routerLink="/assessments" routerLinkActive="active">Assessments</a>
             <a routerLink="/messages" routerLinkActive="active">Messages</a>
             <a routerLink="/absences" routerLinkActive="active">Absences</a>
             <a routerLink="/fees" routerLinkActive="active">Fees</a>
@@ -29,6 +30,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
           } @else {
             <a routerLink="/home" routerLinkActive="active">Home</a>
             <a routerLink="/reports" routerLinkActive="active">Reports</a>
+            <a routerLink="/assessments" routerLinkActive="active">Assessments</a>
             <a routerLink="/messages" routerLinkActive="active">Messages</a>
             <a routerLink="/absences" routerLinkActive="active">Absences</a>
             <a routerLink="/timetable" routerLinkActive="active">Timetable</a>

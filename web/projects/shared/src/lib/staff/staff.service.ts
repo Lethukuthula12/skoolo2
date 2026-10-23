@@ -868,6 +868,66 @@ export class StaffService {
     const { error } = await this.client.from('calendar_items').delete().eq('id', id);
     if (error) throw error;
   }
+
+  // ----- Assessment detail (Stage 7) -----------------------------------------
+
+  async assessments(classId: string, subjectId: string, term: number): Promise<Tables<'assessments'>[]> {
+    const { data, error } = await this.client
+      .from('assessments')
+      .select('*')
+      .eq('class_id', classId)
+      .eq('subject_id', subjectId)
+      .eq('term_number', term)
+      .order('assessed_on', { nullsFirst: false })
+      .order('created_at');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async saveAssessment(input: {
+    id?: string | null; classId: string; subjectId: string; term: number;
+    title: string; kind: string; maxScore: number; weight: number; assessedOn: string | null;
+  }): Promise<string> {
+    const { data, error } = await this.client.rpc('save_assessment', {
+      p_id: (input.id ?? null) as string, p_class_id: input.classId, p_subject_id: input.subjectId,
+      p_term: input.term, p_title: input.title, p_kind: input.kind,
+      p_max_score: input.maxScore, p_weight: input.weight, p_assessed_on: (input.assessedOn ?? null) as string,
+    });
+    if (error) throw new Error(this.assessmentError((error as { hint?: string }).hint, error.message));
+    return data as string;
+  }
+
+  async deleteAssessment(id: string): Promise<void> {
+    const { error } = await this.client.rpc('delete_assessment', { p_id: id });
+    if (error) throw error;
+  }
+
+  /** Scores for a set of assessments (row security keeps this to the caller's classes). */
+  async assessmentScores(assessmentIds: string[]): Promise<Tables<'assessment_scores'>[]> {
+    if (assessmentIds.length === 0) return [];
+    const { data, error } = await this.client
+      .from('assessment_scores')
+      .select('*')
+      .in('assessment_id', assessmentIds);
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async saveAssessmentScore(assessmentId: string, learnerId: string, score: number | null, isAbsent: boolean): Promise<void> {
+    const { error } = await this.client.rpc('save_assessment_score', {
+      p_assessment_id: assessmentId, p_learner_id: learnerId, p_score: score as number, p_is_absent: isAbsent,
+    });
+    if (error) throw new Error(this.assessmentError((error as { hint?: string }).hint, error.message));
+  }
+
+  private assessmentError(hint: string | undefined, fallback: string): string {
+    switch (hint) {
+      case 'OVER_MAX': return 'That score is more than the assessment’s maximum.';
+      case 'BAD_SUBJECT': return 'That subject is not offered in this grade.';
+      case 'NOT_ALLOWED': return 'You cannot capture assessments for this class.';
+      default: return fallback;
+    }
+  }
 }
 
 export type FeeAccountRow = import('../database.types').Database['public']['Views']['fee_account_balances']['Row'] & {

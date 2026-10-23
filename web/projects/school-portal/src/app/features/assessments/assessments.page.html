@@ -1,0 +1,116 @@
+<div class="stack">
+  <div class="toolbar">
+    <div>
+      <h1>Assessments</h1>
+      <p class="muted">Capture each assessment's scores; Skoolo calculates the term mark.</p>
+    </div>
+    <span class="spacer"></span>
+    <label class="row small">Year
+      <input type="number" class="year" [ngModel]="year()" (ngModelChange)="year.set($event); reload()" [ngModelOptions]="{standalone: true}" min="2020" max="2100" />
+    </label>
+  </div>
+
+  <div class="card">
+    <div class="row wrap">
+      <label class="field">Class
+        <select [ngModel]="selectedClassId()" (ngModelChange)="selectedClassId.set($event); onClassChange()" [ngModelOptions]="{standalone: true}">
+          @for (c of classOptions(); track c.id) { <option [value]="c.id">{{ c.grade_code }} {{ c.name }}</option> }
+        </select>
+      </label>
+      <label class="field">Subject
+        <select [ngModel]="selectedSubjectId()" (ngModelChange)="selectedSubjectId.set($event); reload()" [ngModelOptions]="{standalone: true}">
+          @for (s of subjectsForClass(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+        </select>
+      </label>
+      <label class="field">Term
+        <select [ngModel]="term()" (ngModelChange)="term.set($event); reload()" [ngModelOptions]="{standalone: true}">
+          @for (t of [1, 2, 3, 4]; track t) { <option [ngValue]="t">Term {{ t }}</option> }
+        </select>
+      </label>
+    </div>
+  </div>
+
+  @if (notice()) { <p class="ok">{{ notice() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (!selectedSubjectId()) {
+    <div class="empty">Choose a class and subject to capture assessments.</div>
+  } @else {
+    <div class="card stack">
+      <h2>Assessments for this subject</h2>
+      <p class="muted small">Each has a maximum and a weight; the term mark is the weighted average. Grades R–3 are all school-based assessment; Grades 4–6 weight the end-of-year exam at about a quarter.</p>
+      @if (assessments().length > 0) {
+        <div class="chips">
+          @for (a of assessments(); track a.id) {
+            <div class="chip" [class.editing]="editForm.id === a.id">
+              <button type="button" class="chip-main" (click)="selectForEdit(a)">
+                <strong>{{ a.title }}</strong>
+                <span>{{ kindLabels[a.kind] }} · /{{ a.max_score }} · weight {{ a.weight }}</span>
+              </button>
+              <button type="button" class="x" (click)="deleteAssessment(a)" [disabled]="busy()" title="Remove">×</button>
+            </div>
+          }
+        </div>
+      }
+      <form class="row wrap end" (ngSubmit)="saveAssessment()">
+        <label class="field grow">{{ editForm.id ? 'Edit title' : 'New assessment' }}
+          <input type="text" [(ngModel)]="editForm.title" name="title" placeholder="e.g. Test 1" />
+        </label>
+        <label class="field">Kind
+          <select [(ngModel)]="editForm.kind" name="kind">
+            @for (k of ['test', 'assignment', 'project', 'exam', 'other']; track k) { <option [value]="k">{{ kindLabels[k] }}</option> }
+          </select>
+        </label>
+        <label class="field sm">Out of <input type="number" min="1" [(ngModel)]="editForm.max_score" name="max" /></label>
+        <label class="field sm">Weight <input type="number" min="0.1" step="0.1" [(ngModel)]="editForm.weight" name="weight" /></label>
+        <label class="field">Date <input type="date" [(ngModel)]="editForm.assessed_on" name="date" /></label>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="busy()">{{ editForm.id ? 'Save' : 'Add' }}</button>
+        @if (editForm.id) { <button class="btn btn-ghost btn-sm" type="button" (click)="cancelEdit()">Cancel</button> }
+      </form>
+    </div>
+
+    <div class="card stack">
+      <div class="toolbar">
+        <h2>Capture</h2>
+        <span class="spacer"></span>
+        <button class="btn btn-outline btn-sm" type="button" (click)="exportAnalysis()" [disabled]="assessments().length === 0">Export analysis</button>
+      </div>
+      @if (learners().length === 0) {
+        <div class="empty">No learners in this class.</div>
+      } @else if (assessments().length === 0) {
+        <div class="empty">Add an assessment above, then capture scores here.</div>
+      } @else {
+        <div class="grid-wrap">
+          <table class="data grid">
+            <thead>
+              <tr>
+                <th class="learner">Learner</th>
+                @for (a of assessments(); track a.id) { <th class="num">{{ a.title }}<span>/{{ a.max_score }} · w{{ a.weight }}</span></th> }
+                <th class="num term">Term mark</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of learners(); track l.id) {
+                <tr>
+                  <td class="learner">{{ l.last_name }}, {{ l.first_name }}</td>
+                  @for (a of assessments(); track a.id) {
+                    <td class="num">
+                      <input type="number" min="0" [max]="a.max_score" inputmode="decimal"
+                             [ngModel]="cell(a.id, l.id)?.score" (change)="onScore(a, l, $any($event.target).value)" [ngModelOptions]="{standalone: true}" />
+                    </td>
+                  }
+                  <td class="num term">
+                    @let tm = termMark(l.id);
+                    @if (tm !== null) { <strong>{{ tm }}</strong> <span class="lvl">L{{ levelFor(tm) }}</span> } @else { <span class="muted">—</span> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>

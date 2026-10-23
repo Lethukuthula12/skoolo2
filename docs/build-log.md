@@ -658,3 +658,23 @@ and that a score over the maximum is refused.
 Next in Stage 7: the screens — a capture grid per class, subject and term (assessments as columns,
 learners as rows), the live calculated term mark, and per-assessment and per-subject analysis,
 exportable.
+
+## Stage 7 screens — assessment capture grid and analysis export
+
+An **Assessments** page in the portal, for teachers and admins. Pick a class, subject and term; add
+assessments (each a title, kind, maximum and weight) shown as chips that select back into the form to
+edit; capture a score per learner in a grid; the term mark column is the live weighted average with
+its achievement level, computed exactly as the server does. A score over the maximum is refused both
+in the grid and by the database. Export analysis writes an Excel workbook with three sheets: the
+scores, per-assessment statistics (count, average, lowest and highest percent) and the per-subject
+term-mark distribution by level.
+
+Verified end to end as the admin on the pilot class: two weighted Mathematics assessments (15/20 at
+weight 1 and 40/50 at weight 3) gave a live term mark of 78.75 (Level 6), a second learner 90
+(Level 7), a score over the maximum was refused, and the analysis workbook exported with its three
+sheets. The roll-up was confirmed on an unpublished term — capturing a Term 2 Mathematics score of 78
+created a draft Term 2 report with that mark, editable — while the already-published Term 1 reports
+stayed locked and untouched, which is the intended behaviour. Both apps build clean.
+
+Stage 7 complete to the backbone-and-screens line; the live-on-a-phone and real-use steps of the
+definition of done remain.

@@ -126,6 +126,14 @@ export const CALENDAR_KIND_LABELS: Record<string, string> = {
   test: 'Test', assignment: 'Assignment', outing: 'Outing', event: 'Event', other: 'Other',
 };
 
+export type Assessment = Tables<'assessments'>;
+export type AssessmentScore = Tables<'assessment_scores'>;
+export type AssessmentKind = 'test' | 'assignment' | 'project' | 'exam' | 'other';
+
+export const ASSESSMENT_KIND_LABELS: Record<string, string> = {
+  test: 'Test', assignment: 'Assignment', project: 'Project', exam: 'Exam', other: 'Other',
+};
+
 /** Monday-first weekday numbers (ISO) with short and long labels, for the timetable grid. */
 export const WEEKDAYS: { value: number; short: string; long: string }[] = [
   { value: 1, short: 'Mon', long: 'Monday' },
