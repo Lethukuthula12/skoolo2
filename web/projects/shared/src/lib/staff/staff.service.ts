@@ -6,6 +6,7 @@ import type {
   School, SchoolClass, SchoolClassInsert, StaffMember, StaffMemberInsert,
 } from '../models';
 import type { Database, Tables, TablesInsert, TablesUpdate } from '../database.types';
+import type { Theme } from '../theme/theme.model';
 
 export type StaffApplication = Application & {
   learner: Learner;
@@ -279,9 +280,9 @@ export class StaffService {
 
   // ----- School profile, badge and bank account -----------------------------
 
-  /** Save the school's portal theme (admin only, enforced by RLS). */
-  async saveTheme(theme: { primary: string; header: string; sidebar: string }): Promise<School> {
-    return this.updateSchool({ theme });
+  /** Save school appearance for both apps (admin only, enforced by RLS). */
+  async saveTheme(theme: Theme): Promise<School> {
+    return this.updateSchool({ theme: { ...theme } });
   }
 
   async updateSchool(changes: TablesUpdate<'schools'>): Promise<School> {

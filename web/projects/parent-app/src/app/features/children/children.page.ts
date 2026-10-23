@@ -48,7 +48,7 @@ export class ChildrenPage {
   // Ionic retains pages between visits; refresh on entry so school updates stay current.
   ionViewWillEnter(): void { void this.load(); }
   protected async refresh(event: RefresherCustomEvent): Promise<void> {
-    try { await this.load(); } finally { await event.target.complete(); }
+    try { await Promise.all([this.load(), this.theme.refreshForParent()]); } finally { await event.target.complete(); }
   }
   protected async link(): Promise<void> {
     if (this.form.invalid || this.busy()) return;

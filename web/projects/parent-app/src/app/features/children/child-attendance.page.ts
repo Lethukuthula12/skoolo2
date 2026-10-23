@@ -57,16 +57,16 @@ import { ApplicationService, AttendanceRecord } from '@skoolo/shared';
     .rate span { font-size: 0.9rem; }
     .totals { grid-auto-flow: column; text-align: center; }
     .t strong { display: block; font-size: 1.6rem; }
-    .t span { font-size: 0.82rem; color: rgba(20,33,61,0.6); }
+    .t span { font-size: 0.82rem; color: var(--skoolo-muted); }
     .t.present strong { color: var(--ion-color-success-shade); }
-    .t.late strong { color: #b7791f; }
+    .t.late strong { color: var(--ion-color-warning); }
     .t.absent strong { color: var(--ion-color-danger); }
-    .day { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid rgba(20,33,61,0.08); }
+    .day { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--skoolo-line); }
     .day:first-of-type { border-top: none; }
     .badge { font-size: 0.75rem; font-weight: 700; padding: 3px 11px; border-radius: 999px; }
-    .badge.present { background: rgba(30,142,90,0.14); color: var(--ion-color-success-shade); }
-    .badge.late { background: rgba(183,121,31,0.14); color: #b7791f; }
-    .badge.absent { background: rgba(197,0,15,0.12); color: var(--ion-color-danger); }
+    .badge.present { background: rgba(var(--ion-color-success-rgb), .12); color: var(--ion-color-success-shade); }
+    .badge.late { background: rgba(var(--ion-color-warning-rgb), .12); color: var(--ion-color-warning); }
+    .badge.absent { background: rgba(var(--ion-color-danger-rgb), .12); color: var(--ion-color-danger); }
   `,
 })
 export class ChildAttendancePage {

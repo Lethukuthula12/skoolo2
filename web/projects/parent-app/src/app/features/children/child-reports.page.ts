@@ -70,10 +70,10 @@ import {
     .report { padding: 0; overflow: hidden; }
     header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; }
     h2 { margin: 0; font-size: 1.05rem; font-weight: 700; }
-    header p { margin: 2px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.88rem; }
+    header p { margin: 2px 0 0; color: var(--skoolo-muted); font-size: 0.88rem; }
     table.marks { width: 100%; border-collapse: collapse; }
-    table.marks th, table.marks td { border-top: 1px solid rgba(20, 33, 61, 0.08); padding: 8px 16px; text-align: left; font-size: 0.92rem; }
-    table.marks th { background: #f6f7fb; font-size: 0.78rem; color: var(--ion-color-medium); }
+    table.marks th, table.marks td { border-top: 1px solid var(--skoolo-line); padding: 8px 16px; text-align: left; font-size: 0.92rem; }
+    table.marks th { background: var(--skoolo-surface-2); font-size: 0.78rem; color: var(--ion-color-medium); }
     .c { text-align: center; }
     .meta, .comment { padding: 4px 16px; margin: 0; font-size: 0.9rem; }
     .legend { padding: 8px 16px 14px; font-size: 0.85rem; }

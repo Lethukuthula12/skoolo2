@@ -134,3 +134,17 @@ The user requires every completed logical change to be committed and pushed to `
 after its applicable checks, rather than saved only locally until the end of a session. This is
 standing approval for pushes within the authorised work and their configured deployments. Confirm
 push success before reporting publication; platform approval controls still apply.
+
+
+## Amendment, 2026-10-24 — Share saved school appearance with parents
+
+The school's saved `schools.theme` is the source of appearance settings for both apps. Primary
+colours carry over to app accents, the header colour to app toolbars, the sidebar colour to bottom
+navigation, and background mode to light/dark content. Unsaved portal previews remain local.
+Online parent apps check for changes every 30 seconds while visible, on focus/resume, and on home
+pull-to-refresh. Offline apps retain the cached theme; signing out restores the default theme.
+
+The existing parent lookup is preserved: the first linked learner returned by the current query
+supplies the school theme. It has no explicit ordering or multi-school preference, so this update
+does not promise a particular school for families linked to several schools. Choosing a preferred
+school remains a separate product decision. No schema, access rules or query scope changed.

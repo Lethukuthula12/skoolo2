@@ -107,23 +107,23 @@ import { ApplicationService, PaymentInstructions } from '@skoolo/shared';
   styles: `
     .form-card { display: grid; gap: 14px; }
     h2 { margin: 0; font-size: 1.3rem; font-weight: 700; }
-    .hint { margin: -6px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.92rem; line-height: 1.4; }
+    .hint { margin: -6px 0 0; color: var(--skoolo-muted); font-size: 0.92rem; line-height: 1.4; }
     .amount { display: flex; justify-content: space-between; align-items: baseline; font-size: 1rem; }
     .amount strong { font-size: 1.6rem; }
-    .reference { background: rgba(31, 75, 216, 0.07); border-radius: 12px; padding: 14px; text-align: center; display: grid; gap: 4px; }
-    .reference span { font-size: 0.85rem; color: rgba(20, 33, 61, 0.7); }
+    .reference { background: var(--skoolo-brand-soft); border-radius: 12px; padding: 14px; text-align: center; display: grid; gap: 4px; }
+    .reference span { font-size: 0.85rem; color: var(--skoolo-muted); }
     .reference strong { font-size: 1.7rem; letter-spacing: 0.08em; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; }
-    .reference p { margin: 0; font-size: 0.82rem; color: rgba(20, 33, 61, 0.7); }
+    .reference p { margin: 0; font-size: 0.82rem; color: var(--skoolo-muted); }
     .bank { display: grid; gap: 8px; margin: 0; }
-    .bank div { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid rgba(20, 33, 61, 0.08); padding-bottom: 6px; }
-    .bank dt { color: rgba(20, 33, 61, 0.7); font-size: 0.9rem; }
+    .bank div { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid var(--skoolo-line); padding-bottom: 6px; }
+    .bank dt { color: var(--skoolo-muted); font-size: 0.9rem; }
     .bank dd { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 2px; }
     ion-button[size='large'] { --border-radius: 12px; font-weight: 700; }
     .status { text-align: center; }
     .status ion-icon { font-size: 64px; }
     .status.confirmed ion-icon { color: var(--ion-color-success); }
-    .status.pending ion-icon { color: var(--ion-color-primary); }
-    .status p { color: rgba(20, 33, 61, 0.75); line-height: 1.45; }
+    .status.pending ion-icon { color: var(--skoolo-brand-ink); }
+    .status p { color: var(--skoolo-muted); line-height: 1.45; }
   `,
 })
 export class PaymentPage {

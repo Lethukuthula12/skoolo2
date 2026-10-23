@@ -989,3 +989,38 @@ tick for a requested zero-duration transition; reduced-mode keyframes contain no
 Browser origin policy still blocks rendered desktop/mobile verification and live deployment checks.
 The recording frames establish the reference, but the build and animation-configuration checks do
 not prove pixel equivalence, perceived smoothness, focus behaviour or real-device acceptance.
+
+
+## 2026-10-24 — Saved school theme shared with the parent app
+
+- Parent appearance now reads all four saved settings from the existing school-theme query:
+  primary accent, header colour, sidebar colour (bottom navigation in the app), and light/dark mode.
+  Portal and app use the same theme validation/defaults and colour calculations. No migration,
+  access rule, tenant-selection rule or query scope changed.
+- Added visible-app refresh every 30 seconds, focus/resume refresh and home pull-to-refresh.
+  Background tabs do not request themes, concurrent lifecycle refreshes are deduplicated, and
+  sign-out cleans up timers/listeners and invalidates delayed responses. Offline errors preserve
+  the last theme. The full theme is cached, with migration from the old primary-only cache.
+- Replaced fixed light surfaces and muted text across parent home, directory, forms, messages,
+  fees, attendance, reports, calendar and inbox with theme tokens. Toolbar controls and navigation
+  text follow their own backgrounds. Light/dark palettes include readable buttons, message text,
+  status labels and Ionic surfaces. Moved the themed loading skeleton into shared parent styles
+  to keep the home component within its existing stylesheet budget.
+- Updated School appearance to explain the shared settings and save timing. Unsaved previews
+  remain local; controls cannot change the pending theme during save. Reset still requires Save
+  to publish. The current first-returned-linked-learner school lookup remains unchanged; no
+  preferred-school selector or deterministic multi-school ordering is introduced.
+
+Verification: both production builds passed. The final parent build has no warnings; portal retains
+its existing 528.09 kB initial bundle warning against the 500 kB threshold. Budgets were not changed.
+`node web/scripts/check-school-theme-sync.mjs` passes against the actual services with a mock
+transport: all four fields save/read, legacy/invalid/missing themes, 19 palettes in light/dark mode,
+text contrast, preview isolation, full cache restore, blocked storage, offline retention, stale
+requests, sign-out reset, foreground polling/resume, deduplication and cleanup. Existing portal
+presentation/pagination and parent motion checks pass. `git diff --check` passes. No fresh RLS suite
+is required for this presentation change, whose existing queries and permissions are preserved.
+
+Browser origin policy still prevents rendered and live end-to-end verification. Portal Save ->
+parent refresh on separate real sessions/devices, toolbar/navigation colours, light/dark Ionic
+controls and all affected parent screens still need a visual walkthrough. Automated service and
+contrast checks are not a claim of real-device acceptance or successful deployment verification.

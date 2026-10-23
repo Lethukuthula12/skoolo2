@@ -44,7 +44,7 @@ import { ApplicationService, ParentNotice } from '@skoolo/shared';
     .top { display: flex; align-items: center; gap: 8px; }
     h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
     .body { white-space: pre-wrap; margin: 4px 0 0; color: var(--ion-text-color); }
-    .meta { margin: 6px 0 0; font-size: 0.82rem; color: rgba(20, 33, 61, 0.6); }
+    .meta { margin: 6px 0 0; font-size: 0.82rem; color: var(--skoolo-muted); }
   `,
 })
 export class SchoolNoticesPage {

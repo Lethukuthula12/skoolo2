@@ -8,7 +8,7 @@
 .child-name h3 { font-size: 24px; line-height: 1.4; font-weight: 600; letter-spacing: -.45px; margin: 3px 0; overflow-wrap: anywhere; }
 .child-name p { font-size: 12px; margin: 3px 0 0; color: var(--skoolo-muted); }
 .separator { padding: 0 7px; }
-.child-stats { margin: 0 24px 20px; display: grid; grid-template-columns: 1fr 1fr; border: 0; background: #f6f6fb; border-radius: 14px; }
+.child-stats { margin: 0 24px 20px; display: grid; grid-template-columns: 1fr 1fr; border: 0; background: var(--skoolo-surface-2); border-radius: 14px; }
 .child-stats a { min-width: 0; display: flex; flex-direction: column; text-decoration: none; color: var(--skoolo-title); padding: 14px 16px; }
 .child-stats a + a { border-left: 1px solid var(--skoolo-line); }
 .stat-label { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--skoolo-muted); }
@@ -20,7 +20,7 @@
 .child-actions a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--skoolo-title); padding: 12px; border: 0; background: var(--skoolo-brand-soft); border-radius: 10px; font-size: 13px; font-weight: 500; }
 .child-actions ion-icon { color: var(--skoolo-brand-ink); font-size: 19px; flex-shrink: 0; }
 .child-actions .action-arrow { color: var(--skoolo-muted); margin-left: auto; font-size: 13px; }
-.absence-link { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 13px 24px; background: #fcfcfe; border-top: 1px solid var(--skoolo-line); text-decoration: none; color: var(--skoolo-muted); font-size: 11px; min-height: 48px; }
+.absence-link { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 13px 24px; background: var(--skoolo-surface-2); border-top: 1px solid var(--skoolo-line); text-decoration: none; color: var(--skoolo-muted); font-size: 11px; min-height: 48px; }
 .absence-link strong { margin-left: auto; font-weight: 500; color: var(--skoolo-brand-ink); }
 .absence-link ion-icon { font-size: 15px; }
 .summary-unavailable { padding: 0 24px 20px; font-size: 12px; color: var(--skoolo-muted); }

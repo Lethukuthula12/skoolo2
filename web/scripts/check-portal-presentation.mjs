@@ -16,10 +16,12 @@ async function loadSource(relative, name) {
   }});
   const output = path.join(root, '.angular', 'presentation-checks', `${name}.mjs`);
   await mkdir(path.dirname(output), { recursive: true });
-  await writeFile(output, outputText);
+  await writeFile(output, outputText.replaceAll('./theme.model', './theme-model.mjs').replaceAll('./theme-colors', './theme-colors.mjs'));
   return import(pathToFileURL(output).href);
 }
 
+await loadSource('projects/shared/src/lib/theme/theme.model.ts', 'theme-model');
+await loadSource('projects/shared/src/lib/theme/theme-colors.ts', 'theme-colors');
 const { ThemeService, DEFAULT_THEME, PRIMARY_SWATCHES, SIDEBAR_SWATCHES } = await loadSource(
   'projects/shared/src/lib/theme/theme.service.ts', 'theme');
 const properties = new Map();

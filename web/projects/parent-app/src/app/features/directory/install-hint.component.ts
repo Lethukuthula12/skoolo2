@@ -31,10 +31,10 @@ const DISMISSED_KEY = 'skoolo.installHintDismissed';
   styles: `
     .hint {
       display: flex; align-items: center; gap: 10px; margin: 10px 12px 0;
-      padding: 10px 6px 10px 14px; border-radius: 12px; background: rgba(31, 75, 216, 0.08);
+      padding: 10px 6px 10px 14px; border-radius: 12px; background: var(--skoolo-brand-soft);
       font-size: 0.88rem; line-height: 1.35;
     }
-    .hint > ion-icon:first-child { font-size: 22px; color: var(--ion-color-primary); flex-shrink: 0; }
+    .hint > ion-icon:first-child { font-size: 22px; color: var(--skoolo-brand-ink); flex-shrink: 0; }
     .hint span { flex: 1; }
     .hint span ion-icon { vertical-align: -3px; }
     ion-button { margin: 0; --padding-start: 4px; --padding-end: 4px; }

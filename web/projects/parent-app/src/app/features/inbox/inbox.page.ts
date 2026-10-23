@@ -62,12 +62,12 @@ import { ApplicationService, Message } from '@skoolo/shared';
   `,
   styles: `
     .inbox { background: transparent; padding: 0 0 20px; width: calc(100% - 40px); max-width: 760px; margin: auto; }
-    ion-item { --background: #fff; margin: 0 0 14px; border: 1px solid var(--skoolo-line); border-radius: 16px; --border-color: transparent; --padding-start: 18px; --inner-padding-end: 18px; --padding-top: 10px; --padding-bottom: 10px; }
+    ion-item { --background: var(--skoolo-surface); margin: 0 0 14px; border: 1px solid var(--skoolo-line); border-radius: 16px; --border-color: transparent; --padding-start: 18px; --inner-padding-end: 18px; --padding-top: 10px; --padding-bottom: 10px; }
     ion-item.unread { border-left: 3px solid var(--ion-color-primary); }
     ion-item > ion-icon { font-size: 22px; margin-right: 16px; }
     ion-item.unread h3 { font-weight: 700; }
     h3 { font-size: 14px; line-height: 1.6; }
-    .when { font-size: 0.8rem; color: rgba(20, 33, 61, 0.6); }
+    .when { font-size: 0.8rem; color: var(--skoolo-muted); }
     .preview { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .body { white-space: pre-wrap; line-height: 1.45; margin-top: 6px; color: var(--ion-text-color); }
     a { display: inline-block; margin-top: 8px; font-weight: 600; }

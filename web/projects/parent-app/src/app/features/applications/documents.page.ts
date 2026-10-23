@@ -88,7 +88,7 @@ const OPTIONAL_DOCUMENT_TYPES: readonly DocumentType[] = ['latest_report', 'immu
   styles: `
     .form-card { display: grid; gap: 14px; }
     h2 { margin: 0; font-size: 1.3rem; font-weight: 700; }
-    .hint { margin: -6px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.92rem; line-height: 1.4; }
+    .hint { margin: -6px 0 0; color: var(--skoolo-muted); font-size: 0.92rem; line-height: 1.4; }
     .hint.small { font-size: 0.82rem; text-align: center; margin: 0; }
     .documents { background: transparent; margin: 0 -16px; }
     .documents ion-item { --background: transparent; }

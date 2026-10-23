@@ -41,7 +41,7 @@ import { AuthService } from '@skoolo/shared';
   styles: `
     .form-card { display: grid; gap: 14px; }
     h2 { margin: 0; font-size: 1.3rem; font-weight: 700; }
-    .hint { margin: -6px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.92rem; }
+    .hint { margin: -6px 0 0; color: var(--skoolo-muted); font-size: 0.92rem; }
     ion-button[type='submit'] { margin-top: 6px; --border-radius: 12px; font-weight: 700; }
   `,
 })

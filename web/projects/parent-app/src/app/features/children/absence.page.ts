@@ -73,10 +73,10 @@ const REASONS = ['Illness', 'Medical appointment', 'Family responsibility', 'Rel
     .form-card { display: grid; gap: 14px; }
     h2 { margin: 0; font-size: 1.2rem; font-weight: 700; }
     ion-button[type='submit'] { margin-top: 6px; --border-radius: 12px; font-weight: 700; }
-    .past { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid rgba(20,33,61,0.08); }
+    .past { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--skoolo-line); }
     .past p { margin: 2px 0 0; font-size: 0.85rem; }
-    .badge { font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: rgba(31,75,216,0.1); color: var(--ion-color-primary); }
-    .badge.ack { background: rgba(30,142,90,0.14); color: var(--ion-color-success-shade); }
+    .badge { font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--skoolo-brand-soft); color: var(--skoolo-brand-ink); }
+    .badge.ack { background: rgba(var(--ion-color-success-rgb), .12); color: var(--ion-color-success-shade); }
   `,
 })
 export class AbsencePage {

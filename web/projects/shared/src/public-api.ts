@@ -12,3 +12,4 @@ export * from './lib/staff/staff.guard';
 export * from './lib/staff/admin.guard';
 export * from './lib/messaging/messaging.service';
 export * from './lib/theme/theme.service';
+export * from './lib/theme/theme-colors';

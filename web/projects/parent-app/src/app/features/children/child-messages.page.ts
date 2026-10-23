@@ -68,16 +68,16 @@ import { AuthService, MessageThread, MessagingService, ThreadMessage } from '@sk
   `,
   styles: `
     .thread { display: grid; gap: 8px; padding: 12px; }
-    .bubble { max-width: 80%; padding: 10px 12px; border-radius: 14px; background: #fff; box-shadow: 0 1px 2px rgba(20,33,61,0.06); justify-self: start; }
-    .bubble.mine { background: var(--ion-color-primary); color: #fff; justify-self: end; }
+    .bubble { max-width: 80%; padding: 10px 12px; border-radius: 14px; background: var(--skoolo-surface); box-shadow: 0 1px 2px rgba(20,33,61,0.06); justify-self: start; }
+    .bubble.mine { background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); justify-self: end; }
     .bubble p { margin: 0; white-space: pre-wrap; }
-    .bubble .when { font-size: 0.72rem; opacity: 0.7; }
+    .bubble .when { font-size: 0.72rem; }
     .composer { display: flex; gap: 8px; align-items: end; padding: 10px 12px; position: sticky; bottom: 0; background: var(--ion-background-color); }
     .composer ion-textarea { flex: 1; }
     .form-card { display: grid; gap: 12px; }
     h2 { margin: 0; font-size: 1.15rem; font-weight: 700; }
     .section { margin: 16px 16px 0; }
-    .thread-row { display: flex; justify-content: space-between; align-items: center; width: calc(100% - 24px); margin: 8px 12px 0; background: #fff; border: none; border-radius: 12px; padding: 14px; text-align: left; font: inherit; cursor: pointer; }
+    .thread-row { display: flex; justify-content: space-between; align-items: center; width: calc(100% - 24px); margin: 8px 12px 0; background: var(--skoolo-surface); border: none; border-radius: 12px; padding: 14px; color: var(--skoolo-title); text-align: left; font: inherit; cursor: pointer; }
     .thread-row p { margin: 2px 0 0; font-size: 0.82rem; }
   `,
 })

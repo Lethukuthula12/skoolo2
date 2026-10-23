@@ -11,13 +11,13 @@ import { DEFAULT_THEME, PRIMARY_SWATCHES, SIDEBAR_SWATCHES, StaffService, Theme,
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg></button>
     <app-portal-drawer title="School appearance" [open]="open()" [dismissible]="!busy()" (closed)="close()">
-      <div class="theme-options"><p class="hint">Preview your school’s colours, then save them for everyone at your school.</p>
+      <div class="theme-options"><p class="hint">Save your school’s colours and background mode for the portal and linked parents’ app. Previews stay here until you save.</p>
 
         <div class="section">
           <span class="lbl">Background</span>
           <div class="modes">
-            <button class="mode" type="button" [class.sel]="working().mode === 'light'" (click)="setMode('light')">Light</button>
-            <button class="mode" type="button" [class.sel]="working().mode === 'dark'" (click)="setMode('dark')">Dark</button>
+            <button class="mode" type="button" [disabled]="busy()" [attr.aria-pressed]="working().mode === 'light'" [class.sel]="working().mode === 'light'" (click)="setMode('light')">Light</button>
+            <button class="mode" type="button" [disabled]="busy()" [attr.aria-pressed]="working().mode === 'dark'" [class.sel]="working().mode === 'dark'" (click)="setMode('dark')">Dark</button>
           </div>
         </div>
 
@@ -25,7 +25,7 @@ import { DEFAULT_THEME, PRIMARY_SWATCHES, SIDEBAR_SWATCHES, StaffService, Theme,
           <span class="lbl">Primary colour</span>
           <div class="swatches">
             @for (c of primarySwatches; track c) {
-              <button class="sw" type="button" [style.background]="c" [class.sel]="working().primary === c" (click)="pick('primary', c)" [attr.aria-label]="c"></button>
+              <button class="sw" type="button" [disabled]="busy()" [attr.aria-pressed]="working().primary === c" [style.background]="c" [class.sel]="working().primary === c" (click)="pick('primary', c)" [attr.aria-label]="'Primary ' + c"></button>
             }
           </div>
         </div>
@@ -34,25 +34,25 @@ import { DEFAULT_THEME, PRIMARY_SWATCHES, SIDEBAR_SWATCHES, StaffService, Theme,
           <span class="lbl">Header bar</span>
           <div class="swatches">
             @for (c of headerSwatches; track c) {
-              <button class="sw" type="button" [style.background]="c" [class.sel]="working().header === c" (click)="pick('header', c)" [attr.aria-label]="c"></button>
+              <button class="sw" type="button" [disabled]="busy()" [attr.aria-pressed]="working().header === c" [style.background]="c" [class.sel]="working().header === c" (click)="pick('header', c)" [attr.aria-label]="'Header ' + c"></button>
             }
           </div>
         </div>
 
         <div class="section">
-          <span class="lbl">Sidebar</span>
+          <span class="lbl">Sidebar / app navigation</span>
           <div class="swatches">
             @for (c of sidebarSwatches; track c) {
-              <button class="sw" type="button" [style.background]="c" [class.sel]="working().sidebar === c" (click)="pick('sidebar', c)" [attr.aria-label]="c"></button>
+              <button class="sw" type="button" [disabled]="busy()" [attr.aria-pressed]="working().sidebar === c" [style.background]="c" [class.sel]="working().sidebar === c" (click)="pick('sidebar', c)" [attr.aria-label]="'Navigation ' + c"></button>
             }
           </div>
         </div>
 
-        @if (saved()) { <p class="ok">Saved. Your school's portal now uses this theme.</p> }
+        @if (saved()) { <p class="ok" role="status">Saved for the portal and parent app. Online parent apps update within 30 seconds while open, or when reopened.</p> }
 
         @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
         <div class="actions">
-          <button class="btn btn-ghost btn-sm" type="button" (click)="resetDefault()">Reset to default</button>
+          <button class="btn btn-ghost btn-sm" type="button" (click)="resetDefault()" [disabled]="busy()">Reset to default</button>
           <span class="spacer"></span>
           <button class="btn btn-primary btn-sm" type="button" (click)="save()" [disabled]="busy()">{{ busy() ? 'Saving…' : 'Save theme' }}</button>
         </div>
@@ -99,6 +99,7 @@ export class ThemeCustomizerComponent {
   }
 
   protected close(): void {
+    if (this.busy()) return;
     this.theme.resetPreview();
     this.open.set(false);
   }
@@ -124,7 +125,9 @@ export class ThemeCustomizerComponent {
   }
 
   protected async save(): Promise<void> {
+    if (this.busy()) return;
     this.busy.set(true);
+    this.saved.set(false);
     this.error.set(null);
     try {
       const school = await this.staff.saveTheme(this.working());

@@ -56,7 +56,7 @@ import { ApplicationService, CALENDAR_KIND_LABELS, SchoolEvent } from '@skoolo/s
     .daygroup:first-child { border-top: none; }
     .date { text-align: center; min-width: 52px; }
     .date strong { display: block; font-size: 1rem; }
-    .date span { font-size: 0.72rem; color: rgba(20,33,61,0.6); text-transform: uppercase; }
+    .date span { font-size: 0.72rem; color: var(--skoolo-muted); text-transform: uppercase; }
     .events { flex: 1; display: grid; gap: 10px; min-width: 0; }
     .event { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 2px 0 12px; overflow-wrap: anywhere; }
     .info { min-width: 0; }
@@ -64,10 +64,10 @@ import { ApplicationService, CALENDAR_KIND_LABELS, SchoolEvent } from '@skoolo/s
     .info p { margin: 1px 0 0; font-size: 0.85rem; }
     .notes { color: var(--ion-text-color); }
     .badge { font-size: 10px; font-weight: 500; padding: 4px 9px; border-radius: 6px; background: var(--skoolo-brand-soft); color: var(--skoolo-brand-ink); white-space: nowrap; }
-    .badge.kind-test { background: #fde8e8; color: #c0392b; }
-    .badge.kind-assignment { background: #e8f0fe; color: #1a56db; }
-    .badge.kind-outing { background: #e6f6ed; color: #1e8e5a; }
-    .badge.kind-event { background: #fff3e0; color: #b7791f; }
+    .badge.kind-test { background: rgba(var(--ion-color-danger-rgb), .12); color: var(--ion-color-danger); }
+    .badge.kind-assignment { background: var(--skoolo-brand-soft); color: var(--skoolo-brand-ink); }
+    .badge.kind-outing { background: rgba(var(--ion-color-success-rgb), .12); color: var(--ion-color-success-shade); }
+    .badge.kind-event { background: rgba(var(--ion-color-warning-rgb), .12); color: var(--ion-color-warning); }
   `,
 })
 export class SchoolCalendarPage {

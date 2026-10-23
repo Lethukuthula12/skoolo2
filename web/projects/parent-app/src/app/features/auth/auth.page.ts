@@ -95,7 +95,7 @@ type Mode = 'sign_in' | 'sign_up';
     .auth-intro { text-align: center; margin: 34px 24px 24px; }
     .welcome-mark { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); font-size: 30px; }
     .auth-wordmark { margin: 5px 0 20px !important; font-size: 26px !important; font-weight: 700; color: var(--skoolo-title) !important; letter-spacing: -1px; }
-    .auth-wordmark span { color: #bf543c; }
+    .auth-wordmark span { color: var(--ion-color-secondary); }
     .auth-intro h1 { font-size: 27px; letter-spacing: -.7px; margin: 0 0 8px; }
     .auth-intro p { color: var(--skoolo-muted); font-size: 13px; margin: 0; }
     .auth-card { max-width: 440px; padding: 26px; }

@@ -4,6 +4,7 @@ import type {
   Application, ApplicationDocument, ApplicationInsert, DocumentType, FeePayment, Learner, LearnerInsert, Message,
 } from '../models';
 import type { Database } from '../database.types';
+import { normalizeTheme, Theme } from '../theme/theme.model';
 
 export type PaymentInstructions =
   Database['public']['Functions']['get_payment_instructions']['Returns'][number];
@@ -250,16 +251,16 @@ export class ApplicationService {
     return (data ?? []) as unknown as ParentNotice[];
   }
 
-  /** The theme (primary colour) of this parent's school, so the app can wear the school's brand. */
-  async mySchoolTheme(): Promise<{ primary: string } | null> {
+  /** School appearance from the existing first linked-learner lookup. */
+  async mySchoolTheme(): Promise<Theme | null> {
     const { data, error } = await this.client
       .from('learners')
       .select('school_id, schools:school_id(theme)')
       .not('school_id', 'is', null)
       .limit(1);
     if (error) throw error;
-    const theme = (data?.[0]?.schools as { theme?: { primary?: string } | null } | null)?.theme;
-    return theme?.primary ? { primary: theme.primary } : null;
+    const theme = (data?.[0]?.schools as { theme?: unknown } | null)?.theme;
+    return theme == null ? null : normalizeTheme(theme);
   }
 
   /** A child's at-a-glance numbers for the home card: fees owing and attendance. */

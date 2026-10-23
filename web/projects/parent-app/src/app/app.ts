@@ -30,18 +30,18 @@ import { SchoolThemeService } from './school-theme.service';
   `,
   styles: `
     .parent-nav { position: absolute; inset: auto 0 0; z-index: 20; height: var(--parent-nav-height);
-      padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--skoolo-surface);
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--skoolo-nav-bg);
       border-top: 1px solid var(--skoolo-line); box-shadow: 0 -4px 24px rgba(39, 40, 71, .035); }
     .nav-items { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 600px; height: 100%; margin: auto; }
     .nav-indicator { position: absolute; left: 0; top: 0; width: 25%; height: 100%; transform: translateX(calc(var(--active-tab) * 100%)); transition: transform var(--motion-slow) var(--ease-out); pointer-events: none; }
-    .nav-indicator::before { content: ''; position: absolute; top: 2px; left: 50%; transform: translateX(-50%); width: 54px; height: 30px; border-radius: 10px; background: var(--skoolo-brand-soft); }
+    .nav-indicator::before { content: ''; position: absolute; top: 2px; left: 50%; transform: translateX(-50%); width: 54px; height: 30px; border-radius: 10px; background: var(--skoolo-nav-active); }
     a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-      color: var(--skoolo-muted); font-size: 11px; font-weight: 500; text-decoration: none; min-height: 48px; }
+      color: var(--skoolo-nav-ink); font-size: 11px; font-weight: 500; text-decoration: none; min-height: 48px; }
     .nav-icon { display: grid; place-items: center; width: 52px; height: 28px; border-radius: 10px; transition: transform var(--motion-base) var(--ease-out); }
     ion-icon { font-size: 22px; }
-    a.active { color: var(--skoolo-brand-ink); font-weight: 600; }
-    a.active .nav-icon { transform: translateY(-1px); }
-    a:focus-visible { outline: 2px solid var(--skoolo-brand-ink); outline-offset: -2px; border-radius: 10px; }
+    a.active { font-weight: 600; }
+    a.active .nav-icon { color: var(--skoolo-nav-active-ink); transform: translateY(-1px); }
+    a:focus-visible { outline: 2px solid var(--skoolo-nav-ink); outline-offset: -2px; border-radius: 10px; }
     @media (prefers-reduced-motion: reduce) { .nav-icon { transition: none; } }
   `,
 })
@@ -72,8 +72,8 @@ export class App {
   protected readonly activeTab = computed(() => Math.max(0, this.navigation.findIndex(item => item.id === this.activeSection())));
 
   constructor() {
-    effect(() => {
-      if (this.auth.user()) void this.theme.refreshForParent();
+    effect((onCleanup) => {
+      if (this.auth.user()) onCleanup(this.theme.watchForParent());
       else if (this.auth.ready()) this.theme.reset();
     });
   }

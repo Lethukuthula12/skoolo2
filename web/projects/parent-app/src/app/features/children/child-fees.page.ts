@@ -77,21 +77,21 @@ import { ApplicationService, FEE_PLAN_LABELS, FeeStatement } from '@skoolo/share
   styles: `
     .form-card { display: grid; gap: 10px; }
     h2 { margin: 0; font-size: 1.15rem; font-weight: 700; }
-    .hint { margin: -4px 0 0; color: rgba(20,33,61,0.7); font-size: 0.9rem; }
+    .hint { margin: -4px 0 0; color: var(--skoolo-muted); font-size: 0.9rem; }
     .balance { text-align: center; }
-    .balance span { color: rgba(20,33,61,0.7); font-size: 0.9rem; }
+    .balance span { color: var(--skoolo-muted); font-size: 0.9rem; }
     .balance strong { font-size: 2rem; color: var(--ion-color-danger); }
     .balance.clear strong { color: var(--ion-color-success-shade); }
-    .reference { background: rgba(31,75,216,0.07); border-radius: 12px; padding: 12px; text-align: center; display: grid; gap: 2px; }
-    .reference span { font-size: 0.8rem; color: rgba(20,33,61,0.7); }
+    .reference { background: var(--skoolo-brand-soft); border-radius: 12px; padding: 12px; text-align: center; display: grid; gap: 2px; }
+    .reference span { font-size: 0.8rem; color: var(--skoolo-muted); }
     .reference strong { font-size: 1.5rem; letter-spacing: 0.08em; font-family: ui-monospace, Consolas, monospace; }
     .bank { display: grid; gap: 6px; margin: 0; }
     .bank div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; border-bottom: 1px solid var(--skoolo-line); padding: 12px 0; }
     .bank dt { color: var(--skoolo-muted); font-size: 12px; } .bank dd { margin: 0; font-size: 13px; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
-    .pay { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid rgba(20,33,61,0.08); }
+    .pay { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--skoolo-line); }
     .pay p { margin: 2px 0 0; font-size: 0.85rem; }
-    .badge { font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: rgba(183,121,31,0.14); color: #b7791f; }
-    .badge.ok { background: rgba(30,142,90,0.14); color: var(--ion-color-success-shade); }
+    .badge { font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: rgba(var(--ion-color-warning-rgb), .12); color: var(--ion-color-warning); }
+    .badge.ok { background: rgba(var(--ion-color-success-rgb), .12); color: var(--ion-color-success-shade); }
   `,
 })
 export class ChildFeesPage {
