@@ -6,12 +6,14 @@ import {
   APPLICATION_STATUS_LABELS, ApplicationStatus, PAYMENT_STATUS_LABELS, PaymentStatus, StaffApplication, StaffService,
 } from '@skoolo/shared';
 import { paymentBadgeClass, statusBadgeClass } from './badges';
+import { TablePagination } from '../../ui/table-pagination';
+import { TablePaginationComponent } from '../../ui/table-pagination.component';
 
 type QuickFilter = 'all' | 'to_review' | 'to_confirm' | 'accepted' | 'waitlisted';
 
 @Component({
   selector: 'app-applications-list-page',
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TablePaginationComponent],
   template: `
     <div class="stack">
       <div>
@@ -38,18 +40,18 @@ type QuickFilter = 'all' | 'to_review' | 'to_confirm' | 'accepted' | 'waitlisted
       </div>
 
       <div class="card stack">
-        <div class="toolbar">
-          <input type="text" placeholder="Search learner, parent or reference" [ngModel]="search()" (ngModelChange)="search.set($event)" class="search" />
-          <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <div class="toolbar"><div><h2>Application register</h2><p>Review learners, documents and payment status.</p></div><span class="spacer"></span><button class="btn btn-outline" type="button" (click)="load()" [disabled]="loading()">Refresh</button></div>
+        <div class="table-tools">
+          <label class="search-field">Search applications<input type="search" placeholder="Learner, parent or reference" [ngModel]="search()" (ngModelChange)="search.set($event)" /></label>
+          <label>Status<select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
             <option value="">Any status</option>
             @for (s of statuses; track s) { <option [value]="s">{{ statusLabels[s] }}</option> }
-          </select>
-          <select [ngModel]="paymentFilter()" (ngModelChange)="paymentFilter.set($event)">
+          </select></label>
+          <label>Payment<select [ngModel]="paymentFilter()" (ngModelChange)="paymentFilter.set($event)">
             <option value="">Any payment state</option>
             @for (p of payments; track p) { <option [value]="p">{{ paymentLabels[p] }}</option> }
-          </select>
-          <span class="spacer"></span>
-          <button class="btn btn-outline btn-sm" type="button" (click)="load()" [disabled]="loading()">Refresh</button>
+          </select></label>
+          <label>Sort by<select [ngModel]="sort()" (ngModelChange)="sort.set($event)"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Learner A–Z</option></select></label>
         </div>
 
         @if (loading()) {
@@ -57,7 +59,7 @@ type QuickFilter = 'all' | 'to_review' | 'to_confirm' | 'accepted' | 'waitlisted
         } @else if (error()) {
           <p class="error">{{ error() }}</p>
         } @else if (filtered().length === 0) {
-          <div class="empty">No applications match.</div>
+          <div class="empty"><p>{{ applications().length ? 'No applications match these filters.' : 'Applications will appear here when parents submit them.' }}</p>@if (applications().length) { <button class="btn btn-outline" type="button" (click)="clearFilters()">Clear filters</button> }</div>
         } @else {
           <div class="table-wrap">
             <table class="data">
@@ -67,9 +69,9 @@ type QuickFilter = 'all' | 'to_review' | 'to_confirm' | 'accepted' | 'waitlisted
                 </tr>
               </thead>
               <tbody>
-                @for (app of filtered(); track app.id) {
-                  <tr class="clickable" (click)="open(app)">
-                    <td><strong>{{ app.learner.first_name }} {{ app.learner.last_name }}</strong></td>
+                @for (app of pagination.visible(); track app.id) {
+                  <tr>
+                    <td><button class="table-link" type="button" (click)="open(app)">{{ app.learner.first_name }} {{ app.learner.last_name }}</button></td>
                     <td>{{ app.period_grade.grades?.label }}</td>
                     <td>{{ app.parent.full_name }}<br /><span class="muted small">{{ app.parent.phone }}</span></td>
                     <td>{{ app.submitted_at | date: 'd MMM yyyy' }}</td>
@@ -83,13 +85,12 @@ type QuickFilter = 'all' | 'to_review' | 'to_confirm' | 'accepted' | 'waitlisted
             </table>
           </div>
         }
+        @if (!loading() && !error()) { <app-table-pagination [pagination]="pagination" /> }
       </div>
     </div>
   `,
   styles: `
     .stat { text-align: left; font: inherit; }
-    .search { max-width: 320px; }
-    select { width: auto; }
     code { font-size: 0.85rem; }
   `,
 })
@@ -111,6 +112,7 @@ export class ApplicationsListPage {
   protected readonly statusFilter = signal<ApplicationStatus | ''>('');
   protected readonly paymentFilter = signal<PaymentStatus | ''>('');
   protected readonly quick = signal<QuickFilter>('all');
+  protected readonly sort = signal('newest');
 
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -128,6 +130,18 @@ export class ApplicationsListPage {
       return haystack.includes(term);
     });
   });
+
+  protected readonly sorted = computed(() => [...this.filtered()].sort((a, b) => {
+    if (this.sort() === 'name') return a.learner.last_name.localeCompare(b.learner.last_name) || a.learner.first_name.localeCompare(b.learner.first_name);
+    const date = (a.submitted_at ?? '').localeCompare(b.submitted_at ?? '');
+    return this.sort() === 'oldest' ? date : -date;
+  }));
+  protected readonly pagination = new TablePagination(this.sorted,
+    computed(() => [this.search(), this.statusFilter(), this.paymentFilter(), this.quick(), this.sort()]));
+
+  protected clearFilters(): void {
+    this.search.set(''); this.statusFilter.set(''); this.paymentFilter.set(''); this.quick.set('all');
+  }
 
   constructor() {
     void this.load();

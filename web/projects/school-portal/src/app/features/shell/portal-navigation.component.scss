@@ -1,0 +1,18 @@
+.school { display: flex; align-items: center; gap: 10px; margin: 0 0 22px; padding: 14px 10px; border-radius: 12px; background: var(--sidebar-hover); color: var(--sidebar-ink-hover); }
+.school-symbol { flex: none; }
+.school strong { display: block; font-weight: 500; font-size: 12px; overflow-wrap: anywhere; }
+.school small { display: block; margin-top: 4px; font-size: 11px; color: var(--sidebar-ink); }
+nav a { display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 46px; color: var(--sidebar-ink); text-decoration: none; font-size: 13px; font-weight: 500; border-radius: 10px; transition: background 160ms, color 160ms; }
+nav a:hover { background: var(--sidebar-hover); color: var(--sidebar-ink-hover); }
+nav a.active { color: var(--brand-contrast); background: var(--brand); box-shadow: inset 3px 0 currentColor; }
+.ico { display: inline-flex; width: 20px; height: 20px; flex: none; }
+.ico ::ng-deep svg { display: block; width: 100%; height: 100%; }
+.nav-group { margin-top: 10px; }
+.group-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 14px; min-height: 40px; border: 0; background: transparent; color: var(--sidebar-school); font: inherit; font-size: 11px; font-weight: 600; letter-spacing: .7px; text-transform: uppercase; cursor: pointer; }
+.chevron { font-size: 17px; transition: transform 180ms; }
+.chevron.expanded { transform: rotate(180deg); }
+.group-items { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows 180ms ease, visibility 180ms; }
+.group-items.expanded { grid-template-rows: 1fr; visibility: visible; }
+.group-items > div { min-height: 0; overflow: hidden; }
+.icon-button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 12px; border: 0; background: var(--header-control); color: var(--header-ink); text-decoration: none; font-size: 21px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { nav a, .chevron, .group-items { transition: none; } }

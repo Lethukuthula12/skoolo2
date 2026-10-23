@@ -1,6 +1,6 @@
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
 .tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 10px 14px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; }
-.tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+.tab.active { color: var(--brand-ink); border-bottom-color: var(--brand-ink); }
 .year { width: 90px; }
 .checkbox { display: inline-flex; gap: 8px; align-items: center; font-weight: 500; }
 .row select, .row input { width: auto; }

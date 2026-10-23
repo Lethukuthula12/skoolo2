@@ -1,18 +1,18 @@
 import { Component, ElementRef, HostListener, computed, effect, inject, signal, viewChild } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { AuthService, StaffService, ThemeService } from '@skoolo/shared';
 import { ThemeCustomizerComponent } from './theme-customizer.component';
 import { PortalDrawerComponent } from '../../ui/portal-drawer.component';
+import { PortalNavigationComponent } from './portal-navigation.component';
 
 interface NavItem { label: string; link: string; icon: string; }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet, ThemeCustomizerComponent, PortalDrawerComponent],
+  imports: [RouterOutlet, RouterLink, PortalNavigationComponent, ThemeCustomizerComponent, PortalDrawerComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
@@ -24,7 +24,6 @@ export class ShellComponent {
   private readonly theme = inject(ThemeService);
   private readonly profileMenu = viewChild<ElementRef<HTMLDetailsElement>>('profileMenu');
   protected readonly mobileOpen = signal(false);
-  private readonly expanded = signal<Record<string, boolean>>({});
   private readonly sections = [
     { label: 'Overview', links: ['/dashboard', '/home'] },
     { label: 'Enrolment', links: ['/applications', '/enrolment'] },
@@ -34,12 +33,10 @@ export class ShellComponent {
     { label: 'Administration', links: ['/staff', '/school'] },
   ];
   protected readonly groups = computed(() => this.sections.map(section => ({
-    label: section.label, items: section.links.flatMap(link => this.nav().filter(item => item.link === link)),
+    label: section.label, items: section.links.flatMap(link => this.nav().filter(item => item.link === link).map(item => ({ ...item, icon: this.icon(item.icon) }))),
   })).filter(group => group.items.length > 0));
   protected readonly activeGroup = computed(() => this.groups().find(group =>
     group.items.some(item => this.url().split('?')[0] === item.link || this.url().startsWith(item.link + '/')))?.label ?? 'School portal');
-  protected groupOpen(label: string): boolean { return this.expanded()[label] ?? (label === this.activeGroup()); }
-  protected toggleGroup(label: string): void { this.expanded.update(value => ({ ...value, [label]: !this.groupOpen(label) })); }
   @HostListener('document:click', ['$event'])
   protected closeProfileOutside(event: MouseEvent): void {
     const menu = this.profileMenu()?.nativeElement;
@@ -51,7 +48,7 @@ export class ShellComponent {
   constructor() {
     // Apply the signed-in school's saved theme (and re-apply whenever the school changes).
     effect(() => this.theme.applyFromSchool(this.staff.currentSchool()));
-    effect(() => { this.url(); this.expanded.set({}); this.mobileOpen.set(false); });
+    effect(() => { this.url(); this.mobileOpen.set(false); });
   }
 
   private readonly adminNav: NavItem[] = [

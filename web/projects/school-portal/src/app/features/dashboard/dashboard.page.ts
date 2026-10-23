@@ -17,6 +17,8 @@ import {
 
       @if (loading()) {
         <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
+      } @else if (error()) {
+        <div class="card empty"><p class="error" role="alert">{{ error() }}</p><button class="btn btn-primary" type="button" (click)="load()">Try again</button></div>
       } @else {
         <div class="stats">
           <a class="stat" routerLink="/learners">
@@ -41,13 +43,13 @@ import {
           <div class="card stack">
             <div class="toolbar"><h2>Recent applications</h2><span class="spacer"></span><a class="btn btn-ghost btn-sm" routerLink="/applications">See all</a></div>
             @if (recentApplications().length === 0) {
-              <div class="empty">No applications yet.</div>
+              <div class="empty"><p>No applications yet. Check that enrolment is ready for parents.</p><a class="btn btn-outline" routerLink="/enrolment">Enrolment settings</a></div>
             } @else {
               <ul class="rows">
                 @for (a of recentApplications(); track a.id) {
                   <li>
                     <div class="who">
-                      <strong>{{ a.learner.first_name }} {{ a.learner.last_name }}</strong>
+                      <a class="table-link" [routerLink]="['/applications', a.id]">{{ a.learner.first_name }} {{ a.learner.last_name }}</a>
                       <span class="muted small">{{ a.period_grade.grades?.label }} · {{ a.submitted_at | date: 'd MMM' }}</span>
                     </div>
                     <span class="badge" [class]="statusBadge(a.status)">{{ statusLabel(a.status) }}</span>
@@ -76,10 +78,10 @@ import {
             }
           </div>
 
-          <div class="card stack">
-            <div class="toolbar"><h2>Upcoming on the calendar</h2><span class="spacer"></span><a class="btn btn-ghost btn-sm" routerLink="/calendar">Open</a></div>
+          <div class="card stack calendar-card">
+            <div class="toolbar"><h2>Upcoming on the calendar</h2><span class="spacer"></span><a class="btn btn-ghost btn-sm" routerLink="/calendar">Open calendar</a></div>
             @if (upcoming().length === 0) {
-              <div class="empty">Nothing scheduled yet.</div>
+              <div class="empty"><p>Nothing scheduled yet. Add a school event or assessment to the calendar.</p><a class="btn btn-outline" routerLink="/calendar">Plan an event</a></div>
             } @else {
               <ul class="rows">
                 @for (c of upcoming(); track c.id) {
@@ -99,13 +101,21 @@ import {
     </div>
   `,
   styles: `
-    .stat { text-decoration: none; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .stat { text-decoration: none; border: 0; border-radius: 0; box-shadow: none; min-width: 0; padding: 24px 20px; }
+    .stat + .stat { border-left: 1px solid var(--line); }
+    .stat:hover { transform: none; box-shadow: none; background: var(--surface-2); }
+    .stat .body { min-width: 0; }
+    .stat .value { font-size: clamp(21px, 1.7vw, 29px); overflow-wrap: anywhere; }
+    .calendar-card { grid-column: 1 / -1; }
     .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-    .rows li { display: flex; align-items: center; gap: 12px; padding: 10px 2px; border-top: 1px solid var(--line); }
+    .rows li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 2px; border-top: 1px solid var(--line); }
     .rows li:first-child { border-top: none; }
     .who { flex: 1; min-width: 0; display: grid; gap: 1px; }
     .who strong { color: var(--title); font-size: 0.92rem; }
     .owing { color: var(--danger); white-space: nowrap; }
+    @media (max-width: 1200px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat:nth-child(3) { border-left: 0; } .stat:nth-child(n+3) { border-top: 1px solid var(--line); } }
+    @media (max-width: 560px) { .stat { padding: 20px 14px; gap: 12px; } .stat .icon { width: 40px; height: 40px; } .stat .value { font-size: 21px; } }
   `,
 })
 export class DashboardPage {
@@ -114,6 +124,7 @@ export class DashboardPage {
   protected readonly kindLabels = ASSESSMENT_KIND_LABELS;
   private readonly year = new Date().getFullYear() + 1;
   protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
 
   private readonly applications = signal<StaffApplication[]>([]);
   private readonly fees = signal<FeeAccountRow[]>([]);
@@ -150,8 +161,9 @@ export class DashboardPage {
     return 'badge';
   }
 
-  private async load(): Promise<void> {
+  protected async load(): Promise<void> {
     this.loading.set(true);
+    this.error.set(null);
     try {
       const [apps, learners, members, fees, calendar] = await Promise.all([
         this.staff.applications(),
@@ -167,6 +179,7 @@ export class DashboardPage {
       this.calendar.set([...calendar].sort((a, b) => a.event_date.localeCompare(b.event_date)));
     } catch (err) {
       console.error(err);
+      this.error.set('Could not load your school overview. Please try again.');
     } finally {
       this.loading.set(false);
     }

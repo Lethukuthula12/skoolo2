@@ -63,23 +63,27 @@
         <button class="btn btn-outline btn-sm" type="button" (click)="exportArrears()">Export arrears</button>
       </div>
       <p class="muted small">Total owed to the school: <strong>{{ money(totalArrears()) }}</strong></p>
+      <div class="table-tools">
+        <label class="search-field">Search accounts<input type="search" placeholder="Learner name or payment reference" [ngModel]="search()" (ngModelChange)="search.set($event)" /></label>
+        <label>Sort by<select [ngModel]="sort()" (ngModelChange)="sort.set($event)"><option value="name">Learner A–Z</option><option value="balance">Highest balance first</option></select></label>
+      </div>
 
       @if (shownAccounts().length === 0) {
-        <div class="empty">No accounts{{ arrearsOnly() ? ' in arrears' : '' }}. Create accounts for a class above.</div>
+        <div class="empty"><p>{{ accounts().length ? 'No accounts match these filters.' : 'No fee accounts yet. Choose a class above to create accounts.' }}</p>@if (accounts().length) { <button class="btn btn-outline" type="button" (click)="search.set(''); arrearsOnly.set(false)">Clear filters</button> }</div>
       } @else {
         <div class="table-wrap">
           <table class="data">
             <thead><tr><th>Learner</th><th>Plan</th><th>Reference</th><th>Due</th><th>Paid</th><th>Balance</th><th></th></tr></thead>
             <tbody>
-              @for (a of shownAccounts(); track a.account_id) {
-                <tr class="clickable" (click)="toggle(a)">
-                  <td><strong>{{ a.learner?.last_name }}, {{ a.learner?.first_name }}</strong></td>
+              @for (a of pagination.visible(); track a.account_id) {
+                <tr>
+                  <td><button class="table-link" type="button" [disabled]="busy()" [attr.aria-expanded]="expandedId() === a.account_id" (click)="toggle(a)">{{ a.learner?.last_name }}, {{ a.learner?.first_name }}</button></td>
                   <td>{{ planLabels[a.plan ?? ''] }}</td>
                   <td><code>{{ a.payment_reference }}</code></td>
                   <td>{{ money(a.total_due) }}</td>
                   <td>{{ money(a.total_paid) }}</td>
                   <td><strong [class.owing]="+a.balance! > 0" [class.clear]="+a.balance! <= 0">{{ money(a.balance) }}</strong></td>
-                  <td class="right"><button class="btn btn-ghost btn-sm" type="button">{{ expandedId() === a.account_id ? 'Close' : 'Payments' }}</button></td>
+                  <td class="right"><button class="btn btn-ghost btn-sm" type="button" [disabled]="busy()" [attr.aria-expanded]="expandedId() === a.account_id" (click)="toggle(a)">{{ expandedId() === a.account_id ? 'Close' : 'Payments' }}</button></td>
                 </tr>
                 @if (expandedId() === a.account_id) {
                   <tr class="detail"><td colspan="7">
@@ -87,14 +91,16 @@
                       <form class="record" (ngSubmit)="record(a)">
                         <strong>Record a payment</strong>
                         <div class="row">
-                          <input type="number" min="0" step="0.01" [(ngModel)]="paymentForm.amount" name="amt" placeholder="Amount" />
-                          <select [(ngModel)]="paymentForm.method" name="method"><option value="eft">EFT</option><option value="cash">Cash</option></select>
-                          <input type="date" [(ngModel)]="paymentForm.paid_on" name="date" />
-                          <input type="text" [(ngModel)]="paymentForm.reference" name="ref" placeholder="Reference (optional)" />
+                          <input type="number" min="0" step="0.01" [(ngModel)]="paymentForm.amount" name="amt" aria-label="Payment amount in rand" placeholder="Amount" />
+                          <select [(ngModel)]="paymentForm.method" name="method" aria-label="Payment method"><option value="eft">EFT</option><option value="cash">Cash</option></select>
+                          <input type="date" [(ngModel)]="paymentForm.paid_on" name="date" aria-label="Date paid" />
+                          <input type="text" [(ngModel)]="paymentForm.reference" name="ref" aria-label="Payment reference" placeholder="Reference (optional)" />
                           <button class="btn btn-primary btn-sm" type="submit" [disabled]="busy()">Record</button>
                         </div>
                       </form>
-                      @if (payments().length > 0) {
+                      @if (paymentsLoading()) { <p class="muted" role="status">Loading payments…</p> }
+                      @else if (paymentsError()) { <p class="error" role="alert">{{ paymentsError() }}</p> }
+                      @else if (payments().length > 0) {
                         <table class="data inner">
                           <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th></th></tr></thead>
                           <tbody>
@@ -119,6 +125,7 @@
           </table>
         </div>
       }
+      <app-table-pagination [pagination]="pagination" />
     </div>
   }
 </div>

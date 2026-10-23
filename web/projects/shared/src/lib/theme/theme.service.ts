@@ -80,7 +80,7 @@ export class ThemeService {
     const headerInk = foreground(t.header);
     s.setProperty('--header-ink', headerInk);
     s.setProperty('--header-muted', headerInk);
-    s.setProperty('--header-control', headerInk === '#ffffff' ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.05)');
+    s.setProperty('--header-control', headerInk === '#ffffff' ? 'rgba(0,0,0,.12)' : 'rgba(0,0,0,.05)');
     s.setProperty('--sidebar-bg', t.sidebar);
     // The sidebar text must follow the sidebar's own lightness (it can be white too).
     const sidebarInk = foreground(t.sidebar);
@@ -88,7 +88,7 @@ export class ThemeService {
     s.setProperty('--sidebar-ink', sidebarInk);
     s.setProperty('--sidebar-ink-hover', sidebarInk);
     s.setProperty('--sidebar-school', sidebarInk);
-    s.setProperty('--sidebar-hover', dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)');
+    s.setProperty('--sidebar-hover', dark ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)');
 
     // Light or dark content area. Dark mode overrides the surface/text tokens; light removes the
     // overrides so the stylesheet's :root (light) values apply.

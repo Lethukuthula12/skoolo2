@@ -7,3 +7,6 @@ h3 { margin: 4px 0 0; }
 .code-cell { white-space: nowrap; }
 .code-cell code { background: var(--brand-soft); padding: 2px 6px; border-radius: 6px; margin-right: 4px; font-size: 0.85rem; }
 .code-cell .badge { margin-left: 4px; }
+.drawer-actions { flex: none; display: flex; justify-content: flex-end; gap: 12px; padding: 18px 24px; padding-bottom: max(18px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--card); }
+.learner-form .row input { flex: 1 1 180px; min-width: 0; }
+.learner-form h3 { font-size: 16px; }

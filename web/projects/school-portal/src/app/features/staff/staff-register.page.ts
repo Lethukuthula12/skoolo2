@@ -1,6 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TablePagination } from '../../ui/table-pagination';
+import { TablePaginationComponent } from '../../ui/table-pagination.component';
 import {
   STAFF_DOCUMENT_TYPES, STAFF_POSITIONS, SchoolStaffRow, StaffDocument, StaffInvite, StaffMember, StaffRole,
   StaffService, isValidSaIdentityNumber,
@@ -26,7 +28,7 @@ const EMPTY_FORM: StaffForm = {
 
 @Component({
   selector: 'app-staff-register-page',
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TablePaginationComponent],
   template: `
     <div class="stack">
       <div class="toolbar">
@@ -132,22 +134,24 @@ const EMPTY_FORM: StaffForm = {
       }
 
       <div class="card stack">
-        <div class="toolbar">
-          <input type="text" class="search" placeholder="Search by name, position or class" [ngModel]="search()" (ngModelChange)="search.set($event)" />
-          <span class="muted small">{{ filtered().length }} of {{ members().length }}</span>
+        <div class="table-tools">
+          <label class="search-field">Search staff<input type="search" placeholder="Name, position or class" [ngModel]="search()" (ngModelChange)="search.set($event)" /></label>
+          <label>Sort by<select [ngModel]="sort()" (ngModelChange)="sort.set($event)"><option value="name">Surname A–Z</option><option value="name-desc">Surname Z–A</option><option value="position">Position</option></select></label>
         </div>
         @if (loading()) {
           <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
         } @else if (members().length === 0) {
-          <div class="empty">No staff recorded yet. Add the principal, admin clerk and teachers to start.</div>
+          <div class="empty"><p>No staff recorded yet. Add the principal, admin clerk and teachers to start.</p><button class="btn btn-primary" type="button" (click)="startNew()">Add staff member</button></div>
+        } @else if (filtered().length === 0) {
+          <div class="empty"><p>No staff match your search.</p><button class="btn btn-outline" type="button" (click)="search.set('')">Clear search</button></div>
         } @else {
           <div class="table-wrap">
             <table class="data">
               <thead><tr><th>Name</th><th>Position</th><th>Class</th><th>Phone</th><th>Email</th><th>Sign-in</th></tr></thead>
               <tbody>
-                @for (m of filtered(); track m.id) {
-                  <tr class="clickable" (click)="edit(m)">
-                    <td><strong>{{ m.last_name }}, {{ m.first_name }}</strong></td>
+                @for (m of pagination.visible(); track m.id) {
+                  <tr>
+                    <td><button class="table-link" type="button" (click)="edit(m)">{{ m.last_name }}, {{ m.first_name }}</button></td>
                     <td>{{ m.position }}</td>
                     <td>{{ m.class_assigned }}</td>
                     <td>{{ m.phone }}</td>
@@ -163,6 +167,7 @@ const EMPTY_FORM: StaffForm = {
             </table>
           </div>
         }
+        @if (!loading()) { <app-table-pagination [pagination]="pagination" /> }
       </div>
 
       <div class="card stack">
@@ -208,7 +213,6 @@ const EMPTY_FORM: StaffForm = {
     </div>
   `,
   styles: `
-    .search { max-width: 320px; }
     .right { text-align: right; white-space: nowrap; }
     hr { border: none; border-top: 1px solid var(--line); margin: 4px 0; }
     .code-box { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -231,6 +235,7 @@ export class StaffRegisterPage {
   protected readonly error = signal<string | null>(null);
   protected readonly notice = signal<string | null>(null);
   protected readonly search = signal('');
+  protected readonly sort = signal('name');
   protected readonly editing = signal(false);
   protected readonly form = signal<StaffForm>({ ...EMPTY_FORM });
   protected readonly idWarning = signal<string | null>(null);
@@ -254,6 +259,12 @@ export class StaffRegisterPage {
         .join(' ').toLowerCase().includes(term),
     );
   });
+  protected readonly sorted = computed(() => [...this.filtered()].sort((a, b) => {
+    const name = a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name);
+    if (this.sort() === 'position') return a.position.localeCompare(b.position) || name;
+    return this.sort() === 'name-desc' ? -name : name;
+  }));
+  protected readonly pagination = new TablePagination(this.sorted, computed(() => [this.search(), this.sort()]));
 
   constructor() {
     void this.load();

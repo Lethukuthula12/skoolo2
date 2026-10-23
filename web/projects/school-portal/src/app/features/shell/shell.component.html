@@ -1,7 +1,7 @@
 <div class="shell">
   <aside class="sidebar">
     <a class="brand" [routerLink]="staff.isAdmin() ? '/dashboard' : '/home'"><span class="brand-mark">S</span>skoolo<span class="brand-dot">.</span></a>
-    <ng-container *ngTemplateOutlet="navigation" />
+    <app-portal-navigation [groups]="groups()" [schoolName]="staff.currentSchool()?.name ?? ''" [activeGroup]="activeGroup()" (navigated)="mobileOpen.set(false)" />
     <p class="sidebar-foot">Home and school, connected.</p>
   </aside>
 
@@ -30,23 +30,5 @@
 </div>
 
 <app-portal-drawer title="School navigation" [open]="mobileOpen()" [navigation]="true" (closed)="mobileOpen.set(false)">
-  <ng-container *ngTemplateOutlet="navigation" />
+  <app-portal-navigation [groups]="groups()" [schoolName]="staff.currentSchool()?.name ?? ''" [activeGroup]="activeGroup()" (navigated)="mobileOpen.set(false)" />
 </app-portal-drawer>
-
-<ng-template #navigation>
-  <div class="school"><span class="school-symbol" aria-hidden="true"><span class="ico" [innerHTML]="icon('building')"></span></span><div><strong>{{ staff.currentSchool()?.name }}</strong><small>School portal</small></div></div>
-  <nav aria-label="School navigation">
-    @for (group of groups(); track group.label) {
-      @if (group.label === 'Overview') {
-        @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="mobileOpen.set(false)"><span class="ico" [innerHTML]="icon(item.icon)"></span><span>{{ item.label }}</span></a> }
-      } @else {
-        <section class="nav-group">
-          <button class="group-toggle" type="button" [attr.aria-expanded]="groupOpen(group.label)" (click)="toggleGroup(group.label)"><span>{{ group.label }}</span><span class="chevron" [class.expanded]="groupOpen(group.label)" aria-hidden="true">⌄</span></button>
-          <div class="group-items" [class.expanded]="groupOpen(group.label)" [attr.inert]="groupOpen(group.label) ? null : ''"><div>
-            @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="mobileOpen.set(false)"><span class="ico" [innerHTML]="icon(item.icon)"></span><span>{{ item.label }}</span></a> }
-          </div></div>
-        </section>
-      }
-    }
-  </nav>
-</ng-template>

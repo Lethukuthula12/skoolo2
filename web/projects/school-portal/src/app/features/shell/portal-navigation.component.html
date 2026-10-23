@@ -1,0 +1,15 @@
+<div class="school"><span class="school-symbol" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 13v.01"/></svg></span><div><strong>{{ schoolName() }}</strong><small>School portal</small></div></div>
+  <nav aria-label="School navigation">
+    @for (group of groups(); track group.label) {
+      @if (group.label === 'Overview') {
+        @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="navigated.emit()"><span class="ico" [innerHTML]="item.icon"></span><span>{{ item.label }}</span></a> }
+      } @else {
+        <section class="nav-group">
+          <button class="group-toggle" type="button" [attr.aria-expanded]="groupOpen(group.label)" (click)="toggleGroup(group.label)"><span>{{ group.label }}</span><span class="chevron" [class.expanded]="groupOpen(group.label)" aria-hidden="true">⌄</span></button>
+          <div class="group-items" [class.expanded]="groupOpen(group.label)" [attr.inert]="groupOpen(group.label) ? null : ''"><div>
+            @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="navigated.emit()"><span class="ico" [innerHTML]="item.icon"></span><span>{{ item.label }}</span></a> }
+          </div></div>
+        </section>
+      }
+    }
+  </nav>

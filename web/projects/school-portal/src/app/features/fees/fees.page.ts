@@ -1,6 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TablePagination } from '../../ui/table-pagination';
+import { TablePaginationComponent } from '../../ui/table-pagination.component';
 import * as XLSX from 'xlsx';
 import { FEE_PLAN_LABELS, FeeAccountRow, FeePayment, Grade, SchoolDirectoryService, StaffService } from '@skoolo/shared';
 
@@ -9,7 +11,7 @@ interface PaymentForm { amount: number | null; method: string; reference: string
 
 @Component({
   selector: 'app-fees-page',
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TablePaginationComponent],
   templateUrl: './fees.page.html',
   styleUrl: './fees.page.scss',
 })
@@ -30,9 +32,13 @@ export class FeesPage {
   protected readonly accounts = signal<FeeAccountRow[]>([]);
   protected readonly structure = signal<Record<string, { annual: number; discount: number }>>({});
   protected readonly arrearsOnly = signal(false);
+  protected readonly search = signal('');
+  protected readonly sort = signal('name');
 
   protected readonly expandedId = signal<string | null>(null);
   protected readonly payments = signal<FeePayment[]>([]);
+  protected readonly paymentsLoading = signal(false);
+  protected readonly paymentsError = signal<string | null>(null);
   protected paymentForm: PaymentForm = { amount: null, method: 'eft', reference: '', paid_on: new Date().toISOString().slice(0, 10), note: '' };
 
   protected newAccounts = { classId: '', plan: 'monthly' };
@@ -44,10 +50,16 @@ export class FeesPage {
     return this.grades().filter((g) => g.sort_order >= lo && g.sort_order <= hi);
   });
 
-  protected readonly shownAccounts = computed(() =>
-    (this.arrearsOnly() ? this.accounts().filter((a) => Number(a.balance) > 0) : this.accounts())
-      .sort((a, b) => (a.learner?.last_name ?? '').localeCompare(b.learner?.last_name ?? '')),
-  );
+  protected readonly shownAccounts = computed(() => {
+    const term = this.search().trim().toLowerCase();
+    return this.accounts().filter(a => (!this.arrearsOnly() || Number(a.balance) > 0) &&
+      [a.learner?.first_name, a.learner?.last_name, a.payment_reference].join(' ').toLowerCase().includes(term))
+      .sort((a, b) => this.sort() === 'balance' ? Number(b.balance) - Number(a.balance) :
+        (a.learner?.last_name ?? '').localeCompare(b.learner?.last_name ?? '') ||
+        (a.learner?.first_name ?? '').localeCompare(b.learner?.first_name ?? ''));
+  });
+  protected readonly pagination = new TablePagination(this.shownAccounts,
+    computed(() => [this.search(), this.arrearsOnly(), this.sort(), this.year()]));
   protected readonly totalArrears = computed(() => this.accounts().reduce((sum, a) => sum + Math.max(0, Number(a.balance)), 0));
 
   constructor() {
@@ -88,8 +100,18 @@ export class FeesPage {
   protected async toggle(account: FeeAccountRow): Promise<void> {
     if (this.expandedId() === account.account_id) { this.expandedId.set(null); return; }
     this.expandedId.set(account.account_id);
+    this.payments.set([]);
+    this.paymentsLoading.set(true);
+    this.paymentsError.set(null);
     this.paymentForm = { amount: null, method: 'eft', reference: '', paid_on: new Date().toISOString().slice(0, 10), note: '' };
-    this.payments.set(await this.staff.accountPayments(account.account_id!));
+    try {
+      const payments = await this.staff.accountPayments(account.account_id!);
+      if (this.expandedId() === account.account_id) this.payments.set(payments);
+    } catch {
+      if (this.expandedId() === account.account_id) this.paymentsError.set('Could not load payments. Close and reopen this account to try again.');
+    } finally {
+      if (this.expandedId() === account.account_id) this.paymentsLoading.set(false);
+    }
   }
 
   protected async record(account: FeeAccountRow): Promise<void> {

@@ -1,5 +1,9 @@
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { PortalDrawerComponent } from '../../ui/portal-drawer.component';
+import { TablePaginationComponent } from '../../ui/table-pagination.component';
+import { TablePagination } from '../../ui/table-pagination';
 import * as XLSX from 'xlsx';
 import {
   ClassRow, Learner, LearnerGuardian, LearnerInsert, RegisterLearnerRow, SchoolDirectoryService,
@@ -36,7 +40,7 @@ const EMPTY: LearnerForm = {
 
 @Component({
   selector: 'app-learners-page',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink, PortalDrawerComponent, TablePaginationComponent],
   templateUrl: './learners.page.html',
   styleUrl: './learners.page.scss',
 })
@@ -54,10 +58,13 @@ export class LearnersPage {
   protected readonly allLearners = signal<RegisterLearnerRow[]>([]);
   protected readonly selectedClassId = signal<string>('');
   protected readonly year = signal(new Date().getFullYear() + 1);
+  protected readonly search = signal('');
+  protected readonly sort = signal('name');
 
   protected readonly editing = signal(false);
   protected readonly form = signal<LearnerForm>({ ...EMPTY });
   protected readonly guardians = signal<LearnerGuardian[]>([]);
+  protected readonly guardiansLoading = signal(false);
 
   protected readonly importRows = signal<ImportRow[]>([]);
   protected readonly showImport = signal(false);
@@ -73,6 +80,16 @@ export class LearnersPage {
   });
 
   protected readonly selectedClass = computed(() => this.classes().find((c) => c.id === this.selectedClassId()) ?? null);
+  protected readonly filteredRoster = computed(() => {
+    const term = this.search().trim().toLowerCase();
+    const rows = this.roster().filter(l => [l.first_name, l.last_name, l.admission_number,
+      l.identity_number, l.passport_number, l.family_code].join(' ').toLowerCase().includes(term));
+    if (this.sort() === 'name-desc') rows.reverse();
+    if (this.sort() === 'age') rows.sort((a, b) => a.date_of_birth.localeCompare(b.date_of_birth));
+    return rows;
+  });
+  protected readonly pagination = new TablePagination(this.filteredRoster,
+    computed(() => [this.search(), this.sort(), this.selectedClassId()]));
   protected readonly validImportCount = computed(() => this.importRows().filter((r) => !r.error).length);
 
   constructor() {
@@ -94,12 +111,19 @@ export class LearnersPage {
   // ----- add / edit -----
 
   protected startNew(): void {
+    this.guardiansLoading.set(false);
+    this.error.set(null);
+    this.notice.set(null);
     this.form.set({ ...EMPTY });
     this.guardians.set([]);
     this.editing.set(true);
   }
 
   protected async edit(learner: RegisterLearnerRow): Promise<void> {
+    this.guardiansLoading.set(true);
+    this.error.set(null);
+    this.notice.set(null);
+    this.guardians.set([]);
     this.form.set({
       id: learner.id,
       first_name: learner.first_name,
@@ -114,7 +138,14 @@ export class LearnersPage {
       guardian_name: '', guardian_phone: '',
     });
     this.editing.set(true);
-    this.guardians.set(await this.staff.guardians(learner.id));
+    try {
+      const guardians = await this.staff.guardians(learner.id);
+      if (this.editing() && this.form().id === learner.id) this.guardians.set(guardians);
+    } catch {
+      if (this.editing() && this.form().id === learner.id) this.error.set('Could not load guardians. Close and reopen this learner to try again.');
+    } finally {
+      if (this.form().id === learner.id) this.guardiansLoading.set(false);
+    }
   }
 
   protected cancel(): void {

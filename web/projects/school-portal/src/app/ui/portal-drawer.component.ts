@@ -8,6 +8,7 @@ import { Component, ElementRef, afterRenderEffect, input, output, viewChild } fr
       <header><h2>{{ title() }}</h2><button type="button" class="close" aria-label="Close panel"
         [disabled]="!dismissible()" (click)="requestClose()">×</button></header>
       <div class="drawer-body"><ng-content /></div>
+      <ng-content select="[drawer-footer]" />
     </dialog>
   `,
   styleUrl: './portal-drawer.component.scss',

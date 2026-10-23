@@ -931,3 +931,30 @@ No schema, query scope or permission rules changed; a fresh database suite is ou
 Browser tooling denied the reference and local/deployed portal origins under its security policy.
 Desktop/mobile layout, drawer motion, keyboard interactions and live deployment remain visually
 unverified. These are recorded limitations, not passing acceptance checks.
+
+## 2026-10-23 — Portal registers and learner editing
+
+- Added labelled search/sort controls and shared client-side pagination to Learners, Applications,
+  Fees and Staff. Filter and page-size changes return to page one; shrinking results clamp the page.
+  Existing query scopes are unchanged. Class export/print/family-code actions still use the full
+  selected class, and arrears export still includes all arrears. Fee sorting no longer mutates the
+  source accounts array. Register names now use keyboard-accessible buttons.
+- Moved learner editing into the modal drawer with persistent Save/Close actions and guardian loading
+  feedback. Kept the existing fields and save/delete flows. Delayed guardian and payment-history
+  requests cannot replace the currently opened different person's details; load failures are visible.
+- Grouped secondary class actions into a menu, added useful empty-state actions, and strengthened the
+  dashboard's summary strip and calendar layout. Dashboard loading failures show a retry action
+  instead of apparently valid zero totals.
+- Extracted the navigation reused by desktop/mobile into its own component, resolving the shell
+  stylesheet warning without changing budgets. Preserved admin/teacher links and route restrictions.
+
+Verification: final `npm run build:portal` passed. The initial bundle is 526.05 kB, above its 500 kB
+warning threshold but below the error budget; there are no component stylesheet budget warnings.
+`node web/scripts/check-portal-presentation.mjs` passed the theme checks and actual pagination logic
+checks for page boundaries, partial last pages, deletion, filter/page-size reset, invalid page inputs,
+empty results and immutable source records. `git diff --check` passed. Changes remain presentation
+and client error handling; no database/access-control changes require a fresh RLS suite.
+
+Rendered desktop/mobile layouts, native dialog focus restoration/animation, form submission and
+live deployment remain unverified because browser access is blocked by the origin policy. Production
+compilation checks the Angular templates but does not substitute for those interaction checks.
