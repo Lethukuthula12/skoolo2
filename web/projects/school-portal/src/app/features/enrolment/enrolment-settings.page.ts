@@ -115,7 +115,7 @@ interface GradeRow {
   `,
   styles: `
     .periods { display: flex; gap: 10px; flex-wrap: wrap; }
-    .period { background: #fff; border: 2px solid var(--line); border-radius: var(--radius); padding: 12px 14px; text-align: left; font: inherit; cursor: pointer; min-width: 220px; display: grid; gap: 4px; }
+    .period { background: var(--card); border: 2px solid var(--line); border-radius: var(--radius); padding: 12px 14px; text-align: left; font: inherit; cursor: pointer; min-width: 220px; display: grid; gap: 4px; }
     .period.active { border-color: var(--brand); }
     .period .row { justify-content: space-between; }
     .capacity { width: 110px; }

@@ -18,6 +18,7 @@
   --line: #ececf4;          /* hairlines, lavender-tinted */
   --bg: #f5f6fc;            /* faint lavender page background */
   --card: #ffffff;
+  --surface-2: #f6f7fc;    /* subtle inset surfaces: detail rows, chips, sticky cells */
 
   /* Status. */
   --success: #1e9e5f;
@@ -103,7 +104,7 @@ p { margin: 0 0 8px; }
 .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 6px 16px rgba(58, 65, 196, 0.25); &:not(:disabled):hover { background: var(--brand-dark); } }
 .btn-accent { background: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(251, 125, 91, 0.28); &:not(:disabled):hover { background: var(--accent-dark); } }
 .btn-success { background: var(--success); color: #fff; }
-.btn-outline { background: #fff; border-color: var(--line); color: var(--ink); &:not(:disabled):hover { border-color: var(--brand); color: var(--brand); } }
+.btn-outline { background: var(--card); border-color: var(--line); color: var(--ink); &:not(:disabled):hover { border-color: var(--brand); color: var(--brand); } }
 .btn-ghost { background: transparent; color: var(--brand); &:not(:disabled):hover { background: var(--brand-soft); } }
 .btn-danger { background: var(--danger-soft); color: var(--danger); }
 .btn-sm { padding: 7px 12px; font-size: 0.85rem; }
@@ -119,7 +120,7 @@ input[type='url'], select, textarea {
   border-radius: var(--radius-sm);
   font: inherit;
   color: var(--ink);
-  background: #fff;
+  background: var(--card);
   &:focus { outline: 2px solid var(--ring); outline-offset: 0; border-color: var(--brand); }
 }
 textarea { resize: vertical; min-height: 80px; }
@@ -144,7 +145,7 @@ textarea { resize: vertical; min-height: 80px; }
 .badge-warning { background: var(--warning-soft); color: var(--warning); }
 .badge-danger { background: var(--danger-soft); color: var(--danger); }
 .badge-accent { background: var(--accent-soft); color: var(--accent-dark); }
-.badge-muted { background: #eef0f6; color: var(--muted); }
+.badge-muted { background: var(--surface-2); color: var(--muted); }
 
 /* Tables */
 .table-wrap { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }

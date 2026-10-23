@@ -8,7 +8,7 @@
 td input { width: 120px; padding: 6px 8px; }
 code { font-size: 0.85rem; }
 .owing { color: var(--danger); } .clear { color: var(--success); }
-tr.detail td { background: #f8f9fd; }
+tr.detail td { background: var(--surface-2); }
 .pay { display: grid; gap: 12px; }
 .record .row { flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-table.inner { background: #fff; }
+table.inner { background: var(--card); }

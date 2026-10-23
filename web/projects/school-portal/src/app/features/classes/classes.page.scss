@@ -28,7 +28,7 @@
 .right { text-align: right; white-space: nowrap; display: flex; gap: 6px; justify-content: flex-end; }
 td select { width: auto; min-width: 150px; padding: 6px 8px; }
 
-tr.assignments td { background: #f8f9fd; }
+tr.assignments td { background: var(--surface-2); }
 .assignments h4 { margin: 4px 0 10px; }
 .assign-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
 .assign-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }

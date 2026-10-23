@@ -11,7 +11,7 @@ table.grid th, table.grid td { border: 1px solid var(--line); padding: 6px; text
 table.grid thead th { background: var(--bg); font-size: 0.85rem; }
 table.grid th.time { text-align: left; white-space: nowrap; font-weight: 600; width: 1%; }
 table.grid th.time span { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; }
-tr.break td { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 8px, #fff 8px, #fff 16px); color: var(--muted); font-size: 0.85rem; }
+tr.break td { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 8px, var(--card) 8px, var(--card) 16px); color: var(--muted); font-size: 0.85rem; }
 tr.break th.time { color: var(--muted); font-weight: 500; }
 
 .lesson { position: relative; background: var(--brand-soft); border-radius: 7px; padding: 6px 8px; display: grid; gap: 1px; min-height: 40px; }

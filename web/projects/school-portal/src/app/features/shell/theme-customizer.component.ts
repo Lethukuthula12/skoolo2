@@ -18,7 +18,15 @@ import { DEFAULT_THEME, PRIMARY_SWATCHES, SIDEBAR_SWATCHES, StaffService, Theme,
           <strong>Pick your style</strong>
           <button class="x" type="button" (click)="close()" aria-label="Close">×</button>
         </header>
-        <p class="hint">Choose your school's portal colours. Everyone at your school sees them.</p>
+        <p class="hint">Choose your school's portal look. Everyone at your school sees it.</p>
+
+        <div class="section">
+          <span class="lbl">Background</span>
+          <div class="modes">
+            <button class="mode" type="button" [class.sel]="working().mode === 'light'" (click)="setMode('light')">Light</button>
+            <button class="mode" type="button" [class.sel]="working().mode === 'dark'" (click)="setMode('dark')">Dark</button>
+          </div>
+        </div>
 
         <div class="section">
           <span class="lbl">Primary colour</span>
@@ -72,7 +80,7 @@ import { DEFAULT_THEME, PRIMARY_SWATCHES, SIDEBAR_SWATCHES, StaffService, Theme,
     .scrim { position: fixed; inset: 0; background: rgba(20, 20, 40, 0.25); z-index: 45; }
     .drawer {
       position: fixed; top: 0; right: 0; z-index: 46; width: min(340px, 90vw); height: 100vh;
-      background: #fff; box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18); padding: 20px; overflow-y: auto;
+      background: var(--card); box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18); padding: 20px; overflow-y: auto;
       display: flex; flex-direction: column; gap: 16px;
     }
     .drawer header { display: flex; align-items: center; justify-content: space-between; }
@@ -81,12 +89,15 @@ import { DEFAULT_THEME, PRIMARY_SWATCHES, SIDEBAR_SWATCHES, StaffService, Theme,
     .hint { margin: -8px 0 0; color: var(--muted); font-size: 0.88rem; }
     .section { display: grid; gap: 8px; }
     .lbl { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+    .modes { display: flex; gap: 8px; }
+    .mode { flex: 1; padding: 9px; border: 2px solid var(--line); border-radius: 9px; background: var(--card); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+    .mode.sel { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
     .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
     .sw {
       width: 34px; height: 34px; border-radius: 9px; cursor: pointer;
       border: 2px solid var(--line); padding: 0; transition: transform 100ms ease;
       &:hover { transform: scale(1.08); }
-      &.sel { border-color: var(--title); box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--brand); }
+      &.sel { border-color: var(--title); box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--brand); }
     }
     .actions { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 8px; }
     .spacer { flex: 1; }
@@ -115,8 +126,15 @@ export class ThemeCustomizerComponent {
     this.open.set(false);
   }
 
-  protected pick(key: keyof Theme, color: string): void {
+  protected pick(key: 'primary' | 'header' | 'sidebar', color: string): void {
     const next = { ...this.working(), [key]: color };
+    this.working.set(next);
+    this.saved.set(false);
+    this.theme.preview(next);
+  }
+
+  protected setMode(mode: 'light' | 'dark'): void {
+    const next: Theme = { ...this.working(), mode };
     this.working.set(next);
     this.saved.set(false);
     this.theme.preview(next);

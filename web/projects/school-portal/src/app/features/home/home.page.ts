@@ -68,7 +68,7 @@ import { AuthService, Grade, Learner, MyClass, SchoolDirectoryService, StaffServ
   styles: `
     .class-cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); }
     .class-card {
-      background: #fff; border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
+      background: var(--card); border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
       text-align: left; font: inherit; cursor: pointer; display: grid; gap: 6px;
       &.active { border-color: var(--brand); }
       .row { justify-content: space-between; }

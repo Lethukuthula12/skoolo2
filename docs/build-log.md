@@ -737,3 +737,16 @@ the sidebar's luminance so a white sidebar still reads), caches the last theme i
 avoid a flash on reload, and re-applies whenever the signed-in school changes. Dark/light background
 mode is left as a later addition. Verified: live preview, Save, persistence across reload (from the
 database and cache), reset to default, and the gear hidden from teachers; both apps build clean.
+
+## Theme customizer — light/dark background mode
+
+Added a Light/Dark background toggle to the per-school theme customizer. Dark mode darkens the content
+area (background, cards, text, borders, shadows) via the ThemeService overriding the surface and text
+tokens on :root and setting color-scheme:dark for native controls; light mode removes the overrides so
+the stylesheet's defaults apply. To make it clean rather than patchy, the handful of hardcoded light
+surfaces across the portal (inputs, outline buttons, chips, detail rows, sticky cells, the break
+stripe, the customizer drawer) were tokenised onto --card or a new --surface-2. The mode is stored
+with the rest of the theme on the school row, so the same RLS and per-school scoping apply. Verified:
+toggling to dark restyles every page, Save persists it (dark survived a reload from the database), and
+reset returns to the light default; both apps build clean. The pilot school is left on the light
+default.

@@ -7,7 +7,7 @@
 .row.wrap.end { align-items: flex-end; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: #fff; }
+.chip { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--card); }
 .chip.editing { border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-soft); }
 .chip-main { border: none; background: transparent; text-align: left; padding: 6px 10px; cursor: pointer; display: grid; gap: 1px; font: inherit; }
 .chip-main strong { font-size: 0.9rem; }
