@@ -427,6 +427,125 @@ export type Database = {
           },
         ]
       }
+      assessment_scores: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          id: string
+          is_absent: boolean
+          learner_id: string
+          score: number | null
+          updated_at: string
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          id?: string
+          is_absent?: boolean
+          learner_id: string
+          score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          id?: string
+          is_absent?: boolean
+          learner_id?: string
+          score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_scores_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_scores_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessments: {
+        Row: {
+          assessed_on: string | null
+          class_id: string
+          created_at: string
+          id: string
+          kind: string
+          max_score: number
+          school_id: string
+          subject_id: string
+          term_number: number
+          title: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          assessed_on?: string | null
+          class_id: string
+          created_at?: string
+          id?: string
+          kind?: string
+          max_score?: number
+          school_id: string
+          subject_id: string
+          term_number: number
+          title: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          assessed_on?: string | null
+          class_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          max_score?: number
+          school_id?: string
+          subject_id?: string
+          term_number?: number
+          title?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessments_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_items: {
         Row: {
           class_id: string | null
@@ -2244,6 +2363,10 @@ export type Database = {
         Args: { p_class_id: string; p_term: number }
         Returns: number
       }
+      assessment_class_id: {
+        Args: { p_assessment_id: string }
+        Returns: string
+      }
       can_access_learner: { Args: { p_learner_id: string }; Returns: boolean }
       can_edit_class_reports: { Args: { p_class_id: string }; Returns: boolean }
       can_read_report: { Args: { p_report_card_id: string }; Returns: boolean }
@@ -2284,6 +2407,15 @@ export type Database = {
         }
       }
       class_school_id: { Args: { p_class_id: string }; Returns: string }
+      computed_subject_term_mark: {
+        Args: {
+          p_class_id: string
+          p_learner_id: string
+          p_subject_id: string
+          p_term: number
+        }
+        Returns: number
+      }
       confirm_application_payment: {
         Args: { p_application_id: string; p_note?: string }
         Returns: undefined
@@ -2336,6 +2468,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delete_assessment: { Args: { p_id: string }; Returns: undefined }
       enrol_application: {
         Args: { p_application_id: string; p_class_id: string }
         Returns: undefined
@@ -2498,6 +2631,19 @@ export type Database = {
         Args: { p_class_id: string; p_term: number }
         Returns: number
       }
+      recalculate_subject_term: {
+        Args: { p_class_id: string; p_subject_id: string; p_term: number }
+        Returns: undefined
+      }
+      recompute_report_mark: {
+        Args: {
+          p_class_id: string
+          p_learner_id: string
+          p_subject_id: string
+          p_term: number
+        }
+        Returns: undefined
+      }
       record_fee_payment: {
         Args: {
           p_account_id: string
@@ -2533,6 +2679,29 @@ export type Database = {
           p_start: string
         }
         Returns: string
+      }
+      save_assessment: {
+        Args: {
+          p_assessed_on: string
+          p_class_id: string
+          p_id: string
+          p_kind: string
+          p_max_score: number
+          p_subject_id: string
+          p_term: number
+          p_title: string
+          p_weight: number
+        }
+        Returns: string
+      }
+      save_assessment_score: {
+        Args: {
+          p_assessment_id: string
+          p_is_absent: boolean
+          p_learner_id: string
+          p_score: number
+        }
+        Returns: undefined
       }
       save_mark: {
         Args: { p_mark: number; p_report_card_id: string; p_subject_id: string }

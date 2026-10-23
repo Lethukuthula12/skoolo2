@@ -32,6 +32,7 @@ declare
   v_absenceA uuid; v_threadA uuid;
   v_feeAccountA uuid; v_feePaymentA uuid; v_balance numeric;
   v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid;
+  v_assess1 uuid; v_assess2 uuid; v_report2 uuid; v_tmark numeric;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
   -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
@@ -581,6 +582,79 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.calendar_items where id = v_calItemA;
   if n <> 0 then v_fail := v_fail || 'admin B sees school A''s calendar item'::text; end if;
+
+  -- ===================== STAGE 7: assessment detail =====================
+  -- Teacher A (the class teacher) captures two weighted assessments for Term 2 and the roll learner's
+  -- scores. The term mark must be their weighted average: (75*1 + 80*3) / 4 = 78.75.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    v_assess1 := public.save_assessment(null, v_classA, v_subjectA, 2, 'Test 1', 'test', 20, 1, null);
+    v_assess2 := public.save_assessment(null, v_classA, v_subjectA, 2, 'Project', 'project', 50, 3, null);
+  exception when others then
+    v_fail := v_fail || format('teacher cannot create assessments: %s', sqlerrm);
+  end;
+
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_score(v_assess1, v_rollLearnerA, 15, false);  -- 15/20 = 75%
+    perform public.save_assessment_score(v_assess2, v_rollLearnerA, 40, false);  -- 40/50 = 80%
+  exception when others then
+    v_fail := v_fail || format('teacher cannot capture scores: %s', sqlerrm);
+  end;
+
+  -- the computed mark landed in a fresh draft Term 2 report
+  select id into v_report2 from public.report_cards
+    where learner_id = v_rollLearnerA and academic_year = 2027 and term_number = 2;
+  v_checks := v_checks + 1;
+  if v_report2 is null then
+    v_fail := v_fail || 'assessments did not create a term 2 report'::text;
+  else
+    select mark into v_tmark from public.report_marks where report_card_id = v_report2 and subject_id = v_subjectA;
+    v_checks := v_checks + 1;
+    if v_tmark is distinct from 78.75 then
+      v_fail := v_fail || format('computed term mark %s, expected 78.75', v_tmark);
+    end if;
+  end if;
+
+  -- a score over the maximum is refused
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_score(v_assess1, v_rollLearnerA, 25, false);  -- max is 20
+    v_fail := v_fail || 'a score over the maximum was accepted'::text;
+  exception when others then
+    get stacked diagnostics v_hint = pg_exception_hint;
+    if v_hint <> 'OVER_MAX' then v_fail := v_fail || format('over-max wrong hint: %s', v_hint); end if;
+  end;
+
+  -- a teacher of another class sees nothing and cannot capture for this class
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated','email', v_emailTA2)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessments where id = v_assess1;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees assessments for a class they do not teach'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessment_scores where assessment_id = v_assess1;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees assessment scores for a class they do not teach'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment(null, v_classA, v_subjectA, 2, 'Sneaky', 'test', 10, 1, null);
+    v_fail := v_fail || 'a teacher created an assessment for a class they do not teach'::text;
+  exception when others then null;
+  end;
+
+  -- another school and the connected parent see no assessment detail
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessments where id = v_assess1;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s assessments'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessments where id = v_assess1;
+  if n <> 0 then v_fail := v_fail || 'a parent sees assessments'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessment_scores where assessment_id = v_assess1;
+  if n <> 0 then v_fail := v_fail || 'a parent sees assessment scores'::text; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.

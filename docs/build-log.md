@@ -627,3 +627,34 @@ remaining lesson with the teacher and class names. Both apps build clean.
 One fix made while building: the teacher's subject list first offered every grade subject whenever
 they were the class teacher, but at a subject-teaching grade the server only allows assigned
 subjects; the client now applies the same grade-threshold rule.
+
+## Stage 7 backbone — assessment detail with weighted roll-up
+
+Two school-owned tables with RLS. **assessments**: one piece of work for a class, subject and term
+(test, assignment, project, exam, other) with a maximum score and a weight. **assessment_scores**:
+a learner's score on an assessment, or absent. Skoolo computes the term mark as the weighted average,
+as a percentage, of the assessments a learner actually sat — `computed_subject_term_mark` — and
+`recompute_report_mark` writes it into the learner's draft Stage 3 report (creating the report and
+mark row if needed, never touching an approved or published one). So the term mark is calculated from
+captured assessments and flows into the existing approval and publishing unchanged.
+
+Write path: `save_assessment`, `delete_assessment` and `save_assessment_score` (teachers of the class
+and the school's admins only; a score over the maximum is refused; changing a weight or removing an
+assessment recomputes every learner via `recalculate_subject_term`). Assessment detail is staff-only
+— a teacher of the class or an admin — so parents never see raw scores, only the term mark through
+the published report.
+
+Policy: Grades R-3 are 100% school-based assessment; Grades 4-6 are 75% SBA and 25% end-of-year
+examination (NPPPR 8(2)/15(2)). Here that split is expressed through the weights a teacher gives each
+assessment (an exam weighted at a quarter of the total), which is how a term mark is computed by hand;
+the policy will be shown as guidance in the screens. A structured per-phase weighting engine is a
+later refinement, flagged in the migration.
+
+Isolation suite now at 95 checks. New ones prove the definition of done — two weighted assessments
+(15/20 and 40/50 at weights 1 and 3) produce a term mark of exactly 78.75 in the draft report — plus
+that a teacher of another class, another school and a connected parent see no assessments or scores,
+and that a score over the maximum is refused.
+
+Next in Stage 7: the screens — a capture grid per class, subject and term (assessments as columns,
+learners as rows), the live calculated term mark, and per-assessment and per-subject analysis,
+exportable.
