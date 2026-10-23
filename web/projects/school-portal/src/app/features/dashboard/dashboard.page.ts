@@ -1,13 +1,14 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { SchoolOverviewComponent } from './school-overview.component';
 import {
   ASSESSMENT_KIND_LABELS, CalendarItemRow, FeeAccountRow, StaffApplication, StaffService,
 } from '@skoolo/shared';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, SchoolOverviewComponent],
   template: `
     <div class="stack">
       <div>
@@ -38,6 +39,8 @@ import {
             <span class="body"><span class="label">Owed in fees</span><span class="value">{{ money(arrearsTotal()) }}</span></span>
           </a>
         </div>
+
+        <app-school-overview [applications]="applicationOverview()" [due]="feeDue()" [paid]="feePaid()" [year]="year" />
 
         <div class="grid-2">
           <div class="card stack">
@@ -103,10 +106,13 @@ import {
   styles: `
     .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
     .stat { text-decoration: none; border: 0; border-radius: 0; box-shadow: none; min-width: 0; padding: 24px 20px; }
-    .stat + .stat { border-left: 1px solid var(--line); }
+    .stat + .stat { border-left: 0; }
+    .stat .icon { width: 64px; height: 64px; }
+    .stat .icon.accent { background: var(--accent); color: #41251d; }
+    .stat .icon.warning { background: #fcc43e; color: #624705; }
     .stat:hover { transform: none; box-shadow: none; background: var(--surface-2); }
     .stat .body { min-width: 0; }
-    .stat .value { font-size: clamp(21px, 1.7vw, 29px); overflow-wrap: anywhere; }
+    .stat .value { font-size: clamp(21px, 1.7vw, 29px); white-space: normal; overflow-wrap: anywhere; }
     .calendar-card { grid-column: 1 / -1; }
     .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
     .rows li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 2px; border-top: 1px solid var(--line); }
@@ -122,7 +128,7 @@ export class DashboardPage {
   protected readonly staff = inject(StaffService);
 
   protected readonly kindLabels = ASSESSMENT_KIND_LABELS;
-  private readonly year = new Date().getFullYear() + 1;
+  protected readonly year = new Date().getFullYear() + 1;
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
 
@@ -133,6 +139,14 @@ export class DashboardPage {
   protected readonly staffCount = signal(0);
 
   protected readonly applicationsTotal = computed(() => this.applications().length);
+  protected readonly applicationOverview = computed(() => [
+    { label: 'To review', count: this.applications().filter(a => ['submitted', 'under_review', 'more_info_needed'].includes(a.status)).length, color: 'var(--brand)' },
+    { label: 'Accepted', count: this.applications().filter(a => a.status === 'accepted').length, color: 'var(--success)' },
+    { label: 'Waitlisted', count: this.applications().filter(a => a.status === 'waitlisted').length, color: 'var(--accent)' },
+    { label: 'Declined / withdrawn', count: this.applications().filter(a => ['declined', 'withdrawn'].includes(a.status)).length, color: 'var(--muted)' },
+  ]);
+  protected readonly feeDue = computed(() => this.fees().reduce((sum, f) => sum + Math.max(0, Number(f.total_due)), 0));
+  protected readonly feePaid = computed(() => this.fees().reduce((sum, f) => sum + Math.max(0, Number(f.total_paid)), 0));
   protected readonly recentApplications = computed(() => this.applications().slice(0, 5));
   protected readonly arrearsTotal = computed(() => this.fees().reduce((sum, f) => sum + Math.max(0, Number(f.balance)), 0));
   protected readonly arrears = computed(() =>

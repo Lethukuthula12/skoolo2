@@ -1,4 +1,5 @@
 /* Parent app foundation. School branding changes the accent, not the page structure. */
+@use '../../shared/src/styles/motion';
 :root {
   --ion-color-primary: #5145b5;
   --ion-color-primary-rgb: 81, 69, 181;
@@ -24,17 +25,21 @@
   --ion-color-medium-contrast-rgb: 255, 255, 255;
   --ion-color-medium-shade: #646779;
   --ion-color-medium-tint: #808396;
-  --ion-background-color: #f5f5fa;
-  --ion-background-color-rgb: 245, 245, 250;
-  --ion-text-color: #34364c;
-  --ion-text-color-rgb: 52, 54, 76;
+  --ion-background-color: #e9edf2;
+  --ion-background-color-rgb: 233, 237, 242;
+  --ion-text-color: #303972;
+  --ion-text-color-rgb: 48, 57, 114;
   --ion-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --skoolo-title: #303451;
-  --skoolo-muted: #717488;
+  --skoolo-title: #303972;
+  --skoolo-muted: #697087;
   --skoolo-surface: #ffffff;
   --skoolo-line: #e9e9f2;
   --skoolo-brand-soft: rgba(var(--ion-color-primary-rgb), .09);
   --skoolo-brand-ink: #5145b5;
+  --skoolo-coral: #fb7d5b;
+  --skoolo-yellow: #fcc43e;
+  --skoolo-radius: 12px;
+  --skoolo-shadow: 0 4px 24px rgba(48, 57, 114, .025);
   --parent-nav-height: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 * { box-sizing: border-box; }
@@ -48,12 +53,13 @@ ion-toolbar {
   --padding-start: 8px;
   --padding-end: 8px;
 }
-ion-header { box-shadow: none !important; border-bottom: 1px solid var(--skoolo-line); }
+ion-header { box-shadow: none !important; border: 0; }
 ion-header::after { display: none; }
 ion-title { font-size: 18px; font-weight: 600; letter-spacing: -.35px; }
 ion-back-button { --color: var(--skoolo-title); --icon-font-size: 22px; min-width: 44px; }
 ion-buttons ion-button { --color: var(--skoolo-muted); --border-radius: 12px; min-width: 44px; min-height: 44px; }
-ion-button { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 500; --border-radius: 11px; --box-shadow: none; min-height: 44px; }
+ion-button { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 500; --border-radius: 10px; --box-shadow: none; min-height: 46px; transition: transform var(--motion-fast) var(--ease-out); }
+ion-button:active:not([disabled]) { transform: scale(.98); }
 ion-button[size='large'] { min-height: 50px; font-size: 14px; }
 ion-button[fill='outline'] { --color: var(--skoolo-brand-ink); --border-color: #d9d7e9; --border-width: 1px; --background: transparent; }
 ion-button[fill='clear']:not([color]) { --color: var(--skoolo-brand-ink); }
@@ -75,7 +81,7 @@ button, a, ion-button, input { -webkit-tap-highlight-color: transparent; }
 .centered p { margin: 8px 0; }
 .centered > ion-icon { color: var(--skoolo-brand-ink); padding: 18px; border-radius: 20px; background: var(--skoolo-brand-soft); font-size: 32px; }
 .page-section { padding: 20px; max-width: 800px; margin-inline: auto; }
-.form-card { background: var(--skoolo-surface); border: 1px solid var(--skoolo-line); border-radius: 18px; padding: 22px; width: calc(100% - 40px); max-width: 760px; margin: 20px auto; box-shadow: 0 4px 20px rgba(41, 43, 80, .025); overflow-wrap: anywhere; }
+.form-card { background: var(--skoolo-surface); border: 0; border-radius: var(--skoolo-radius); padding: 28px; width: calc(100% - 40px); max-width: 760px; margin: 24px auto; box-shadow: var(--skoolo-shadow); overflow-wrap: anywhere; animation: surface-enter var(--motion-base) var(--ease-out); }
 .form-card h2 { font-size: 18px; letter-spacing: -.3px; }
 .form-card h3 { font-size: 16px; }
 .error-text { color: #b73647; font-size: 13px; margin: 8px 0 0; }
@@ -85,3 +91,8 @@ button, a, ion-button, input { -webkit-tap-highlight-color: transparent; }
 .screen-intro > p:not(.eyebrow) { margin: 9px 0 0; color: var(--skoolo-muted); font-size: 13px; }
 @media (max-width: 480px) { .form-card { padding: 20px; } ion-title { font-size: 17px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
+ion-card { border: 0; border-radius: var(--skoolo-radius); box-shadow: var(--skoolo-shadow); }
+ion-item { --transition: background var(--motion-fast) ease; }
+ion-segment-button::part(indicator-background) { transition: transform var(--motion-base) var(--ease-out); }
+.screen-intro, .auth-intro { animation: content-enter var(--motion-base) ease; }
+.school-details, .connect-card { animation: surface-enter var(--motion-base) var(--ease-out); }

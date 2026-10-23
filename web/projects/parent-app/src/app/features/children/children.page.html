@@ -15,9 +15,7 @@
   <main class="family-home">
     <section class="welcome" aria-labelledby="welcome-title">
       <div>
-        <p class="eyebrow">YOUR FAMILY, CONNECTED</p>
         <h1 id="welcome-title">{{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}<span class="greeting-dot">.</span></h1>
-        <p class="welcome-copy">A little closer to their school day.</p>
       </div>
       <div class="welcome-date"><ion-icon name="calendar-outline" aria-hidden="true" /><span>{{ today | date:'EEE, d MMM' }}</span></div>
     </section>
@@ -37,7 +35,7 @@
         </div>
 
         @if (showConnect()) {
-          <form id="connect-child" class="connect-card" [formGroup]="form" (ngSubmit)="link()">
+          <form id="connect-child" class="connect-card" animate.enter="panel-enter" animate.leave="panel-leave" [formGroup]="form" (ngSubmit)="link()">
             <h3>Bring your family together</h3>
             <p>Enter the family code shared by your child’s school or another guardian.</p>
             <ion-input label="Family code" labelPlacement="stacked" fill="outline" formControlName="code" placeholder="Enter your code" autocapitalize="characters" [maxlength]="20" />
@@ -48,7 +46,7 @@
         }
 
         @if (loading()) {
-          <div class="loading-card" role="status"><ion-spinner name="crescent" /><span>Bringing your family up to date…</span></div>
+          <div class="skeleton-card" role="status" aria-label="Bringing your family up to date"><span class="skeleton-line" aria-hidden="true"></span><span class="skeleton-line" aria-hidden="true"></span><span class="skeleton-line" aria-hidden="true"></span></div>
         } @else if (loadError()) {
           <div class="empty-card"><span class="empty-icon"><ion-icon name="cloud-upload-outline" aria-hidden="true" /></span><h3>Let’s try that again</h3><p role="alert">{{ loadError() }}</p><ion-button (click)="load()" fill="outline">Retry</ion-button></div>
         } @else {
@@ -77,7 +75,6 @@
             <a routerLink="/calendar" class="event-preview"><span class="event-date"><small>{{ event.event_date | date:'MMM' }}</small><strong>{{ event.event_date | date:'d' }}</strong></span><span class="event-info"><strong>{{ event.title }}</strong><small>{{ event.schools?.name }}</small><span>{{ event.starts_at ? event.starts_at.slice(0, 5) : 'All day' }}</span></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
           } @empty { @if (!loading() && !updatesError()) { <div class="quiet-state"><ion-icon name="calendar-outline" aria-hidden="true" /><strong>A little room in the diary</strong><p>Your school’s upcoming dates will appear here.</p></div> } }
         </section>
-        <p class="home-footnote"><ion-icon name="people-outline" aria-hidden="true" />A shared space for home and school.</p>
       </aside>
     </div>
   </main>

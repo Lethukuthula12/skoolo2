@@ -14,6 +14,8 @@ import { SchoolThemeService } from './school-theme.service';
       <ion-router-outlet [style.bottom]="showNavigation() ? 'var(--parent-nav-height)' : '0'" />
       @if (showNavigation()) {
         <nav class="parent-nav" aria-label="Main navigation">
+          <div class="nav-items" [style.--active-tab]="activeTab()">
+          <span class="nav-indicator" aria-hidden="true"></span>
           @for (item of navigation; track item.id) {
             <a [routerLink]="item.link" [class.active]="activeSection() === item.id"
                [attr.aria-current]="activeSection() === item.id ? 'page' : null">
@@ -21,21 +23,24 @@ import { SchoolThemeService } from './school-theme.service';
               <span>{{ item.label }}</span>
             </a>
           }
+          </div>
         </nav>
       }
     </ion-app>
   `,
   styles: `
     .parent-nav { position: absolute; inset: auto 0 0; z-index: 20; height: var(--parent-nav-height);
-      padding: 8px max(12px, calc((100vw - 600px) / 2)) calc(8px + env(safe-area-inset-bottom, 0px));
-      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--skoolo-surface);
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--skoolo-surface);
       border-top: 1px solid var(--skoolo-line); box-shadow: 0 -4px 24px rgba(39, 40, 71, .035); }
-    a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    .nav-items { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 600px; height: 100%; margin: auto; }
+    .nav-indicator { position: absolute; left: 0; top: 0; width: 25%; height: 100%; transform: translateX(calc(var(--active-tab) * 100%)); transition: transform var(--motion-slow) var(--ease-out); pointer-events: none; }
+    .nav-indicator::before { content: ''; position: absolute; top: 2px; left: 50%; transform: translateX(-50%); width: 54px; height: 30px; border-radius: 10px; background: var(--skoolo-brand-soft); }
+    a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
       color: var(--skoolo-muted); font-size: 11px; font-weight: 500; text-decoration: none; min-height: 48px; }
-    .nav-icon { display: grid; place-items: center; width: 52px; height: 28px; border-radius: 10px; transition: background 180ms ease; }
+    .nav-icon { display: grid; place-items: center; width: 52px; height: 28px; border-radius: 10px; transition: transform var(--motion-base) var(--ease-out); }
     ion-icon { font-size: 22px; }
     a.active { color: var(--skoolo-brand-ink); font-weight: 600; }
-    a.active .nav-icon { background: rgba(var(--ion-color-primary-rgb), .10); }
+    a.active .nav-icon { transform: translateY(-1px); }
     a:focus-visible { outline: 2px solid var(--skoolo-brand-ink); outline-offset: -2px; border-radius: 10px; }
     @media (prefers-reduced-motion: reduce) { .nav-icon { transition: none; } }
   `,
@@ -64,6 +69,7 @@ export class App {
     if (path === '/inbox') return 'inbox';
     return 'home';
   });
+  protected readonly activeTab = computed(() => Math.max(0, this.navigation.findIndex(item => item.id === this.activeSection())));
 
   constructor() {
     effect(() => {

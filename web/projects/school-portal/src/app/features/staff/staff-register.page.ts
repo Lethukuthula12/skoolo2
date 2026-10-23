@@ -151,7 +151,7 @@ const EMPTY_FORM: StaffForm = {
               <tbody>
                 @for (m of pagination.visible(); track m.id) {
                   <tr>
-                    <td><button class="table-link" type="button" (click)="edit(m)">{{ m.last_name }}, {{ m.first_name }}</button></td>
+                    <td><div class="person-cell"><span class="person-avatar" aria-hidden="true">{{ m.first_name.charAt(0) }}{{ m.last_name.charAt(0) }}</span><button class="table-link" type="button" (click)="edit(m)">{{ m.last_name }}, {{ m.first_name }}</button></div></td>
                     <td>{{ m.position }}</td>
                     <td>{{ m.class_assigned }}</td>
                     <td>{{ m.phone }}</td>

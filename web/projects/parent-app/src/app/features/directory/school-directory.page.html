@@ -51,11 +51,11 @@
               <p>{{ school.town }}@if (school.province) {, {{ school.province }}}</p>
               <ion-badge [color]="statusColor(school)">{{ statusLabel(school) }}</ion-badge>
             </ion-label>
-            <ion-icon slot="end" class="chevron" [name]="school.id === selectedId() ? 'chevron-up-outline' : 'chevron-down-outline'" />
+            <ion-icon slot="end" class="chevron" name="chevron-down-outline" />
           </ion-item>
 
           @if (school.id === selectedId()) {
-            <div class="school-details">
+            <div class="school-details" animate.enter="panel-enter" animate.leave="panel-leave">
               @if (school.tagline) {
                 <p class="tagline">{{ school.tagline }}</p>
               }

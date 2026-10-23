@@ -958,3 +958,34 @@ and client error handling; no database/access-control changes require a fresh RL
 Rendered desktop/mobile layouts, native dialog focus restoration/animation, form submission and
 live deployment remain unverified because browser access is blocked by the origin policy. Production
 compilation checks the Angular templates but does not substitute for those interaction checks.
+
+## 2026-10-23 — Akademi visual and motion pass across both apps
+
+The user clarified that the goal is Akademi's clean visual treatment and smooth interactions across
+the portal and parent app. Reviewed the supplied screenshots and decoded frames from the supplied
+Akademi recording; local analysis media and the temporary decoder stay in ignored .angular files.
+
+- Unified the cool page canvas, quieter white panels, spacing, navy headings, circular identity
+  markers and purple/coral/yellow accents. Learner, application and staff rows now include initials;
+  parent child cards use circular avatars and a restrained colour strip inspired by the reference.
+- Added animated desktop sidebar collapse, softer active navigation backgrounds, page entry fades,
+  menu transitions, consistent press/hover feedback and shared motion timings. Parent navigation uses
+  an animated active-tab indicator and an Ionic page transition that also handles restored pages.
+  Connect-child and school-details panels animate on entry/exit. Reduced-motion preferences remove
+  movement in CSS and the Ionic transition. No delays or animation dependencies were added.
+- Added application-status bars and a fee-payment ring to the portal dashboard, using its existing
+  loaded data. Empty datasets show explanations instead of sample charts. Long fee totals can wrap.
+- Simplified parent home panels, removed redundant decorative copy, and replaced its initial loading
+  spinner block with a card-shaped skeleton. Preserved existing requests, roles and save flows.
+
+Verification: final production builds passed for both apps. Parent build has no warnings; portal
+retains an initial-bundle warning (528.09 kB against 500 kB), with no component stylesheet warnings.
+The portal presentation checks pass, including selected-sidebar contrast across the supplied theme
+colours. The parent motion check exercises the actual Ionic animation builder for forward/back,
+cached outgoing pages, first entry and reduced motion. Ionic's CSS fallback uses a 1 ms completion
+tick for a requested zero-duration transition; reduced-mode keyframes contain no fade or movement.
+`git diff --check` passed. No database or access-control changes were made.
+
+Browser origin policy still blocks rendered desktop/mobile verification and live deployment checks.
+The recording frames establish the reference, but the build and animation-configuration checks do
+not prove pixel equivalence, perceived smoothness, focus behaviour or real-device acceptance.

@@ -1,0 +1,21 @@
+/* Shared motion rhythm. Movement is small; controls never wait for an animation. */
+:root {
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 300ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes surface-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes content-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes menu-enter { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes surface-exit { to { opacity: 0; transform: translateY(-4px); } }
+.panel-enter { animation: surface-enter var(--motion-base) var(--ease-out); }
+.panel-leave { animation: surface-exit var(--motion-fast) ease; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

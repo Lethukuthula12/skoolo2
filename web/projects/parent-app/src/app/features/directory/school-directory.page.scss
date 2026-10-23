@@ -8,12 +8,12 @@
 
 .school-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 12px;
   margin-bottom: 16px;
-  border: 1px solid var(--skoolo-line);
+  border: 1px solid transparent;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(20, 33, 61, 0.06);
-  transition: box-shadow 150ms ease;
+  box-shadow: var(--skoolo-shadow);
+  transition: box-shadow var(--motion-base), border-color var(--motion-base);
 
   &.selected {
     border-color: var(--skoolo-brand-ink);
@@ -157,3 +157,6 @@ ion-avatar {
 .school-card ion-label p { font-size: 12px; color: var(--skoolo-muted); margin: 5px 0 10px; white-space: normal; }
 .school-card ion-badge { font-size: 10px; }
 @media (prefers-reduced-motion: reduce) { .school-card { transition: none; } }
+
+.school-card .chevron { transition: transform var(--motion-base) var(--ease-out); }
+.school-card.selected .chevron { transform: rotate(180deg); }

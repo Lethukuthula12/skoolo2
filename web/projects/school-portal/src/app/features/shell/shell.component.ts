@@ -24,6 +24,7 @@ export class ShellComponent {
   private readonly theme = inject(ThemeService);
   private readonly profileMenu = viewChild<ElementRef<HTMLDetailsElement>>('profileMenu');
   protected readonly mobileOpen = signal(false);
+  protected readonly compact = signal(false);
   private readonly sections = [
     { label: 'Overview', links: ['/dashboard', '/home'] },
     { label: 'Enrolment', links: ['/applications', '/enrolment'] },

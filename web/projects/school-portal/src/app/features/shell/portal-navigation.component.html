@@ -2,12 +2,12 @@
   <nav aria-label="School navigation">
     @for (group of groups(); track group.label) {
       @if (group.label === 'Overview') {
-        @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="navigated.emit()"><span class="ico" [innerHTML]="item.icon"></span><span>{{ item.label }}</span></a> }
+        @for (item of group.items; track item.link) { <a [attr.title]="item.label" [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="navigated.emit()"><span class="ico" [innerHTML]="item.icon"></span><span>{{ item.label }}</span></a> }
       } @else {
         <section class="nav-group">
-          <button class="group-toggle" type="button" [attr.aria-expanded]="groupOpen(group.label)" (click)="toggleGroup(group.label)"><span>{{ group.label }}</span><span class="chevron" [class.expanded]="groupOpen(group.label)" aria-hidden="true">⌄</span></button>
+          <button class="group-toggle" [class.current]="activeGroup() === group.label" type="button" [attr.aria-expanded]="groupOpen(group.label)" (click)="toggleGroup(group.label)"><span class="ico" [innerHTML]="group.items[0].icon" aria-hidden="true"></span><span>{{ group.label }}</span><span class="chevron" [class.expanded]="groupOpen(group.label)" aria-hidden="true">⌄</span></button>
           <div class="group-items" [class.expanded]="groupOpen(group.label)" [attr.inert]="groupOpen(group.label) ? null : ''"><div>
-            @for (item of group.items; track item.link) { <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="navigated.emit()"><span class="ico" [innerHTML]="item.icon"></span><span>{{ item.label }}</span></a> }
+            @for (item of group.items; track item.link) { <a [attr.title]="item.label" [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="navigated.emit()"><span class="ico" [innerHTML]="item.icon"></span><span>{{ item.label }}</span></a> }
           </div></div>
         </section>
       }

@@ -77,10 +77,10 @@ export class ThemeService {
     s.setProperty('--brand-ink', readable(t.primary, t.mode === 'dark' ? '#20223c' : '#ffffff'));
     s.setProperty('--ring', rgba(t.primary, 0.25));
     s.setProperty('--header-bg', t.header);
-    const headerInk = foreground(t.header);
+    const headerInk = contrast('#303972', t.header) >= 4.5 ? '#303972' : foreground(t.header);
     s.setProperty('--header-ink', headerInk);
     s.setProperty('--header-muted', headerInk);
-    s.setProperty('--header-control', headerInk === '#ffffff' ? 'rgba(0,0,0,.12)' : 'rgba(0,0,0,.05)');
+    s.setProperty('--header-control', headerInk === '#ffffff' ? 'rgba(0,0,0,.12)' : 'rgba(255,255,255,.65)');
     s.setProperty('--sidebar-bg', t.sidebar);
     // The sidebar text must follow the sidebar's own lightness (it can be white too).
     const sidebarInk = foreground(t.sidebar);
@@ -88,6 +88,9 @@ export class ThemeService {
     s.setProperty('--sidebar-ink', sidebarInk);
     s.setProperty('--sidebar-ink-hover', sidebarInk);
     s.setProperty('--sidebar-school', sidebarInk);
+    const activeSurface = mix(t.sidebar, dark ? '#ffffff' : '#000000', 0.14);
+    s.setProperty('--sidebar-active', activeSurface);
+    s.setProperty('--sidebar-active-ink', foreground(activeSurface));
     s.setProperty('--sidebar-hover', dark ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)');
 
     // Light or dark content area. Dark mode overrides the surface/text tokens; light removes the
@@ -146,6 +149,10 @@ function darken(hex: string, amount: number): string {
 function rgba(hex: string, alpha: number): string {
   const [r, g, b] = hexToRgb(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+function mix(a: string, b: string, amount: number): string {
+  const target = hexToRgb(b);
+  return '#' + hexToRgb(a).map((c, i) => Math.round(c + (target[i] - c) * amount).toString(16).padStart(2, '0')).join('');
 }
 function luminance(hex: string): number {
   const [r, g, b] = hexToRgb(hex).map(channel => {

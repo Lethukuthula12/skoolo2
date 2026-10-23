@@ -59,6 +59,7 @@ for (const color of [...colors, ...SIDEBAR_SWATCHES]) {
   checkContrast(properties.get('--header-ink'), color, 4.5, 'Header text');
   checkContrast(properties.get('--sidebar-ink'), color, 4.5, 'Sidebar text');
   checkContrast(properties.get('--sidebar-ink-hover'), color, 4.5, 'Sidebar hover');
+  checkContrast(properties.get('--sidebar-active-ink'), properties.get('--sidebar-active'), 4.5, 'Selected sidebar item');
 }
 theme.preview({ mode: 'dark' });
 checkContrast(properties.get('--ink'), properties.get('--surface-2'), 4.5, 'Disabled report input');

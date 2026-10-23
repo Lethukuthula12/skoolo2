@@ -71,7 +71,7 @@ type QuickFilter = 'all' | 'to_review' | 'to_confirm' | 'accepted' | 'waitlisted
               <tbody>
                 @for (app of pagination.visible(); track app.id) {
                   <tr>
-                    <td><button class="table-link" type="button" (click)="open(app)">{{ app.learner.first_name }} {{ app.learner.last_name }}</button></td>
+                    <td><div class="person-cell"><span class="person-avatar" aria-hidden="true">{{ app.learner.first_name.charAt(0) }}{{ app.learner.last_name.charAt(0) }}</span><button class="table-link" type="button" (click)="open(app)">{{ app.learner.first_name }} {{ app.learner.last_name }}</button></div></td>
                     <td>{{ app.period_grade.grades?.label }}</td>
                     <td>{{ app.parent.full_name }}<br /><span class="muted small">{{ app.parent.phone }}</span></td>
                     <td>{{ app.submitted_at | date: 'd MMM yyyy' }}</td>

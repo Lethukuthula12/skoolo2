@@ -54,7 +54,7 @@
               @for (l of pagination.visible(); track l.id; let i = $index) {
                 <tr>
                   <td>{{ pagination.start() + i + 1 }}</td>
-                  <td><button class="table-link" type="button" (click)="edit(l)">{{ l.last_name }}, {{ l.first_name }}</button>@if (l.admission_number) { <div class="muted small">{{ l.admission_number }}</div> }</td>
+                  <td><div class="person-cell"><span class="person-avatar" aria-hidden="true">{{ l.first_name.charAt(0) }}{{ l.last_name.charAt(0) }}</span><div><button class="table-link" type="button" (click)="edit(l)">{{ l.last_name }}, {{ l.first_name }}</button>@if (l.admission_number) { <div class="muted small">{{ l.admission_number }}</div> }</div></div></td>
                   <td>{{ l.date_of_birth }}</td>
                   <td>{{ age(l.date_of_birth) }}</td>
                   <td>{{ l.gender }}</td>
