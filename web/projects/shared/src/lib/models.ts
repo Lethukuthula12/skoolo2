@@ -116,3 +116,21 @@ export type FeeBalance = Database['public']['Views']['fee_account_balances']['Ro
 export const FEE_PLAN_LABELS: Record<string, string> = {
   monthly: 'Monthly', term: 'Per term', year: 'Once for the year',
 };
+
+export type SchoolPeriod = Tables<'school_periods'>;
+export type TimetableLesson = Tables<'timetable_lessons'>;
+export type CalendarItem = Tables<'calendar_items'>;
+export type CalendarKind = 'test' | 'assignment' | 'outing' | 'event' | 'other';
+
+export const CALENDAR_KIND_LABELS: Record<string, string> = {
+  test: 'Test', assignment: 'Assignment', outing: 'Outing', event: 'Event', other: 'Other',
+};
+
+/** Monday-first weekday numbers (ISO) with short and long labels, for the timetable grid. */
+export const WEEKDAYS: { value: number; short: string; long: string }[] = [
+  { value: 1, short: 'Mon', long: 'Monday' },
+  { value: 2, short: 'Tue', long: 'Tuesday' },
+  { value: 3, short: 'Wed', long: 'Wednesday' },
+  { value: 4, short: 'Thu', long: 'Thursday' },
+  { value: 5, short: 'Fri', long: 'Friday' },
+];

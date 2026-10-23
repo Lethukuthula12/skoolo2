@@ -1,0 +1,27 @@
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 10px 14px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; }
+.tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+.year { width: 90px; }
+.row.wrap { flex-wrap: wrap; gap: 8px; align-items: center; }
+.checkbox { display: inline-flex; gap: 8px; align-items: center; font-weight: 500; }
+
+.grid-wrap { overflow-x: auto; }
+table.grid { border-collapse: collapse; width: 100%; min-width: 640px; }
+table.grid th, table.grid td { border: 1px solid var(--line); padding: 6px; text-align: center; vertical-align: top; }
+table.grid thead th { background: var(--bg); font-size: 0.85rem; }
+table.grid th.time { text-align: left; white-space: nowrap; font-weight: 600; width: 1%; }
+table.grid th.time span { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; }
+tr.break td { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 8px, #fff 8px, #fff 16px); color: var(--muted); font-size: 0.85rem; }
+tr.break th.time { color: var(--muted); font-weight: 500; }
+
+.lesson { position: relative; background: var(--brand-soft); border-radius: 7px; padding: 6px 8px; display: grid; gap: 1px; min-height: 40px; }
+.lesson.mine { padding-right: 20px; }
+.lesson strong { font-size: 0.9rem; }
+.lesson span { font-size: 0.78rem; color: var(--muted); }
+.lesson .x { position: absolute; top: 2px; right: 3px; border: none; background: transparent; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 2px; }
+.lesson .x:hover { color: var(--danger); }
+
+@media print {
+  .tabs, .toolbar .spacer, .btn, .year, form, .muted { display: none !important; }
+  .card { box-shadow: none; border: none; }
+}

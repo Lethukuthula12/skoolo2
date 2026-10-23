@@ -60,6 +60,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/fees/fees.page').then((m) => m.FeesPage),
       },
       {
+        path: 'timetable',
+        loadComponent: () => import('./features/timetable/timetable.page').then((m) => m.TimetablePage),
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./features/timetable/calendar.page').then((m) => m.CalendarPage),
+      },
+      {
         path: 'staff',
         loadComponent: () => import('./features/staff/staff-register.page').then((m) => m.StaffRegisterPage),
       },

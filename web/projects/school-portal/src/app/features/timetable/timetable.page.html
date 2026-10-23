@@ -1,0 +1,183 @@
+<div class="stack">
+  <div class="toolbar">
+    <div>
+      <h1>Timetable</h1>
+      <p class="muted">{{ isAdmin ? 'The school day, and every teacher and class week.' : 'Your weekly lessons. Add a lesson to a free slot.' }}</p>
+    </div>
+    <span class="spacer"></span>
+    <label class="row small">Year
+      <input type="number" class="year" [ngModel]="year()" (ngModelChange)="changeYear($event)" min="2020" max="2100" />
+    </label>
+  </div>
+
+  @if (notice()) { <p class="ok">{{ notice() }}</p> }
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (isAdmin) {
+    <div class="tabs">
+      <button class="tab" [class.active]="tab() === 'structure'" (click)="tab.set('structure')">Day structure</button>
+      <button class="tab" [class.active]="tab() === 'byClass'" (click)="tab.set('byClass')">By class</button>
+      <button class="tab" [class.active]="tab() === 'byTeacher'" (click)="tab.set('byTeacher')">By teacher</button>
+    </div>
+
+    @if (tab() === 'structure') {
+      <div class="card stack">
+        <h2>The school day</h2>
+        <p class="muted small">Add each period and break in order. Teachers place lessons into the periods that are not breaks.</p>
+        @if (periods().length === 0) {
+          <div class="empty">No periods yet. Add the first one below.</div>
+        } @else {
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th>#</th><th>Name</th><th>Start</th><th>End</th><th>Type</th><th></th></tr></thead>
+              <tbody>
+                @for (p of periods(); track p.id) {
+                  <tr>
+                    <td>{{ p.position }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ fmtTime(p.starts_at) }}</td>
+                    <td>{{ fmtTime(p.ends_at) }}</td>
+                    <td>{{ p.is_break ? 'Break' : 'Lesson' }}</td>
+                    <td class="right"><button class="btn btn-ghost btn-sm" type="button" (click)="deletePeriod(p.id)" [disabled]="busy()">Remove</button></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        <form class="row wrap" (ngSubmit)="addPeriod()">
+          <input type="text" [(ngModel)]="newPeriod.name" name="pname" placeholder="e.g. Period 1 or Break" />
+          <input type="time" [(ngModel)]="newPeriod.starts_at" name="pstart" />
+          <input type="time" [(ngModel)]="newPeriod.ends_at" name="pend" />
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="newPeriod.is_break" name="pbreak" /> Break</label>
+          <button class="btn btn-primary btn-sm" type="submit" [disabled]="busy()">Add period</button>
+        </form>
+      </div>
+    } @else if (tab() === 'byClass') {
+      <div class="card stack">
+        <div class="toolbar">
+          <h2>Class timetable</h2>
+          <span class="spacer"></span>
+          <select [ngModel]="selectedClassId()" (ngModelChange)="selectedClassId.set($event)">
+            @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }} ({{ c.grade_code }})</option> }
+          </select>
+        </div>
+        <ng-container *ngTemplateOutlet="adminGrid; context: { filter: { classId: selectedClassId() }, mode: 'class' }" />
+      </div>
+    } @else {
+      <div class="card stack">
+        <div class="toolbar">
+          <h2>Teacher timetable</h2>
+          <span class="spacer"></span>
+          <select [ngModel]="selectedTeacherId()" (ngModelChange)="selectedTeacherId.set($event)">
+            @for (m of staffMembers(); track m.id) { <option [value]="m.id">{{ teacherName(m) }}</option> }
+          </select>
+        </div>
+        <ng-container *ngTemplateOutlet="adminGrid; context: { filter: { teacherId: selectedTeacherId() }, mode: 'teacher' }" />
+      </div>
+    }
+  } @else {
+    <!-- teacher view -->
+    <div class="card stack">
+      <h2>Add a lesson</h2>
+      <form class="row wrap" (ngSubmit)="place()">
+        <select [(ngModel)]="addForm.day" name="day">
+          @for (d of weekdays; track d.value) { <option [ngValue]="d.value">{{ d.long }}</option> }
+        </select>
+        <select [(ngModel)]="addForm.periodId" name="period">
+          <option value="">Period…</option>
+          @for (p of teachingPeriods(); track p.id) { <option [value]="p.id">{{ p.name }} ({{ fmtTime(p.starts_at) }})</option> }
+        </select>
+        <select [(ngModel)]="addForm.classId" name="class" (ngModelChange)="onClassChange($event)">
+          <option value="">Class…</option>
+          @for (c of myClasses(); track c.id) { <option [value]="c.id">{{ c.name }} ({{ c.grade_code }})</option> }
+        </select>
+        <select [(ngModel)]="addForm.subjectId" name="subject" [disabled]="formSubjects().length === 0">
+          <option value="">Subject…</option>
+          @for (s of formSubjects(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+        </select>
+        <button class="btn btn-primary btn-sm" type="submit" [disabled]="busy()">Place</button>
+      </form>
+      @if (myClasses().length === 0) {
+        <p class="muted small">You are not assigned to any class for {{ year() }} yet. Ask your admin to assign you.</p>
+      }
+    </div>
+
+    <div class="card stack">
+      <div class="toolbar">
+        <h2>My week</h2>
+        <span class="spacer"></span>
+        <button class="btn btn-outline btn-sm" type="button" (click)="exportIcs()" [disabled]="myLessons().length === 0">Export to calendar</button>
+        <button class="btn btn-outline btn-sm" type="button" (click)="print()">Print</button>
+      </div>
+      @if (periods().length === 0) {
+        <div class="empty">Your school day has not been set up yet. Ask your admin to add the periods.</div>
+      } @else {
+        <div class="grid-wrap" id="print-grid">
+          <table class="grid">
+            <thead><tr><th class="time">Period</th>@for (d of weekdays; track d.value) { <th>{{ d.short }}</th> }</tr></thead>
+            <tbody>
+              @for (p of periods(); track p.id) {
+                @if (p.is_break) {
+                  <tr class="break"><th class="time">{{ fmtTime(p.starts_at) }}</th><td [attr.colspan]="weekdays.length">{{ p.name }}</td></tr>
+                } @else {
+                  <tr>
+                    <th class="time">{{ p.name }}<span>{{ fmtTime(p.starts_at) }}–{{ fmtTime(p.ends_at) }}</span></th>
+                    @for (d of weekdays; track d.value) {
+                      <td>
+                        @let l = myLessonAt(d.value, p.id);
+                        @if (l) {
+                          <div class="lesson mine">
+                            <strong>{{ l.subject_name }}</strong>
+                            <span>{{ l.class_name }}</span>
+                            <button class="x" type="button" (click)="remove(l)" [disabled]="busy()" title="Remove">×</button>
+                          </div>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<ng-template #adminGrid let-filter="filter" let-mode="mode">
+  @if (periods().length === 0) {
+    <div class="empty">Set up the school day first, on the Day structure tab.</div>
+  } @else {
+    <div class="grid-wrap">
+      <table class="grid">
+        <thead><tr><th class="time">Period</th>@for (d of weekdays; track d.value) { <th>{{ d.short }}</th> }</tr></thead>
+        <tbody>
+          @for (p of periods(); track p.id) {
+            @if (p.is_break) {
+              <tr class="break"><th class="time">{{ fmtTime(p.starts_at) }}</th><td [attr.colspan]="weekdays.length">{{ p.name }}</td></tr>
+            } @else {
+              <tr>
+                <th class="time">{{ p.name }}<span>{{ fmtTime(p.starts_at) }}–{{ fmtTime(p.ends_at) }}</span></th>
+                @for (d of weekdays; track d.value) {
+                  <td>
+                    @let l = lessonFor(d.value, p.id, filter);
+                    @if (l) {
+                      <div class="lesson">
+                        <strong>{{ l.subjects?.name }}</strong>
+                        <span>{{ mode === 'class' ? (l.teacher?.first_name + ' ' + l.teacher?.last_name) : l.classes?.name }}</span>
+                      </div>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</ng-template>

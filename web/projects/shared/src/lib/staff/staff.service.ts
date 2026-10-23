@@ -759,6 +759,115 @@ export class StaffService {
     const { error } = await this.client.rpc('confirm_fee_payment', { p_payment_id: paymentId });
     if (error) throw error;
   }
+
+  // ----- Timetables and calendars (Stage 6) ----------------------------------
+
+  /** The school day: the ordered periods and breaks. Staff may read; admins manage. */
+  async schoolPeriods(): Promise<Tables<'school_periods'>[]> {
+    const { data, error } = await this.client
+      .from('school_periods')
+      .select('*')
+      .eq('school_id', this.requireSchoolId())
+      .order('position');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async savePeriod(period: Omit<TablesInsert<'school_periods'>, 'school_id'> & { id?: string }): Promise<Tables<'school_periods'>> {
+    const { data, error } = await this.client
+      .from('school_periods')
+      .upsert({ ...period, school_id: this.requireSchoolId() })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deletePeriod(id: string): Promise<void> {
+    const { error } = await this.client.from('school_periods').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  /** The signed-in teacher's week for a year. */
+  async myTimetable(year: number): Promise<MyTimetableRow[]> {
+    const { data, error } = await this.client.rpc('my_timetable', { p_year: year });
+    if (error) throw error;
+    return (data ?? []) as MyTimetableRow[];
+  }
+
+  /** Place one of the signed-in teacher's lessons. Throws a friendly message on a clash or a block. */
+  async placeLesson(classId: string, subjectId: string, periodId: string, dayOfWeek: number): Promise<string> {
+    const { data, error } = await this.client.rpc('place_lesson', {
+      p_class_id: classId, p_subject_id: subjectId, p_period_id: periodId, p_day_of_week: dayOfWeek,
+    });
+    if (error) throw new Error(this.lessonError((error as { hint?: string }).hint, error.message));
+    return data as string;
+  }
+
+  async removeLesson(lessonId: string): Promise<void> {
+    const { error } = await this.client.rpc('remove_lesson', { p_lesson_id: lessonId });
+    if (error) throw error;
+  }
+
+  private lessonError(hint: string | undefined, fallback: string): string {
+    switch (hint) {
+      case 'TEACHER_BUSY': return 'You already teach a lesson in that slot.';
+      case 'CLASS_BUSY': return 'That class already has a lesson in that slot.';
+      case 'NOT_YOUR_CLASS': return 'Only the class teacher sets this class’s timetable.';
+      case 'NOT_YOUR_SUBJECT': return 'You are not the teacher for this subject in this class.';
+      case 'BAD_PERIOD': return 'That period cannot hold a lesson.';
+      case 'BAD_SUBJECT': return 'That subject is not offered in this grade.';
+      default: return fallback;
+    }
+  }
+
+  /** The whole school's timetable for a year, for the admin's per-teacher and per-class views. */
+  async schoolTimetable(year: number): Promise<SchoolTimetableRow[]> {
+    const { data, error } = await this.client
+      .from('timetable_lessons')
+      .select(`*, classes(name, grade_code), subjects(name),
+               teacher:staff_members(first_name, last_name),
+               school_periods(name, position, starts_at, ends_at)`)
+      .eq('school_id', this.requireSchoolId())
+      .eq('academic_year', year);
+    if (error) throw error;
+    return (data ?? []) as unknown as SchoolTimetableRow[];
+  }
+
+  /** The caller's own staff_member id at the current school, or null. */
+  async myStaffMemberId(): Promise<string | null> {
+    const { data, error } = await this.client.rpc('my_staff_member', { p_school_id: this.requireSchoolId() });
+    if (error) throw error;
+    return (data as string | null) ?? null;
+  }
+
+  /** Calendar items the caller may see (own, for a teacher; the school's, for an admin). */
+  async calendarItems(): Promise<CalendarItemRow[]> {
+    const { data, error } = await this.client
+      .from('calendar_items')
+      .select('*, classes(name, grade_code), subjects(name)')
+      .order('event_date');
+    if (error) throw error;
+    return (data ?? []) as unknown as CalendarItemRow[];
+  }
+
+  async addCalendarItem(item: Omit<TablesInsert<'calendar_items'>, 'school_id' | 'staff_member_id'>): Promise<Tables<'calendar_items'>> {
+    const staffMemberId = await this.myStaffMemberId();
+    if (!staffMemberId) throw new Error('You are not a teacher at this school.');
+    const { data, error } = await this.client
+      .from('calendar_items')
+      // school_id is filled by the trigger; staff_member_id ties the item to this teacher.
+      .insert({ ...item, staff_member_id: staffMemberId, school_id: this.requireSchoolId() })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteCalendarItem(id: string): Promise<void> {
+    const { error } = await this.client.from('calendar_items').delete().eq('id', id);
+    if (error) throw error;
+  }
 }
 
 export type FeeAccountRow = import('../database.types').Database['public']['Views']['fee_account_balances']['Row'] & {
@@ -792,4 +901,18 @@ export type ClassSubjectTeacherRow = ClassSubjectTeacher & {
 };
 export type RegisterLearnerRow = Learner & {
   classes: { name: string; grade_code: string } | null;
+};
+
+export type MyTimetableRow = Database['public']['Functions']['my_timetable']['Returns'][number];
+
+export type SchoolTimetableRow = Tables<'timetable_lessons'> & {
+  classes: { name: string; grade_code: string } | null;
+  subjects: { name: string } | null;
+  teacher: { first_name: string; last_name: string } | null;
+  school_periods: { name: string; position: number; starts_at: string; ends_at: string } | null;
+};
+
+export type CalendarItemRow = Tables<'calendar_items'> & {
+  classes: { name: string; grade_code: string } | null;
+  subjects: { name: string } | null;
 };

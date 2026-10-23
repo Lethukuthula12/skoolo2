@@ -2450,6 +2450,7 @@ export type Database = {
           school_id: string
         }[]
       }
+      my_staff_member: { Args: { p_school_id: string }; Returns: string }
       my_timetable: {
         Args: { p_year: number }
         Returns: {

@@ -22,6 +22,8 @@ import { AuthService, StaffService } from '@skoolo/shared';
             <a routerLink="/messages" routerLinkActive="active">Messages</a>
             <a routerLink="/absences" routerLinkActive="active">Absences</a>
             <a routerLink="/fees" routerLinkActive="active">Fees</a>
+            <a routerLink="/timetable" routerLinkActive="active">Timetable</a>
+            <a routerLink="/calendar" routerLinkActive="active">Calendar</a>
             <a routerLink="/staff" routerLinkActive="active">Staff register</a>
             <a routerLink="/school" routerLinkActive="active">School profile</a>
           } @else {
@@ -29,6 +31,8 @@ import { AuthService, StaffService } from '@skoolo/shared';
             <a routerLink="/reports" routerLinkActive="active">Reports</a>
             <a routerLink="/messages" routerLinkActive="active">Messages</a>
             <a routerLink="/absences" routerLinkActive="active">Absences</a>
+            <a routerLink="/timetable" routerLinkActive="active">Timetable</a>
+            <a routerLink="/calendar" routerLinkActive="active">Calendar</a>
           }
         </nav>
         <div class="user">

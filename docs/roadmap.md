@@ -19,7 +19,7 @@ school. Nothing in the next stage starts while the current one has open bugs.
 | 3 | Term reports | 2, 5, 3 (schedules and pass and fail lists) | **Built** (capture grid, approval, publish, report card, parent view, schedule export; verified end to end) |
 | 4 | Messages between home and school | 4, 6 | **Built** (report absence, acknowledge, two-way threads, message a class; verified absence end to end) |
 | 5 | School fees | 7 | **Built** (fee structures, accounts, record/confirm payments, balances, arrears export, parent statement; verified end to end) |
-| 6 | Teacher timetables and calendars | 8 | **In progress** (day structure, timetable lessons with clash prevention, calendar items, RLS and RPCs done; screens next) |
+| 6 | Teacher timetables and calendars | 8 | **Built** (day structure, teacher weekly grid with place/remove and .ics export, calendar, admin per-class and per-teacher views; verified end to end) |
 | 7 | Assessment detail | rest of 5 | Planned, target Term 1 2027 |
 
 The school's requests, in their words:

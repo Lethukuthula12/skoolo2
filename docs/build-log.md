@@ -602,3 +602,28 @@ neither another teacher nor another school sees a lesson or calendar item.
 Next in Stage 6: the screens — the admin day-structure setup, the teacher's weekly timetable grid
 (place and remove lessons, print, export to .ics) and calendar, and the admin's per-teacher and
 per-class timetable views.
+
+## Stage 6 screens — timetable and calendar in the portal
+
+One role-aware **Timetable** page. The admin gets three tabs: Day structure (add and remove the
+day's periods and breaks), By class and By teacher (read-only week grids for oversight). A teacher
+gets an Add-a-lesson form and their own week grid: they pick a day, a teaching period, one of their
+classes and a subject, and place the lesson; each placed slot has a remove ×. The subject list
+mirrors the server rule — below the school's subject-teaching grade the class teacher may place any
+of the grade's subjects, at and above it only the subjects they are assigned — so the form never
+offers a lesson the database would refuse. Buttons export the week to a phone calendar (.ics, weekly
+recurring events) and print. A separate **Calendar** page lets a teacher add dated items (test,
+assignment, outing, event) linked to a class and subject, and remove their own; the admin sees the
+school's. Both are added to the portal nav for admins and teachers, and a SECURITY DEFINER
+`my_staff_member` helper lets a teacher resolve their own staff id to add a calendar item without
+reading the admin-only staff register.
+
+Verified end to end on the pilot data as both roles: the admin set up a four-period day; the teacher
+(Thandeka) placed a Mathematics lesson, was refused a clashing slot ("you already teach a lesson in
+that slot"), placed a second lesson, exported a valid two-event .ics and removed a lesson; the
+calendar accepted a test dated 12 Feb 2027; and the admin's By class and By teacher grids showed the
+remaining lesson with the teacher and class names. Both apps build clean.
+
+One fix made while building: the teacher's subject list first offered every grade subject whenever
+they were the class teacher, but at a subject-teaching grade the server only allows assigned
+subjects; the client now applies the same grade-threshold rule.
