@@ -14,7 +14,7 @@ import { ApplicationService, FEE_PLAN_LABELS, FeeStatement } from '@skoolo/share
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
         <ion-title>School fees</ion-title>
       </ion-toolbar>
@@ -86,8 +86,8 @@ import { ApplicationService, FEE_PLAN_LABELS, FeeStatement } from '@skoolo/share
     .reference span { font-size: 0.8rem; color: rgba(20,33,61,0.7); }
     .reference strong { font-size: 1.5rem; letter-spacing: 0.08em; font-family: ui-monospace, Consolas, monospace; }
     .bank { display: grid; gap: 6px; margin: 0; }
-    .bank div { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(20,33,61,0.08); padding-bottom: 4px; }
-    .bank dt { color: rgba(20,33,61,0.7); font-size: 0.9rem; } .bank dd { margin: 0; font-weight: 600; }
+    .bank div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; border-bottom: 1px solid var(--skoolo-line); padding: 12px 0; }
+    .bank dt { color: var(--skoolo-muted); font-size: 12px; } .bank dd { margin: 0; font-size: 13px; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
     .pay { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid rgba(20,33,61,0.08); }
     .pay p { margin: 2px 0 0; font-size: 0.85rem; }
     .badge { font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: rgba(183,121,31,0.14); color: #b7791f; }

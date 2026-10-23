@@ -1,6 +1,6 @@
 import { Component, effect, inject, input, signal } from '@angular/core';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar,
+  IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
 import {
   ACHIEVEMENT_LEVELS, ApplicationService, ChildReport, achievementDescription, achievementLevel,
@@ -9,11 +9,11 @@ import {
 @Component({
   selector: 'app-child-reports-page',
   imports: [
-    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar,
+    IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
         <ion-title>Reports</ion-title>
       </ion-toolbar>

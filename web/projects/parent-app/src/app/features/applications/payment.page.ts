@@ -15,7 +15,7 @@ import { ApplicationService, PaymentInstructions } from '@skoolo/shared';
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/applications" text="" /></ion-buttons>
         <ion-title>Enrolment fee</ion-title>
       </ion-toolbar>

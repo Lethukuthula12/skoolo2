@@ -1,60 +1,87 @@
-/* Skoolo parent app theme — aligned with the school portal (indigo primary, coral accent, Poppins). */
+/* Parent app foundation. School branding changes the accent, not the page structure. */
 :root {
-  --ion-color-primary: #3a41c4;
-  --ion-color-primary-rgb: 58, 65, 196;
+  --ion-color-primary: #5145b5;
+  --ion-color-primary-rgb: 81, 69, 181;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #333aad;
-  --ion-color-primary-tint: #4e54ca;
-
-  --ion-color-secondary: #fb7d5b;
-  --ion-color-secondary-rgb: 251, 125, 91;
+  --ion-color-primary-shade: #473d9f;
+  --ion-color-primary-tint: #6258bc;
+  --ion-color-secondary: #bf543c;
+  --ion-color-secondary-rgb: 191, 84, 60;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #dd6e50;
-  --ion-color-secondary-tint: #fb8a6b;
-
-  --ion-color-success: #1e9e5f;
-  --ion-color-success-rgb: 30, 158, 95;
+  --ion-color-secondary-shade: #a84a35;
+  --ion-color-secondary-tint: #c56550;
+  --ion-color-success: #247650;
+  --ion-color-success-rgb: 36, 118, 80;
   --ion-color-success-contrast: #ffffff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #1a8b53;
-  --ion-color-success-tint: #35a86f;
-
-  --ion-background-color: #f5f6fc;
-  --ion-background-color-rgb: 245, 246, 252;
-  --ion-text-color: #2c3156;
-  --ion-text-color-rgb: 44, 49, 86;
-  --ion-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-
-  --skoolo-title: #303972;
+  --ion-color-success-shade: #206846;
+  --ion-color-success-tint: #3a8462;
+  --ion-color-medium: #72758a;
+  --ion-color-medium-rgb: 114, 117, 138;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #646779;
+  --ion-color-medium-tint: #808396;
+  --ion-background-color: #f5f5fa;
+  --ion-background-color-rgb: 245, 245, 250;
+  --ion-text-color: #34364c;
+  --ion-text-color-rgb: 52, 54, 76;
+  --ion-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --skoolo-title: #303451;
+  --skoolo-muted: #717488;
+  --skoolo-surface: #ffffff;
+  --skoolo-line: #e9e9f2;
+  --skoolo-brand-soft: rgba(var(--ion-color-primary-rgb), .09);
+  --skoolo-brand-ink: #5145b5;
+  --parent-nav-height: calc(72px + env(safe-area-inset-bottom, 0px));
 }
-
-ion-content { --padding-bottom: 32px; }
-ion-title { font-weight: 700; }
-h1, h2, h3 { color: var(--skoolo-title); font-weight: 700; }
-
-.centered {
-  display: grid;
-  place-items: center;
-  min-height: 40vh;
-  text-align: center;
-  color: var(--ion-color-medium);
-  padding: 0 24px;
+* { box-sizing: border-box; }
+body { -webkit-font-smoothing: antialiased; }
+ion-content { --padding-bottom: 28px; }
+ion-toolbar {
+  --background: var(--skoolo-surface);
+  --color: var(--skoolo-title);
+  --border-width: 0;
+  --min-height: 68px;
+  --padding-start: 8px;
+  --padding-end: 8px;
 }
-
-.page-section { padding: 16px; }
-
-.form-card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 18px;
-  margin: 16px;
-  box-shadow: 0 6px 20px rgba(48, 57, 114, 0.07);
-}
-
-.error-text {
-  color: var(--ion-color-danger);
-  font-size: 0.9rem;
-  margin: 8px 0 0;
-}
+ion-header { box-shadow: none !important; border-bottom: 1px solid var(--skoolo-line); }
+ion-header::after { display: none; }
+ion-title { font-size: 18px; font-weight: 600; letter-spacing: -.35px; }
+ion-back-button { --color: var(--skoolo-title); --icon-font-size: 22px; min-width: 44px; }
+ion-buttons ion-button { --color: var(--skoolo-muted); --border-radius: 12px; min-width: 44px; min-height: 44px; }
+ion-button { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 500; --border-radius: 11px; --box-shadow: none; min-height: 44px; }
+ion-button[size='large'] { min-height: 50px; font-size: 14px; }
+ion-button[fill='outline'] { --color: var(--skoolo-brand-ink); --border-color: #d9d7e9; --border-width: 1px; --background: transparent; }
+ion-button[fill='clear']:not([color]) { --color: var(--skoolo-brand-ink); }
+ion-input, ion-select, ion-textarea { font-size: 14px; --border-radius: 10px; --border-color: #dcdde8; --highlight-color-focused: var(--skoolo-brand-ink); --background: var(--skoolo-surface); }
+ion-input, ion-textarea { --padding-top: 14px; --padding-bottom: 14px; }
+ion-segment { border-radius: 12px; background: #f1f0f7; padding: 4px; }
+ion-segment-button { font-size: 12px; text-transform: none; letter-spacing: 0; --color: var(--skoolo-muted); --color-checked: var(--skoolo-brand-ink); --indicator-color: var(--skoolo-brand-ink); }
+ion-badge { font-weight: 500; font-size: 11px; border-radius: 6px; padding: 6px 9px; line-height: 1.4; }
+ion-spinner { color: var(--skoolo-brand-ink); }
+ion-button ion-spinner { color: inherit; width: 22px; height: 22px; }
+ion-searchbar { --background: #f5f5fa; --color: var(--skoolo-title); --placeholder-color: var(--skoolo-muted); --icon-color: var(--skoolo-muted); --box-shadow: none; --border-radius: 12px; }
+ion-list { --ion-item-background: var(--skoolo-surface); }
+h1, h2, h3 { color: var(--skoolo-title); font-weight: 600; }
+p { line-height: 1.7; }
+a { color: var(--skoolo-brand-ink); }
+button, a, ion-button, input { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--skoolo-brand-ink); outline-offset: 3px; }
+.centered { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 45vh; text-align: center; color: var(--skoolo-muted); padding: 32px 24px; gap: 10px; max-width: 520px; margin: auto; font-size: 14px; }
+.centered p { margin: 8px 0; }
+.centered > ion-icon { color: var(--skoolo-brand-ink); padding: 18px; border-radius: 20px; background: var(--skoolo-brand-soft); font-size: 32px; }
+.page-section { padding: 20px; max-width: 800px; margin-inline: auto; }
+.form-card { background: var(--skoolo-surface); border: 1px solid var(--skoolo-line); border-radius: 18px; padding: 22px; width: calc(100% - 40px); max-width: 760px; margin: 20px auto; box-shadow: 0 4px 20px rgba(41, 43, 80, .025); overflow-wrap: anywhere; }
+.form-card h2 { font-size: 18px; letter-spacing: -.3px; }
+.form-card h3 { font-size: 16px; }
+.error-text { color: #b73647; font-size: 13px; margin: 8px 0 0; }
+.screen-intro { max-width: 760px; margin: 24px auto 20px; width: calc(100% - 40px); }
+.screen-intro .eyebrow { color: var(--skoolo-brand-ink); font-size: 10px; letter-spacing: 1.5px; font-weight: 600; margin: 0 0 8px; }
+.screen-intro h1 { margin: 0; font-size: 26px; letter-spacing: -.7px; line-height: 1.4; }
+.screen-intro > p:not(.eyebrow) { margin: 9px 0 0; color: var(--skoolo-muted); font-size: 13px; }
+@media (max-width: 480px) { .form-card { padding: 20px; } ion-title { font-size: 17px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }

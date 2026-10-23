@@ -10,7 +10,7 @@ import { ApplicationService, AttendanceRecord } from '@skoolo/shared';
   imports: [DatePipe, IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
         <ion-title>Attendance</ion-title>
       </ion-toolbar>
@@ -53,7 +53,7 @@ import { ApplicationService, AttendanceRecord } from '@skoolo/shared';
     .form-card { display: grid; gap: 8px; }
     h2 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 700; }
     .rate { text-align: center; }
-    .rate strong { font-size: 2.4rem; color: var(--ion-color-primary); line-height: 1; }
+    .rate strong { font-size: 2.4rem; color: var(--skoolo-brand-ink); line-height: 1; }
     .rate span { font-size: 0.9rem; }
     .totals { grid-auto-flow: column; text-align: center; }
     .t strong { display: block; font-size: 1.6rem; }

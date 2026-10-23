@@ -21,7 +21,7 @@ const OPTIONAL_DOCUMENT_TYPES: readonly DocumentType[] = ['latest_report', 'immu
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/applications" text="" /></ion-buttons>
         <ion-title>Documents</ion-title>
       </ion-toolbar>

@@ -19,7 +19,7 @@ type Mode = 'sign_in' | 'sign_up';
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
         <ion-title>{{ auth.isSignedIn() ? 'Your account' : 'Welcome' }}</ion-title>
       </ion-toolbar>
@@ -27,29 +27,25 @@ type Mode = 'sign_in' | 'sign_up';
 
     <ion-content>
       @if (auth.isSignedIn()) {
+        <div class="screen-intro"><p class="eyebrow">YOUR SPACE</p><h1>Home and school, connected.</h1><p>Your family, applications and conversations in one place.</p></div>
         <div class="form-card account">
-          <ion-icon name="person-circle-outline" class="avatar" />
-          <h2>{{ auth.user()?.user_metadata?.['full_name'] || 'Parent' }}</h2>
-          <p>{{ auth.user()?.email }}</p>
-          <ion-button expand="block" routerLink="/children">
-            <ion-icon slot="start" name="people-outline" /> My children
-          </ion-button>
-          <ion-button expand="block" routerLink="/applications">
-            <ion-icon slot="start" name="folder-open-outline" /> My applications
-          </ion-button>
-          <ion-button expand="block" fill="outline" routerLink="/inbox">
-            <ion-icon slot="start" name="mail-outline" /> Messages
-          </ion-button>
-          <ion-button expand="block" fill="clear" color="medium" (click)="signOut()">
-            <ion-icon slot="start" name="log-out-outline" /> Sign out
-          </ion-button>
+          <div class="profile"><span class="avatar"><ion-icon name="person-circle-outline" aria-hidden="true" /></span><div><span class="profile-label">Parent account</span><h2>{{ auth.user()?.user_metadata?.['full_name'] || 'Parent' }}</h2><p>{{ auth.user()?.email }}</p></div></div>
+          <nav class="account-links" aria-label="Account shortcuts">
+            <a routerLink="/children"><ion-icon name="people-outline" aria-hidden="true" /><span><strong>My family</strong><small>Children, reports and school life</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+            <a routerLink="/applications"><ion-icon name="folder-open-outline" aria-hidden="true" /><span><strong>Applications</strong><small>Follow your enrolment progress</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+            <a routerLink="/inbox"><ion-icon name="mail-outline" aria-hidden="true" /><span><strong>Inbox</strong><small>Updates about your applications</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+            <a routerLink="/schools"><ion-icon name="school-outline" aria-hidden="true" /><span><strong>Explore schools</strong><small>Find a place for their next chapter</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+          </nav>
+          <ion-button class="sign-out" fill="clear" color="medium" (click)="signOut()"><ion-icon slot="start" name="log-out-outline" /> Sign out</ion-button>
         </div>
       } @else {
-        <div class="form-card">
+        <div class="auth-intro"><span class="welcome-mark"><ion-icon name="school-outline" aria-hidden="true" /></span><p class="auth-wordmark">skoolo<span>.</span></p><h1>{{ mode() === 'sign_up' ? 'A new chapter starts here.' : 'Welcome back.' }}</h1><p>Your child’s school day, a little closer.</p></div>
+        <div class="form-card auth-card">
           <ion-segment [value]="mode()" (ionChange)="switchMode($event)">
             <ion-segment-button value="sign_in">Sign in</ion-segment-button>
             <ion-segment-button value="sign_up">Create account</ion-segment-button>
           </ion-segment>
+          @if (notice()) { <p class="notice-text" role="status">{{ notice() }}</p> }
 
           @if (mode() === 'sign_up') {
             <p class="intro">Create a free parent account to apply to schools and follow your applications.</p>
@@ -58,8 +54,7 @@ type Mode = 'sign_in' | 'sign_up';
               <ion-input label="Cellphone number" labelPlacement="floating" fill="outline" formControlName="phone" type="tel" inputmode="tel" autocomplete="tel" helperText="The school uses this to contact you" />
               <ion-input label="Email" labelPlacement="floating" fill="outline" formControlName="email" type="email" inputmode="email" autocomplete="email" />
               <ion-input label="Password" labelPlacement="floating" fill="outline" formControlName="password" type="password" autocomplete="new-password" helperText="At least 8 characters" />
-              @if (error()) { <p class="error-text">{{ error() }}</p> }
-              @if (notice()) { <p class="notice-text">{{ notice() }}</p> }
+              @if (error()) { <p class="error-text" role="alert">{{ error() }}</p> }
               <ion-button expand="block" size="large" type="submit" [disabled]="signUpForm.invalid || busy()">
                 @if (busy()) { <ion-spinner name="crescent" /> } @else { Create account }
               </ion-button>
@@ -68,7 +63,7 @@ type Mode = 'sign_in' | 'sign_up';
             <form [formGroup]="signInForm" (ngSubmit)="signIn()">
               <ion-input label="Email" labelPlacement="floating" fill="outline" formControlName="email" type="email" inputmode="email" autocomplete="email" />
               <ion-input label="Password" labelPlacement="floating" fill="outline" formControlName="password" type="password" autocomplete="current-password" />
-              @if (error()) { <p class="error-text">{{ error() }}</p> }
+              @if (error()) { <p class="error-text" role="alert">{{ error() }}</p> }
               <ion-button expand="block" size="large" type="submit" [disabled]="signInForm.invalid || busy()">
                 @if (busy()) { <ion-spinner name="crescent" /> } @else { Sign in }
               </ion-button>
@@ -82,13 +77,28 @@ type Mode = 'sign_in' | 'sign_up';
   styles: `
     form { display: grid; gap: 14px; margin-top: 16px; }
     ion-segment { margin-bottom: 4px; }
-    .intro { color: rgba(20, 33, 61, 0.7); margin: 14px 0 0; font-size: 0.95rem; }
-    .notice-text { color: var(--ion-color-success-shade); font-size: 0.9rem; margin: 0; }
+    .intro { color: var(--skoolo-muted); margin: 18px 0 0; font-size: 13px; }
+    .notice-text { color: var(--ion-color-success-shade); font-size: 13px; margin: 16px 0 0; }
     ion-button[type="submit"] { margin-top: 6px; --border-radius: 12px; font-weight: 700; }
-    .account { text-align: center; }
-    .account .avatar { font-size: 72px; color: var(--ion-color-primary); }
-    .account h2 { margin: 4px 0 0; }
-    .account p { color: rgba(20, 33, 61, 0.7); margin: 4px 0 20px; }
+    .profile { display: flex; align-items: center; gap: 16px; padding: 6px 0 24px; }
+    .profile > div { min-width: 0; }
+    .profile .avatar { width: 64px; height: 64px; border-radius: 20px; flex-shrink: 0; display: grid; place-items: center; font-size: 38px; color: var(--skoolo-brand-ink); background: var(--skoolo-brand-soft); }
+    .profile-label { color: var(--skoolo-brand-ink); font-size: 11px; }
+    .profile h2 { margin: 4px 0 0; font-size: 19px; }
+    .profile p { color: var(--skoolo-muted); margin: 4px 0 0; font-size: 12px; overflow-wrap: anywhere; }
+    .account-links a { display: flex; align-items: center; gap: 15px; border-top: 1px solid var(--skoolo-line); padding: 19px 0; color: var(--skoolo-title); text-decoration: none; }
+    .account-links ion-icon { font-size: 22px; flex-shrink: 0; color: var(--skoolo-brand-ink); }
+    .account-links strong { display: block; font-size: 14px; font-weight: 500; }
+    .account-links small { display: block; font-size: 11px; color: var(--skoolo-muted); margin-top: 5px; }
+    .account-links ion-icon:last-child { margin-left: auto; font-size: 16px; color: var(--skoolo-muted); }
+    .sign-out { margin: 8px 0 0; }
+    .auth-intro { text-align: center; margin: 34px 24px 24px; }
+    .welcome-mark { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); font-size: 30px; }
+    .auth-wordmark { margin: 5px 0 20px !important; font-size: 26px !important; font-weight: 700; color: var(--skoolo-title) !important; letter-spacing: -1px; }
+    .auth-wordmark span { color: #bf543c; }
+    .auth-intro h1 { font-size: 27px; letter-spacing: -.7px; margin: 0 0 8px; }
+    .auth-intro p { color: var(--skoolo-muted); font-size: 13px; margin: 0; }
+    .auth-card { max-width: 440px; padding: 26px; }
   `,
 })
 export class AuthPage {

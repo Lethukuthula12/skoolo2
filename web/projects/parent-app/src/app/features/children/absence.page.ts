@@ -19,7 +19,7 @@ const REASONS = ['Illness', 'Medical appointment', 'Family responsibility', 'Rel
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
         <ion-title>Report absence</ion-title>
       </ion-toolbar>

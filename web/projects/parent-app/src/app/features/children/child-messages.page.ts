@@ -16,7 +16,7 @@ import { AuthService, MessageThread, MessagingService, ThreadMessage } from '@sk
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
         <ion-title>{{ openThread() ? openThread()!.subject : 'Messages' }}</ion-title>
       </ion-toolbar>

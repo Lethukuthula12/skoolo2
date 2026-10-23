@@ -1,0 +1,21 @@
+<article class="child-card">
+  <div class="child-identity">
+    <span class="child-avatar" [class.coral-avatar]="index() % 3 === 1" [class.teal-avatar]="index() % 3 === 2" aria-hidden="true">{{ initials() }}</span>
+    <div class="child-name"><span class="school-name">{{ child().school_name }}</span><h3>{{ child().first_name }} {{ child().last_name }}</h3><p>{{ child().grade_label }}@if (child().class_name) { <span class="separator">·</span>{{ child().class_name }} }</p></div>
+  </div>
+
+  @if (summary(); as details) {
+    <div class="child-stats">
+      <a [routerLink]="['/child', child().id, 'attendance']"><span class="stat-label"><ion-icon name="checkbox-outline" aria-hidden="true" />Attendance</span><strong>{{ details.attendanceRate === null ? 'No records yet' : details.attendanceRate + '%' }}</strong><span class="stat-caption">View attendance<ion-icon name="chevron-forward-outline" aria-hidden="true" /></span></a>
+      <a [routerLink]="['/child', child().id, 'fees']"><span class="stat-label"><ion-icon name="wallet-outline" aria-hidden="true" />Fee balance</span><strong [class.amount]="details.balance !== null">{{ details.balance === null ? 'Not available yet' : money(details.balance) }}</strong><span class="stat-caption">View account<ion-icon name="chevron-forward-outline" aria-hidden="true" /></span></a>
+    </div>
+  } @else {
+    <div class="summary-unavailable"><p>Attendance and fee summaries are unavailable.</p><div><a [routerLink]="['/child', child().id, 'attendance']">Attendance</a><a [routerLink]="['/child', child().id, 'fees']">School fees</a></div></div>
+  }
+
+  <div class="child-actions">
+    <a [routerLink]="['/child', child().id]"><ion-icon name="document-text-outline" aria-hidden="true" />Reports<ion-icon class="action-arrow" name="chevron-forward-outline" aria-hidden="true" /></a>
+    <a [routerLink]="['/child', child().id, 'messages']"><ion-icon name="chatbubble-ellipses-outline" aria-hidden="true" />Messages<ion-icon class="action-arrow" name="chevron-forward-outline" aria-hidden="true" /></a>
+  </div>
+  <a class="absence-link" [routerLink]="['/child', child().id, 'absence']"><ion-icon name="time-outline" aria-hidden="true" /><span>Not coming to school?</span><strong>Report absence</strong><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+</article>

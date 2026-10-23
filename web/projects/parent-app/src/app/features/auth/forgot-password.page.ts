@@ -13,7 +13,7 @@ import { AuthService } from '@skoolo/shared';
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/auth" text="" /></ion-buttons>
         <ion-title>Reset password</ion-title>
       </ion-toolbar>

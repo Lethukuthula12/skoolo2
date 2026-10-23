@@ -10,7 +10,7 @@ import { ApplicationService, ParentNotice } from '@skoolo/shared';
   imports: [DatePipe, IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
         <ion-title>Notices</ion-title>
       </ion-toolbar>

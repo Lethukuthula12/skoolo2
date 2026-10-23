@@ -1,0 +1,84 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <div class="home-header">
+      <a routerLink="/children" class="wordmark" aria-label="Skoolo home"><span class="brand-mark"><ion-icon name="school-outline" aria-hidden="true" /></span>skoolo<span class="brand-dot">.</span></a>
+      <div class="header-actions">
+        <a routerLink="/notices" aria-label="School notices"><ion-icon name="notifications-outline" aria-hidden="true" /></a>
+        <a routerLink="/auth" aria-label="Your account" class="account-link"><ion-icon name="person-circle-outline" aria-hidden="true" /></a>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content /></ion-refresher>
+  <main class="family-home">
+    <section class="welcome" aria-labelledby="welcome-title">
+      <div>
+        <p class="eyebrow">YOUR FAMILY, CONNECTED</p>
+        <h1 id="welcome-title">{{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}<span class="greeting-dot">.</span></h1>
+        <p class="welcome-copy">A little closer to their school day.</p>
+      </div>
+      <div class="welcome-date"><ion-icon name="calendar-outline" aria-hidden="true" /><span>{{ today | date:'EEE, d MMM' }}</span></div>
+    </section>
+
+    <div class="quick-links">
+      <a routerLink="/calendar"><span class="quick-icon coral"><ion-icon name="calendar-outline" aria-hidden="true" /></span><span><strong>School calendar</strong><small>Dates to remember</small></span><ion-icon class="link-arrow" name="chevron-forward-outline" aria-hidden="true" /></a>
+      <a routerLink="/notices"><span class="quick-icon amber"><ion-icon name="notifications-outline" aria-hidden="true" /></span><span><strong>Noticeboard</strong><small>From your school</small></span><ion-icon class="link-arrow" name="chevron-forward-outline" aria-hidden="true" /></a>
+    </div>
+
+    @if (notice()) { <p class="success-message" role="status"><ion-icon name="checkmark-circle-outline" aria-hidden="true" />{{ notice() }}</p> }
+
+    <div class="home-grid">
+      <section class="children-section" aria-labelledby="children-title">
+        <div class="section-heading">
+          <h2 id="children-title">My children @if (!loading() && !loadError()) { <span class="count">{{ children().length }}</span> }</h2>
+          <button class="text-button" type="button" (click)="showConnect.set(!showConnect())" [attr.aria-expanded]="showConnect()" aria-controls="connect-child"><ion-icon [name]="showConnect() ? 'chevron-up-outline' : 'add-outline'" aria-hidden="true" />Connect child</button>
+        </div>
+
+        @if (showConnect()) {
+          <form id="connect-child" class="connect-card" [formGroup]="form" (ngSubmit)="link()">
+            <h3>Bring your family together</h3>
+            <p>Enter the family code shared by your child’s school or another guardian.</p>
+            <ion-input label="Family code" labelPlacement="stacked" fill="outline" formControlName="code" placeholder="Enter your code" autocapitalize="characters" [maxlength]="20" />
+            <ion-input label="Relationship (optional)" labelPlacement="stacked" fill="outline" formControlName="relationship" placeholder="e.g. Parent or guardian" />
+            @if (linkError()) { <p class="error-text" role="alert">{{ linkError() }}</p> }
+            <ion-button expand="block" type="submit" [disabled]="form.invalid || busy()">@if (busy()) { <ion-spinner name="crescent" /> } @else { Connect my child }</ion-button>
+          </form>
+        }
+
+        @if (loading()) {
+          <div class="loading-card" role="status"><ion-spinner name="crescent" /><span>Bringing your family up to date…</span></div>
+        } @else if (loadError()) {
+          <div class="empty-card"><span class="empty-icon"><ion-icon name="cloud-upload-outline" aria-hidden="true" /></span><h3>Let’s try that again</h3><p role="alert">{{ loadError() }}</p><ion-button (click)="load()" fill="outline">Retry</ion-button></div>
+        } @else {
+          @for (child of children(); track child.id; let i = $index) {
+            <app-child-card [child]="child" [summary]="summaries()[child.id]" [index]="i" />
+          } @empty {
+            <div class="empty-card"><span class="empty-icon"><ion-icon name="people-outline" aria-hidden="true" /></span><h3>Your family starts here</h3><p>Connect your child with a family code to see their school updates, reports and attendance.</p><ion-button (click)="showConnect.set(true)">Connect a child<ion-icon slot="end" name="add-outline" aria-hidden="true" /></ion-button><a class="empty-secondary" routerLink="/applications">Already applied? View applications</a></div>
+          }
+        }
+
+        <a class="school-discovery" routerLink="/schools"><span class="discovery-icon"><ion-icon name="school-outline" aria-hidden="true" /></span><span><strong>Ready for their next chapter?</strong><small>Explore schools and apply in one place.</small></span><ion-icon name="arrow-forward-outline" aria-hidden="true" /></a>
+      </section>
+
+      <aside class="school-updates" aria-label="School updates">
+        <section class="updates-card" aria-labelledby="notice-title">
+          <div class="section-heading"><h2 id="notice-title">From your school</h2><a routerLink="/notices" class="view-all">View all<ion-icon name="chevron-forward-outline" aria-hidden="true" /></a></div>
+          @if (loading()) { <p class="quiet-state">Checking for school updates…</p> }
+          @else if (updatesError()) { <p class="quiet-state">Some updates couldn’t be loaded. Pull down to refresh.</p> }
+          @for (item of notices(); track item.id) {
+            <a class="notice-preview" routerLink="/notices"><span class="notice-label"><ion-icon [name]="item.pinned ? 'pin' : 'notifications-outline'" aria-hidden="true" />{{ item.pinned ? 'Pinned notice' : 'Latest notice' }}</span><h3>{{ item.title }}</h3><p>{{ item.body }}</p><span class="notice-meta">{{ item.schools?.name }}<span>·</span>{{ item.created_at | date:'d MMM' }}</span></a>
+          } @empty { @if (!loading() && !updatesError()) { <div class="quiet-state"><ion-icon name="notifications-outline" aria-hidden="true" /><strong>All caught up</strong><p>New notices from your school will appear here.</p></div> } }
+        </section>
+        <section class="updates-card" aria-labelledby="events-title">
+          <div class="section-heading"><h2 id="events-title">Coming up</h2><a routerLink="/calendar" class="view-all">Calendar<ion-icon name="chevron-forward-outline" aria-hidden="true" /></a></div>
+          @for (event of events(); track event.id) {
+            <a routerLink="/calendar" class="event-preview"><span class="event-date"><small>{{ event.event_date | date:'MMM' }}</small><strong>{{ event.event_date | date:'d' }}</strong></span><span class="event-info"><strong>{{ event.title }}</strong><small>{{ event.schools?.name }}</small><span>{{ event.starts_at ? event.starts_at.slice(0, 5) : 'All day' }}</span></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+          } @empty { @if (!loading() && !updatesError()) { <div class="quiet-state"><ion-icon name="calendar-outline" aria-hidden="true" /><strong>A little room in the diary</strong><p>Your school’s upcoming dates will appear here.</p></div> } }
+        </section>
+        <p class="home-footnote"><ion-icon name="people-outline" aria-hidden="true" />A shared space for home and school.</p>
+      </aside>
+    </div>
+  </main>
+</ion-content>

@@ -10,13 +10,14 @@ import { ApplicationService, CALENDAR_KIND_LABELS, SchoolEvent } from '@skoolo/s
   imports: [DatePipe, IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
         <ion-title>School calendar</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content>
+      <div class="screen-intro"><p class="eyebrow">DATES TO REMEMBER</p><h1>Coming up at school.</h1><p>Keep track of school events, assessments and activities.</p></div>
       @if (loading()) {
         <div class="centered"><ion-spinner name="crescent" /></div>
       } @else if (events().length === 0) {
@@ -51,18 +52,18 @@ import { ApplicationService, CALENDAR_KIND_LABELS, SchoolEvent } from '@skoolo/s
     </ion-content>
   `,
   styles: `
-    .daygroup { display: flex; gap: 14px; padding: 12px 4px; border-top: 1px solid rgba(20,33,61,0.08); }
+    .daygroup { display: flex; gap: 18px; padding: 20px; border: 1px solid var(--skoolo-line); background: var(--skoolo-surface); border-radius: 16px; margin: 16px auto; width: calc(100% - 40px); max-width: 760px; }
     .daygroup:first-child { border-top: none; }
     .date { text-align: center; min-width: 52px; }
     .date strong { display: block; font-size: 1rem; }
     .date span { font-size: 0.72rem; color: rgba(20,33,61,0.6); text-transform: uppercase; }
     .events { flex: 1; display: grid; gap: 10px; min-width: 0; }
-    .event { display: flex; gap: 10px; align-items: flex-start; }
+    .event { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 2px 0 12px; overflow-wrap: anywhere; }
     .info { min-width: 0; }
     .info strong { font-size: 0.98rem; }
     .info p { margin: 1px 0 0; font-size: 0.85rem; }
     .notes { color: var(--ion-text-color); }
-    .badge { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(31,75,216,0.1); color: var(--ion-color-primary); white-space: nowrap; }
+    .badge { font-size: 10px; font-weight: 500; padding: 4px 9px; border-radius: 6px; background: var(--skoolo-brand-soft); color: var(--skoolo-brand-ink); white-space: nowrap; }
     .badge.kind-test { background: #fde8e8; color: #c0392b; }
     .badge.kind-assignment { background: #e8f0fe; color: #1a56db; }
     .badge.kind-outing { background: #e6f6ed; color: #1e8e5a; }

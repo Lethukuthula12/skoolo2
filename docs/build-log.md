@@ -847,3 +847,41 @@ details — an attendance percentage and the fees owed (or "Fees up to date") �
 childSummary (fee balance + attendance counts), on top of the existing actions. Verified: with the pilot
 school's theme set to coral, the parent app rendered coral throughout, and Ayanda's card showed "0%
 present" and "R 10 800 owing" (matching the register and fee balance). Builds clean.
+
+## 2026-10-23 — Parent app design pass
+
+User chose the parent app as the starting point for the design rework, using the supplied Akademi
+and EduDash references for hierarchy, spacing and component treatment. This pass keeps the existing
+parent workflows and adapts the visual direction to a phone interface.
+
+- Added persistent Home / Applications / Inbox / Account navigation, with safe-area spacing and an
+  active state. Password recovery keeps its focused layout.
+- Rebuilt the family home with a greeting, calendar and noticeboard shortcuts, clearer child cards,
+  attendance and fee summaries, grouped Reports / Messages actions, and a report-absence link.
+  A reusable child-card component keeps the repeated card markup and styles together. A compact
+  section previews real school notices and upcoming dates; loading, empty and failed requests have
+  distinct states. Family-code entry is expandable.
+- Added a shared light page foundation: white headers, muted page backgrounds, consistent typography,
+  restrained borders, form spacing and button treatments. Refined account/sign-in, school directory,
+  application cards, inbox and calendar. Moved directory status badges under the school name to leave
+  room for long names on phones. Fee banking details now wrap in a two-column grid.
+- Preserved school accent colours with calculated contrasting button text and readable link colours.
+  A late theme request cannot restore the previous school's colour after sign-out. Connecting a child
+  refreshes branding. Removed the viewport restriction that prevented browser zoom.
+- Corrected the applications empty-state school-directory link; refreshed home, applications and
+  inbox when Ionic re-enters a retained page. Summary query errors are propagated instead of appearing
+  as missing attendance or fee records. Sign-up confirmation feedback remains visible after switching
+  back to the sign-in form. No schema or access-rule changes.
+
+Verification: final `npm run build:parent` passed in production mode without warnings (network access
+was needed for the existing Google Fonts import). A temporary Angular-injection harness exercised the
+actual SchoolThemeService: seven accent colours meet 4.5:1 button contrast and 5:1 link contrast; invalid
+colours fall back correctly; a delayed request cannot undo sign-out reset. `git diff --check` passed.
+The first `npm run test:rls` run passed all 112 tenant-isolation checks, then the coverage guard failed
+to connect with `DbConfigLoginRoleNetworkError / TransportError`. A retry also failed at connection.
+
+Not released: CLAUDE.md requires a passing full RLS suite before release. The source is saved locally;
+push to main (which triggers deployment) is held until the required test can complete. Browser access
+to the local preview was denied by this session's origin policy, so rendered phone/desktop layouts,
+navigation, touch interactions and live deployment are not yet visually verified. No claim of visual
+parity or real-device acceptance is made for this pass.

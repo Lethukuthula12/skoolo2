@@ -269,6 +269,8 @@ export class ApplicationService {
         .order('academic_year', { ascending: false }).limit(1).maybeSingle(),
       this.client.from('attendance_records').select('status').eq('learner_id', learnerId),
     ]);
+    if (balanceRes.error) throw balanceRes.error;
+    if (attRes.error) throw attRes.error;
     const records = attRes.data ?? [];
     const total = records.length;
     const attended = records.filter((r) => r.status !== 'absent').length;

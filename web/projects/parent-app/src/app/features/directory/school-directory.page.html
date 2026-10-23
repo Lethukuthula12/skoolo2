@@ -1,6 +1,6 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>Skoolo</ion-title>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Explore schools</ion-title>
     <ion-buttons slot="end">
       @if (auth.isSignedIn()) {
         <ion-button routerLink="/children" aria-label="My children">
@@ -15,18 +15,11 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar color="primary">
-    <ion-searchbar
-      placeholder="Search schools or towns"
-      [debounce]="250"
-      inputmode="search"
-      (ionInput)="onSearch($event)"
-    />
-  </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
   <app-install-hint />
+  <div class="screen-intro"><p class="eyebrow">THEIR NEXT CHAPTER</p><h1>Find a school.</h1><p>Explore schools, see open grades and take the next step.</p><ion-searchbar placeholder="Search schools or towns" [debounce]="250" inputmode="search" (ionInput)="onSearch($event)" /></div>
   @if (loading() && schools().length === 0) {
     <div class="centered"><ion-spinner name="crescent" /></div>
   } @else if (loadError()) {
@@ -56,8 +49,8 @@
             <ion-label>
               <h2>{{ school.name }}</h2>
               <p>{{ school.town }}@if (school.province) {, {{ school.province }}}</p>
+              <ion-badge [color]="statusColor(school)">{{ statusLabel(school) }}</ion-badge>
             </ion-label>
-            <ion-badge slot="end" [color]="statusColor(school)">{{ statusLabel(school) }}</ion-badge>
             <ion-icon slot="end" class="chevron" [name]="school.id === selectedId() ? 'chevron-up-outline' : 'chevron-down-outline'" />
           </ion-item>
 

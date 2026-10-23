@@ -5,13 +5,14 @@ import { ApplicationService } from '@skoolo/shared';
 /** Wears the parent's school brand: applies that school's primary colour to the app's Ionic theme,
  *  so a school that customises its portal also recolours its parents' app. */
 const CACHE_KEY = 'skoolo-app-primary';
-const DEFAULT_PRIMARY = '#3a41c4';
+const DEFAULT_PRIMARY = '#5145b5';
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 @Injectable({ providedIn: 'root' })
 export class SchoolThemeService {
   private readonly doc = inject(DOCUMENT);
   private readonly applications = inject(ApplicationService);
+  private requestVersion = 0;
 
   constructor() {
     const cached = this.read();
@@ -20,8 +21,10 @@ export class SchoolThemeService {
 
   /** Look up the signed-in parent's school colour and apply it. */
   async refreshForParent(): Promise<void> {
+    const version = ++this.requestVersion;
     try {
       const theme = await this.applications.mySchoolTheme();
+      if (version !== this.requestVersion) return;
       this.apply(theme?.primary && HEX.test(theme.primary) ? theme.primary : DEFAULT_PRIMARY);
     } catch {
       /* keep whatever is applied */
@@ -29,6 +32,7 @@ export class SchoolThemeService {
   }
 
   reset(): void {
+    ++this.requestVersion;
     this.apply(DEFAULT_PRIMARY);
   }
 
@@ -37,6 +41,13 @@ export class SchoolThemeService {
     const [r, g, b] = toRgb(primary);
     s.setProperty('--ion-color-primary', primary);
     s.setProperty('--ion-color-primary-rgb', `${r}, ${g}, ${b}`);
+    // A school's light accent still needs readable buttons and links on white cards.
+    const useWhite = contrastWithWhite(primary) >= 4.5;
+    s.setProperty('--ion-color-primary-contrast', useWhite ? '#ffffff' : '#000000');
+    s.setProperty('--ion-color-primary-contrast-rgb', useWhite ? '255, 255, 255' : '0, 0, 0');
+    let ink = primary;
+    while (contrastWithWhite(ink) < 5) ink = shade(ink, 0.1);
+    s.setProperty('--skoolo-brand-ink', ink);
     s.setProperty('--ion-color-primary-shade', shade(primary, 0.12));
     s.setProperty('--ion-color-primary-tint', shade(primary, -0.1));
     try { this.doc.defaultView?.localStorage.setItem(CACHE_KEY, primary); } catch { /* blocked storage */ }
@@ -50,6 +61,14 @@ export class SchoolThemeService {
       return null;
     }
   }
+}
+
+function contrastWithWhite(hex: string): number {
+  const [r, g, b] = toRgb(hex).map((channel) => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 1.05 / (0.2126 * r + 0.7152 * g + 0.0722 * b + 0.05);
 }
 
 function toRgb(hex: string): [number, number, number] {

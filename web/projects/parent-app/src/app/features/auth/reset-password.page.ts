@@ -15,7 +15,7 @@ import { AuthService } from '@skoolo/shared';
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary"><ion-title>Reset password</ion-title></ion-toolbar>
+      <ion-toolbar><ion-title>Reset password</ion-title></ion-toolbar>
     </ion-header>
     <ion-content>
       @if (!ready()) {

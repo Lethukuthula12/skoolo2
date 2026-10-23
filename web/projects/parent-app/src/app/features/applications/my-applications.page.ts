@@ -19,7 +19,7 @@ import {
   ],
   template: `
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
         <ion-title>My applications</ion-title>
       </ion-toolbar>
@@ -27,14 +27,17 @@ import {
 
     <ion-content>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content /></ion-refresher>
+      <div class="screen-intro"><p class="eyebrow">THE NEXT STEP</p><h1>Every application, in one place.</h1><p>Follow progress, add documents and manage enrolment fees.</p></div>
 
       @if (loading()) {
         <div class="centered"><ion-spinner name="crescent" /></div>
+      } @else if (error()) {
+        <div class="centered"><ion-icon name="alert-circle-outline" /><p role="alert">{{ error() }}</p><ion-button fill="outline" (click)="load()">Retry</ion-button></div>
       } @else if (applications().length === 0) {
         <div class="centered">
           <ion-icon name="folder-open-outline" size="large" />
           <p>You have not applied to a school yet.</p>
-          <ion-button fill="outline" routerLink="/">Find a school</ion-button>
+          <ion-button fill="outline" routerLink="/schools">Find a school</ion-button>
         </div>
       } @else {
         @for (app of applications(); track app.id) {
@@ -74,11 +77,12 @@ import {
   `,
   styles: `
     .application { display: grid; gap: 8px; }
-    header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-    h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
-    header p { margin: 2px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.92rem; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+    header > div { flex: 1 1 200px; min-width: 0; }
+    h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    header p { margin: 4px 0 0; color: var(--skoolo-muted); font-size: 12px; }
     ion-badge { white-space: nowrap; flex-shrink: 0; }
-    .meta { margin: 0; font-size: 0.88rem; color: rgba(20, 33, 61, 0.75); display: flex; align-items: center; gap: 6px; }
+    .meta { margin: 0; font-size: 12px; color: var(--skoolo-muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
     .payment.good { color: var(--ion-color-success-shade); }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
   `,
@@ -90,8 +94,9 @@ export class MyApplicationsPage {
   protected readonly paymentLabels = PAYMENT_STATUS_LABELS;
   protected readonly applications = signal<ApplicationSummary[]>([]);
   protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
 
-  constructor() {
+  ionViewWillEnter(): void {
     void this.load();
   }
 
@@ -111,9 +116,13 @@ export class MyApplicationsPage {
     await event.target.complete();
   }
 
-  private async load(): Promise<void> {
+  protected async load(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
     try {
       this.applications.set(await this.applications$.mine());
+    } catch {
+      this.error.set('We couldn’t load your applications. Please try again.');
     } finally {
       this.loading.set(false);
     }
