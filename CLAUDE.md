@@ -39,8 +39,27 @@ the current state of the system.
   status transitions) are enforced in PostgreSQL with constraints, triggers or SECURITY DEFINER
   functions, never only in the client.
 - After any migration, regenerate types: `npm run gen:types` in `web/`.
-- Add any new school-owned table or RPC to `supabase/tests/tenant_isolation.sql` and run
-  `npm run test:rls` (it must pass) before every release.
+- Add any new school-owned table or RPC to `supabase/tests/tenant_isolation.sql`.
+  Run the full RLS suite when required by the change-specific release checks below.
+
+## Verification and release checks
+- Choose checks from the complete diff being released, not just the latest commit.
+- Styling, layout, copy, navigation and client error-handling changes that preserve data access
+  and permission rules require a passing production build of each affected app and relevant
+  functional checks. They do not require a fresh `npm run test:rls` run.
+- Changes to schema, migrations, RLS, storage permissions, views, RPCs, triggers, constraints,
+  authentication, role checks, tenant selection or query scoping require the full
+  `npm run test:rls` suite to pass before release. Extend the tests for changed access rules.
+  A connection failure is not a passing result for these changes.
+- Documentation-only changes need a diff review; builds and database tests are not required.
+- For UI changes, check affected screens and interactions in the browser when access is available.
+  If browser tooling is blocked, record the unverified screens in `docs/build-log.md` and report
+  the limitation. This does not block a UI release whose required checks pass. Do not claim
+  visual verification or mark a roadmap stage accepted without its actual acceptance checks.
+- An unavailable check outside the change's scope (network, credentials or tool access) does not
+  block otherwise authorised work or release. Record it and continue without asking for repeat
+  approval. Actual test failures relevant to the change must be fixed; do not relabel them as
+  infrastructure problems. These rules do not override platform permissions or security controls.
 
 ## Angular
 - Standalone components, signals, typed reactive forms, lazy-loaded feature routes.

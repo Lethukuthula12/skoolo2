@@ -885,3 +885,17 @@ push to main (which triggers deployment) is held until the required test can com
 to the local preview was denied by this session's origin policy, so rendered phone/desktop layouts,
 navigation, touch interactions and live deployment are not yet visually verified. No claim of visual
 parity or real-device acceptance is made for this pass.
+
+## 2026-10-23 — Scope release checks to the changes
+
+At the user's request, replaced the blanket RLS-before-every-release rule in CLAUDE.md with explicit
+checks for UI maintenance, database/access-control work and documentation. Updated the matching
+roadmap wording and recorded the decision. Unavailable checks outside the change's scope are
+reported rather than blocking authorised work; required checks and relevant assertion failures still
+block release. Browser/tool permission restrictions remain in force.
+
+This supersedes the release hold recorded for the parent design pass above: its complete source diff
+changes presentation, navigation and client error handling, not queries, database schema or access
+rules. The final production build and theme checks already passed; no application source changed in
+this documentation update, so those checks need not be repeated. The Supabase coverage connection
+error and pending visual verification remain recorded limitations, not passing checks.

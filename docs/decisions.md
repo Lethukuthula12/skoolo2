@@ -115,3 +115,15 @@ The full plan and its reasoning are in `docs/roadmap.md`; the policy research is
 | 25 | **The principal approves results in Skoolo before any report is published**, and published reports are locked and versioned. | Request 5, and the protocol's rule that reports must be free of errors, with the school management team responsible. |
 | 26 | **A report card is never withheld for any reason, including unpaid fees.** | National Protocol for Assessment 25(13). Must hold when fees arrive in Stage 5. |
 | 27 | **Learners are imported from the school's existing Excel list** with validation before anything is saved. | The school already keeps the list; retyping hundreds of learners would stop adoption. |
+
+## Amendment, 2026-10-23 — Checks follow the change
+
+At the developer's request, release checks are scoped to the complete diff being released.
+Presentation, navigation and client error-handling updates that preserve data access and permission
+rules need affected-app production builds and relevant functional checks, without a fresh RLS suite.
+Database and access-control changes still require the full RLS suite to pass. Documentation-only
+changes need a diff review. The detailed criteria live in CLAUDE.md.
+
+A blocked browser or unrelated infrastructure check is recorded honestly and does not prevent an
+otherwise verified UI release. This does not waive the real-device and school-use acceptance criteria
+for completing a roadmap stage, or override platform permissions.
