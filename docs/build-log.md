@@ -723,3 +723,17 @@ hidden) and the sidebar becomes a dark horizontal icon strip; the stat tiles go 
 large values (fees owed) are never clipped. Also enlarged the stat-tile icon to a filled colour
 circle with a white glyph (fixing the earlier value/label run-together). Verified desktop and mobile,
 no console errors, clean build.
+
+## Per-school theme customizer
+
+Each school's admin can now theme their own portal, like a dashboard template's style picker, and
+their staff see the result — self-service and multi-tenant. A floating settings gear (bottom-right,
+spinning, admin-only) opens a "Pick your style" panel with swatches for the primary colour, the
+header bar and the sidebar; picking previews live and Save persists it. The theme is stored in a new
+jsonb `theme` column on the school row, so the existing RLS applies unchanged: an admin writes only
+their own school's theme, staff read it, no school sees another's. A ThemeService applies the colours
+as CSS variables on :root (deriving the brand shades, and flipping the sidebar text light or dark by
+the sidebar's luminance so a white sidebar still reads), caches the last theme in localStorage to
+avoid a flash on reload, and re-applies whenever the signed-in school changes. Dark/light background
+mode is left as a later addition. Verified: live preview, Save, persistence across reload (from the
+database and cache), reset to default, and the gear hidden from teachers; both apps build clean.

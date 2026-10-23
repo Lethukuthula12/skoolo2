@@ -1,15 +1,16 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { AuthService, StaffService } from '@skoolo/shared';
+import { AuthService, StaffService, ThemeService } from '@skoolo/shared';
+import { ThemeCustomizerComponent } from './theme-customizer.component';
 
 interface NavItem { label: string; link: string; icon: string; }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ThemeCustomizerComponent],
   template: `
     <div class="shell">
       <header class="topbar">
@@ -51,6 +52,8 @@ interface NavItem { label: string; link: string; icon: string; }
           <router-outlet />
         </main>
       </div>
+
+      @if (staff.isAdmin()) { <app-theme-customizer /> }
     </div>
   `,
   styles: `
@@ -60,7 +63,7 @@ interface NavItem { label: string; link: string; icon: string; }
     .topbar {
       position: sticky; top: 0; z-index: 10;
       display: flex; align-items: center; gap: 16px; height: 64px; padding: 0 24px;
-      background: var(--brand); color: #fff;
+      background: var(--header-bg); color: #fff;
     }
     .topbar .brand { font-weight: 800; font-size: 1.35rem; color: #fff; letter-spacing: -0.02em; width: 200px; }
     .topbar .page-title { font-size: 1.1rem; font-weight: 600; color: #fff; }
@@ -81,19 +84,19 @@ interface NavItem { label: string; link: string; icon: string; }
     /* Dark sidebar + content */
     .body { display: grid; grid-template-columns: 248px minmax(0, 1fr); flex: 1; min-height: 0; }
     .sidebar {
-      background: #22223d; padding: 16px 14px; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;
+      background: var(--sidebar-bg); padding: 16px 14px; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;
       display: flex; flex-direction: column; gap: 4px;
     }
-    .school { color: rgba(255, 255, 255, 0.5); font-size: 0.8rem; padding: 4px 10px 12px; }
+    .school { color: var(--sidebar-school); font-size: 0.8rem; padding: 4px 10px 12px; }
     nav { display: grid; gap: 4px; }
     nav a {
       display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px; border-radius: 12px; color: rgba(255, 255, 255, 0.66); text-decoration: none;
+      padding: 11px 14px; border-radius: 12px; color: var(--sidebar-ink); text-decoration: none;
       font-weight: 500; font-size: 0.94rem; transition: background 120ms ease, color 120ms ease;
     }
     nav a .ico { width: 20px; height: 20px; flex: none; display: grid; place-items: center; }
     nav a .ico ::ng-deep svg { width: 20px; height: 20px; display: block; }
-    nav a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+    nav a:hover { background: var(--sidebar-hover); color: var(--sidebar-ink-hover); }
     nav a.active { background: var(--brand); color: #fff; font-weight: 600; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25); }
 
     .content { padding: 24px; max-width: 1200px; width: 100%; min-width: 0; }
@@ -121,6 +124,12 @@ export class ShellComponent {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly theme = inject(ThemeService);
+
+  constructor() {
+    // Apply the signed-in school's saved theme (and re-apply whenever the school changes).
+    effect(() => this.theme.applyFromSchool(this.staff.currentSchool()));
+  }
 
   private readonly adminNav: NavItem[] = [
     { label: 'Dashboard', link: '/dashboard', icon: 'home' },

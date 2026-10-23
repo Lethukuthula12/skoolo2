@@ -33,6 +33,14 @@
   --shadow: 0 6px 20px rgba(48, 57, 114, 0.06);
   --shadow-lg: 0 12px 32px rgba(48, 57, 114, 0.10);
   --ring: rgba(58, 65, 196, 0.25);
+
+  /* Frame colours the admin can retheme per school (ThemeService overrides these on :root). */
+  --header-bg: var(--brand);
+  --sidebar-bg: #22223d;
+  --sidebar-ink: rgba(255, 255, 255, 0.66);
+  --sidebar-ink-hover: #ffffff;
+  --sidebar-school: rgba(255, 255, 255, 0.5);
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
 }
 
 * { box-sizing: border-box; }

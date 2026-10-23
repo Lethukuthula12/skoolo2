@@ -1683,6 +1683,7 @@ export type Database = {
           subject_teaching_from_grade: string | null
           tagline: string | null
           tax_reference: string | null
+          theme: Json | null
           town: string
           updated_at: string
           website: string | null
@@ -1710,6 +1711,7 @@ export type Database = {
           subject_teaching_from_grade?: string | null
           tagline?: string | null
           tax_reference?: string | null
+          theme?: Json | null
           town?: string
           updated_at?: string
           website?: string | null
@@ -1737,6 +1739,7 @@ export type Database = {
           subject_teaching_from_grade?: string | null
           tagline?: string | null
           tax_reference?: string | null
+          theme?: Json | null
           town?: string
           updated_at?: string
           website?: string | null
@@ -2334,6 +2337,7 @@ export type Database = {
           subject_teaching_from_grade: string | null
           tagline: string | null
           tax_reference: string | null
+          theme: Json | null
           town: string
           updated_at: string
           website: string | null
@@ -2395,6 +2399,7 @@ export type Database = {
           subject_teaching_from_grade: string | null
           tagline: string | null
           tax_reference: string | null
+          theme: Json | null
           town: string
           updated_at: string
           website: string | null
@@ -2457,6 +2462,7 @@ export type Database = {
           subject_teaching_from_grade: string | null
           tagline: string | null
           tax_reference: string | null
+          theme: Json | null
           town: string
           updated_at: string
           website: string | null

@@ -279,6 +279,11 @@ export class StaffService {
 
   // ----- School profile, badge and bank account -----------------------------
 
+  /** Save the school's portal theme (admin only, enforced by RLS). */
+  async saveTheme(theme: { primary: string; header: string; sidebar: string }): Promise<School> {
+    return this.updateSchool({ theme });
+  }
+
   async updateSchool(changes: TablesUpdate<'schools'>): Promise<School> {
     const { data, error } = await this.client
       .from('schools')
