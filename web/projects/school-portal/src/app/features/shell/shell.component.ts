@@ -19,11 +19,15 @@ import { AuthService, StaffService } from '@skoolo/shared';
             <a routerLink="/classes" routerLinkActive="active">Classes & subjects</a>
             <a routerLink="/learners" routerLinkActive="active">Learners</a>
             <a routerLink="/reports" routerLinkActive="active">Reports</a>
+            <a routerLink="/messages" routerLinkActive="active">Messages</a>
+            <a routerLink="/absences" routerLinkActive="active">Absences</a>
             <a routerLink="/staff" routerLinkActive="active">Staff register</a>
             <a routerLink="/school" routerLinkActive="active">School profile</a>
           } @else {
             <a routerLink="/home" routerLinkActive="active">Home</a>
             <a routerLink="/reports" routerLinkActive="active">Reports</a>
+            <a routerLink="/messages" routerLinkActive="active">Messages</a>
+            <a routerLink="/absences" routerLinkActive="active">Absences</a>
           }
         </nav>
         <div class="user">

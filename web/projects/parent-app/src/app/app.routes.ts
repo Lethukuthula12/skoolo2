@@ -52,6 +52,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/children/child-reports.page').then((m) => m.ChildReportsPage),
   },
   {
+    path: 'child/:learnerId/messages',
+    canActivate: [signedInGuard],
+    loadComponent: () => import('./features/children/child-messages.page').then((m) => m.ChildMessagesPage),
+  },
+  {
+    path: 'child/:learnerId/absence',
+    canActivate: [signedInGuard],
+    loadComponent: () => import('./features/children/absence.page').then((m) => m.AbsencePage),
+  },
+  {
     path: 'inbox',
     canActivate: [signedInGuard],
     loadComponent: () => import('./features/inbox/inbox.page').then((m) => m.InboxPage),

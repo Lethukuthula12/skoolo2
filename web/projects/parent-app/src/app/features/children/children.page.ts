@@ -31,15 +31,21 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
           </div>
         } @else {
           @for (c of children(); track c.id) {
-            <article class="form-card child" [routerLink]="['/child', c.id]">
-              <div class="avatar">{{ initials(c) }}</div>
-              <div>
-                <h2>{{ c.first_name }} {{ c.last_name }}</h2>
-                <p>
-                  @if (c.school_name) { {{ c.school_name }} }
-                  @if (c.grade_label) { · {{ c.grade_label }}@if (c.class_name) { {{ c.class_name }} } }
-                </p>
-                <p class="view">View reports ›</p>
+            <article class="form-card child">
+              <div class="top">
+                <div class="avatar">{{ initials(c) }}</div>
+                <div>
+                  <h2>{{ c.first_name }} {{ c.last_name }}</h2>
+                  <p>
+                    @if (c.school_name) { {{ c.school_name }} }
+                    @if (c.grade_label) { · {{ c.grade_label }}@if (c.class_name) { {{ c.class_name }} } }
+                  </p>
+                </div>
+              </div>
+              <div class="actions">
+                <ion-button fill="outline" size="small" [routerLink]="['/child', c.id]">Reports</ion-button>
+                <ion-button fill="outline" size="small" [routerLink]="['/child', c.id, 'messages']">Messages</ion-button>
+                <ion-button fill="outline" size="small" [routerLink]="['/child', c.id, 'absence']">Report absence</ion-button>
               </div>
             </article>
           }
@@ -60,11 +66,13 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
     </ion-content>
   `,
   styles: `
-    .child { display: flex; align-items: center; gap: 14px; }
+    .child { display: grid; gap: 12px; }
+    .child .top { display: flex; align-items: center; gap: 14px; }
+    .child .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .child h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
-    .child { cursor: pointer; }
+    
     .child p { margin: 2px 0 0; color: rgba(20, 33, 61, 0.7); font-size: 0.9rem; }
-    .child .view { color: var(--ion-color-primary); font-weight: 600; margin-top: 4px; }
+
     .avatar { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--ion-color-primary); color: #fff; font-weight: 700; flex-shrink: 0; }
     .form-card { display: grid; gap: 14px; }
     h2 { margin: 0; font-size: 1.2rem; font-weight: 700; }

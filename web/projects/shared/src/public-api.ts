@@ -10,3 +10,4 @@ export * from './lib/identity/sa-identity-number';
 export * from './lib/staff/staff.service';
 export * from './lib/staff/staff.guard';
 export * from './lib/staff/admin.guard';
+export * from './lib/messaging/messaging.service';

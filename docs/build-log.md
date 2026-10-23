@@ -517,3 +517,21 @@ neither an unrelated parent nor another school's admin can see it.
 
 Next in Stage 4: the screens — report an absence and the message threads in the parent app, and the
 absence queue, acknowledge, and messaging a parent or class in the portal.
+
+## 2026-10-23 — Stage 4 (part 2): the message and absence screens
+
+Shared `MessagingService` wraps the Stage 4 functions for both apps.
+
+Parent app: each child on My children has **Reports**, **Messages** and **Report absence**. The
+absence page takes dates, a reason, an optional note and a photo of a doctor's note, and shows past
+reports with their status. The messages page is a per-child thread list with a conversation view and
+a reply box, and a form to start a new message to the school.
+
+Portal: an **Absences** page lists reported absences (pending first), opens any attached note, and
+acknowledges with one click, which messages the parent. A **Messages** page lists conversations,
+shows a thread with reply, and has "Message a class" that opens a private thread per family.
+
+Verified end to end: as the parent, reported Ayanda's absence (10–12 Feb, Illness); as the admin,
+it appeared in the Absences queue and was acknowledged; the parent's inbox received "Absence noted
+for Ayanda Dlamini". That is Stage 4's definition of done. The thread path is covered by the
+60-check isolation suite (teacher starts, parent reads and replies, others shut out).
