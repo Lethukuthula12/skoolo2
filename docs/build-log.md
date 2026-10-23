@@ -535,3 +535,28 @@ Verified end to end: as the parent, reported Ayanda's absence (10–12 Feb, Illn
 it appeared in the Absences queue and was acknowledged; the parent's inbox received "Absence noted
 for Ayanda Dlamini". That is Stage 4's definition of done. The thread path is covered by the
 60-check isolation suite (teacher starts, parent reads and replies, others shut out).
+
+## 2026-10-23 — Stage 5 (part 1): school fees backbone
+
+Fees are administrators and parents only; teachers never see them, and nothing about fees blocks a
+report card.
+
+- **fee_structures**: an annual fee per grade per year, with an optional upfront discount and the
+  number of months/terms for the plans. **learner_fee_accounts**: one per learner per year, with a
+  chosen plan (monthly, term, year), the total due and a unique `FEE-` reference. **fee_payments**:
+  each payment with method (EFT or cash), reference, date and a status of recorded → confirmed.
+- **fee_account_balances** view (security_invoker): due minus confirmed payments, correct for the
+  admin (school totals) and the parent (their child) without leaking.
+- Write path through functions: `set_fee_structure`, `ensure_fee_account` and
+  `ensure_fee_accounts_for_class` (total computed from the grade's fee and plan; the yearly plan
+  applies the discount), `record_fee_payment` (the clerk) and `confirm_fee_payment` (the principal),
+  which messages the parent the new balance.
+- RLS: admins manage; a connected parent reads their child's account and payments; teachers and
+  other schools see nothing.
+
+Isolation suite now at 68 checks. New ones prove: a payment of R5 000 against a R12 000 account
+leaves a R7 000 balance that the parent also sees; a teacher sees no fee accounts and cannot record
+a payment; another school's admin and an unrelated parent see nothing.
+
+Next in Stage 5: the screens — fee setup and payments in the portal (record, confirm, arrears
+export), and the statement and balance in the parent app.

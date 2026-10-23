@@ -598,6 +598,168 @@ export type Database = {
           },
         ]
       }
+      fee_payments: {
+        Row: {
+          account_id: string
+          amount: number
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          id: string
+          learner_id: string
+          method: string
+          note: string | null
+          paid_on: string
+          recorded_by: string | null
+          reference: string | null
+          school_id: string
+          status: Database["public"]["Enums"]["fee_payment_status"]
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          learner_id: string
+          method?: string
+          note?: string | null
+          paid_on?: string
+          recorded_by?: string | null
+          reference?: string | null
+          school_id: string
+          status?: Database["public"]["Enums"]["fee_payment_status"]
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          id?: string
+          learner_id?: string
+          method?: string
+          note?: string | null
+          paid_on?: string
+          recorded_by?: string | null
+          reference?: string | null
+          school_id?: string
+          status?: Database["public"]["Enums"]["fee_payment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_payments_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "fee_account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "fee_payments_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "learner_fee_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_payments_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_payments_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_payments_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_payments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_payments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_structures: {
+        Row: {
+          academic_year: number
+          annual_amount: number
+          created_at: string
+          grade_code: string
+          id: string
+          months_per_year: number
+          school_id: string
+          terms_per_year: number
+          updated_at: string
+          upfront_discount_percent: number
+        }
+        Insert: {
+          academic_year: number
+          annual_amount: number
+          created_at?: string
+          grade_code: string
+          id?: string
+          months_per_year?: number
+          school_id: string
+          terms_per_year?: number
+          updated_at?: string
+          upfront_discount_percent?: number
+        }
+        Update: {
+          academic_year?: number
+          annual_amount?: number
+          created_at?: string
+          grade_code?: string
+          id?: string
+          months_per_year?: number
+          school_id?: string
+          terms_per_year?: number
+          updated_at?: string
+          upfront_discount_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_structures_grade_code_fkey"
+            columns: ["grade_code"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "fee_structures_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_structures_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grades: {
         Row: {
           code: string
@@ -615,6 +777,64 @@ export type Database = {
           sort_order?: number
         }
         Relationships: []
+      }
+      learner_fee_accounts: {
+        Row: {
+          academic_year: number
+          created_at: string
+          id: string
+          learner_id: string
+          payment_reference: string
+          plan: Database["public"]["Enums"]["fee_plan"]
+          school_id: string
+          total_due: number
+          updated_at: string
+        }
+        Insert: {
+          academic_year: number
+          created_at?: string
+          id?: string
+          learner_id: string
+          payment_reference: string
+          plan?: Database["public"]["Enums"]["fee_plan"]
+          school_id: string
+          total_due?: number
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: number
+          created_at?: string
+          id?: string
+          learner_id?: string
+          payment_reference?: string
+          plan?: Database["public"]["Enums"]["fee_plan"]
+          school_id?: string
+          total_due?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learner_fee_accounts_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_fee_accounts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_fee_accounts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       learner_guardians: {
         Row: {
@@ -1612,6 +1832,64 @@ export type Database = {
       }
     }
     Views: {
+      fee_account_balances: {
+        Row: {
+          academic_year: number | null
+          account_id: string | null
+          balance: number | null
+          learner_id: string | null
+          payment_reference: string | null
+          plan: Database["public"]["Enums"]["fee_plan"] | null
+          school_id: string | null
+          total_due: number | null
+          total_paid: number | null
+        }
+        Insert: {
+          academic_year?: number | null
+          account_id?: string | null
+          balance?: never
+          learner_id?: string | null
+          payment_reference?: string | null
+          plan?: Database["public"]["Enums"]["fee_plan"] | null
+          school_id?: string | null
+          total_due?: number | null
+          total_paid?: never
+        }
+        Update: {
+          academic_year?: number | null
+          account_id?: string | null
+          balance?: never
+          learner_id?: string | null
+          payment_reference?: string | null
+          plan?: Database["public"]["Enums"]["fee_plan"] | null
+          school_id?: string | null
+          total_due?: number | null
+          total_paid?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learner_fee_accounts_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_fee_accounts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_fee_accounts_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       period_grade_availability: {
         Row: {
           capacity: number | null
@@ -1793,6 +2071,10 @@ export type Database = {
         Args: { p_application_id: string; p_note?: string }
         Returns: undefined
       }
+      confirm_fee_payment: {
+        Args: { p_payment_id: string }
+        Returns: undefined
+      }
       create_school: {
         Args: {
           p_email?: string
@@ -1841,11 +2123,28 @@ export type Database = {
         Args: { p_application_id: string; p_class_id: string }
         Returns: undefined
       }
+      ensure_fee_account: {
+        Args: {
+          p_learner_id: string
+          p_plan: Database["public"]["Enums"]["fee_plan"]
+          p_year: number
+        }
+        Returns: string
+      }
+      ensure_fee_accounts_for_class: {
+        Args: {
+          p_class_id: string
+          p_plan: Database["public"]["Enums"]["fee_plan"]
+          p_year: number
+        }
+        Returns: number
+      }
       ensure_term_reports: {
         Args: { p_class_id: string; p_term: number }
         Returns: number
       }
       generate_family_code: { Args: never; Returns: string }
+      generate_fee_reference: { Args: never; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
       generate_payment_reference: { Args: never; Returns: string }
       get_payment_instructions: {
@@ -1933,6 +2232,17 @@ export type Database = {
         Args: { p_class_id: string; p_term: number }
         Returns: number
       }
+      record_fee_payment: {
+        Args: {
+          p_account_id: string
+          p_amount: number
+          p_method: string
+          p_note?: string
+          p_paid_on?: string
+          p_reference?: string
+        }
+        Returns: string
+      }
       redeem_family_code: {
         Args: { p_code: string; p_relationship?: string }
         Returns: {
@@ -1979,6 +2289,18 @@ export type Database = {
         Returns: undefined
       }
       set_class_family_codes: { Args: { p_class_id: string }; Returns: number }
+      set_fee_structure: {
+        Args: {
+          p_annual: number
+          p_discount?: number
+          p_grade: string
+          p_months?: number
+          p_school_id: string
+          p_terms?: number
+          p_year: number
+        }
+        Returns: undefined
+      }
       set_report_meta: {
         Args: {
           p_days_absent: number
@@ -2016,6 +2338,8 @@ export type Database = {
         | "latest_report"
         | "immunisation_card"
         | "other"
+      fee_payment_status: "recorded" | "confirmed"
+      fee_plan: "monthly" | "term" | "year"
       gender: "female" | "male" | "unspecified"
       payment_status: "unpaid" | "marked_paid" | "confirmed"
       period_status: "draft" | "open" | "closed"
@@ -2178,6 +2502,8 @@ export const Constants = {
         "immunisation_card",
         "other",
       ],
+      fee_payment_status: ["recorded", "confirmed"],
+      fee_plan: ["monthly", "term", "year"],
       gender: ["female", "male", "unspecified"],
       payment_status: ["unpaid", "marked_paid", "confirmed"],
       period_status: ["draft", "open", "closed"],

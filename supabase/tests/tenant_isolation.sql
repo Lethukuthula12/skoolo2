@@ -30,6 +30,7 @@ declare
   v_staffA uuid; v_staffTA2 uuid; v_code text; v_codeTA2 text; v_codeIv text; v_codeExpired text;
   v_classA uuid; v_subjectA uuid; v_rollLearnerA uuid; v_guardianA uuid; v_reportA uuid;
   v_absenceA uuid; v_threadA uuid;
+  v_feeAccountA uuid; v_feePaymentA uuid; v_balance numeric;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
   -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
@@ -417,6 +418,52 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.message_threads where id = v_threadA;
   if n <> 0 then v_fail := v_fail || 'admin B sees school A''s thread'; end if;
+
+  -- ===================== STAGE 5: school fees =====================
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  perform public.set_fee_structure(v_schoolA, 2027, 'GR', 12000, 0);
+  v_feeAccountA := public.ensure_fee_account(v_rollLearnerA, 2027, 'monthly');
+  v_feePaymentA := public.record_fee_payment(v_feeAccountA, 5000, 'eft', 'ENR-X', current_date, null);
+  perform public.confirm_fee_payment(v_feePaymentA);
+
+  v_checks := v_checks + 1;
+  select balance into v_balance from public.fee_account_balances where account_id = v_feeAccountA;
+  if v_balance is distinct from 7000 then v_fail := v_fail || format('wrong balance after payment: %s (expected 7000)', v_balance); end if;
+
+  -- The connected parent sees the account, the payment and the balance.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
+  if n < 1 then v_fail := v_fail || 'the parent cannot see their child''s fee account'; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.fee_payments where id = v_feePaymentA;
+  if n < 1 then v_fail := v_fail || 'the parent cannot see their child''s payment'; end if;
+  v_checks := v_checks + 1;
+  select balance into v_balance from public.fee_account_balances where account_id = v_feeAccountA;
+  if v_balance is distinct from 7000 then v_fail := v_fail || 'the parent sees a wrong balance'; end if;
+
+  -- A teacher of the class may not see fees; nor record a payment.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
+  if n <> 0 then v_fail := v_fail || 'a teacher sees fee accounts'; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.record_fee_payment(v_feeAccountA, 100, 'cash');
+    v_fail := v_fail || 'a teacher recorded a payment';
+  exception when others then null;
+  end;
+
+  -- Another school and an unrelated parent see nothing.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s fee account'; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.learner_fee_accounts where id = v_feeAccountA;
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees the fee account'; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.
