@@ -1,9 +1,16 @@
 import { Routes } from '@angular/router';
 import { signedInGuard } from '@skoolo/shared';
+import { parentHomeGuard } from './home.guard';
 
 export const routes: Routes = [
   {
     path: '',
+    canActivate: [parentHomeGuard],
+    loadComponent: () => import('./features/directory/school-directory.page').then((m) => m.SchoolDirectoryPage),
+  },
+  {
+    // The directory, reachable by a signed-in parent who wants to apply to another school.
+    path: 'schools',
     loadComponent: () => import('./features/directory/school-directory.page').then((m) => m.SchoolDirectoryPage),
   },
   {

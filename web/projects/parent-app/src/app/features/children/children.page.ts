@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTitle, IonToolbar,
+  IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/shared';
@@ -10,14 +10,17 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
   selector: 'app-children-page',
   imports: [
     ReactiveFormsModule, RouterLink,
-    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTitle, IonToolbar,
+    IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
+        <ion-buttons slot="start">
+          <ion-button [routerLink]="['/auth']"><ion-icon slot="icon-only" name="person-circle-outline" /></ion-button>
+        </ion-buttons>
         <ion-title>My children</ion-title>
         <ion-buttons slot="end">
+          <ion-button [routerLink]="['/inbox']"><ion-icon slot="icon-only" name="mail-outline" /></ion-button>
           <ion-button [routerLink]="['/notices']"><ion-icon slot="icon-only" name="notifications-outline" /></ion-button>
           <ion-button [routerLink]="['/calendar']"><ion-icon slot="icon-only" name="calendar-outline" /></ion-button>
         </ion-buttons>
@@ -68,6 +71,12 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
             @if (busy()) { <ion-spinner name="crescent" /> } @else { Connect }
           </ion-button>
         </form>
+
+        <div class="find">
+          <ion-button fill="clear" size="small" [routerLink]="['/schools']">
+            <ion-icon slot="start" name="search-outline" /> Find a school to apply
+          </ion-button>
+        </div>
       }
     </ion-content>
   `,
@@ -86,6 +95,7 @@ import { ApplicationService, GUARDIAN_RELATIONSHIPS, MyChild } from '@skoolo/sha
     .notice-text { color: var(--ion-color-success-shade); font-size: 0.9rem; margin: 0; }
     .code input { text-transform: uppercase; letter-spacing: 0.1em; }
     ion-button[type='submit'] { margin-top: 6px; --border-radius: 12px; font-weight: 700; }
+    .find { text-align: center; margin: 4px 0 20px; }
   `,
 })
 export class ChildrenPage {

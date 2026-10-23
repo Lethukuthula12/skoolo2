@@ -822,3 +822,15 @@ and an unrelated parent cannot. Parent app: a per-child Attendance screen (reach
 showing the attendance rate, present/late/absent totals and the recent days with status badges.
 Verified end to end: a learner marked absent in the portal register showed in the parent's summary
 (0% rate, 1 absent, the right date). Both apps build clean.
+
+## Parent app: land on the children, and match the portal styling
+
+Two parent-app improvements. (1) A signed-in parent now lands on their own children and actions, not
+the public school directory: a parentHomeGuard redirects a signed-in visitor from the directory to
+/children, the children page became the home (account, inbox, notices and calendar in the header,
+plus a "Find a school to apply" link), and the directory stays reachable at /schools for applying to
+another school. (2) The parent app's theme now matches the portal — Poppins, the indigo primary
+(#3a41c4) with a coral secondary, the lavender background and deep-indigo headings, and the softer
+18px cards — by aligning the Ionic variables and loading Poppins. Verified: a signed-in parent is
+redirected to My children in Poppins/indigo, and /schools still lists schools without a redirect loop.
+Both apps build clean.
