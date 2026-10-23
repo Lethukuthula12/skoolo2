@@ -834,3 +834,16 @@ another school. (2) The parent app's theme now matches the portal — Poppins, t
 18px cards — by aligning the Ionic variables and loading Poppins. Verified: a signed-in parent is
 redirected to My children in Poppins/indigo, and /schools still lists schools without a redirect loop.
 Both apps build clean.
+
+## Parent app: wear the school's brand, and richer child cards
+
+Two parent-app improvements answering the developer's feedback. (1) A school that customises its portal
+theme now also recolours its parents' app: a SchoolThemeService reads the parent's school primary colour
+(ApplicationService.mySchoolTheme, from the school row the parent can already read) and applies it to the
+app's Ionic --ion-color-primary with computed shade/tint, cached to avoid a flash. If a parent has
+children at more than one school it uses the first; light/dark and header/sidebar don't map to the mobile
+app, so only the brand colour carries across. (2) Each child card on the home now shows at-a-glance
+details — an attendance percentage and the fees owed (or "Fees up to date") — from a lightweight
+childSummary (fee balance + attendance counts), on top of the existing actions. Verified: with the pilot
+school's theme set to coral, the parent app rendered coral throughout, and Ayanda's card showed "0%
+present" and "R 10 800 owing" (matching the register and fee balance). Builds clean.

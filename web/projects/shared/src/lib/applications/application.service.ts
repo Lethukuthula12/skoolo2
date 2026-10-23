@@ -250,6 +250,35 @@ export class ApplicationService {
     return (data ?? []) as unknown as ParentNotice[];
   }
 
+  /** The theme (primary colour) of this parent's school, so the app can wear the school's brand. */
+  async mySchoolTheme(): Promise<{ primary: string } | null> {
+    const { data, error } = await this.client
+      .from('learners')
+      .select('school_id, schools:school_id(theme)')
+      .not('school_id', 'is', null)
+      .limit(1);
+    if (error) throw error;
+    const theme = (data?.[0]?.schools as { theme?: { primary?: string } | null } | null)?.theme;
+    return theme?.primary ? { primary: theme.primary } : null;
+  }
+
+  /** A child's at-a-glance numbers for the home card: fees owing and attendance. */
+  async childSummary(learnerId: string): Promise<ChildSummary> {
+    const [balanceRes, attRes] = await Promise.all([
+      this.client.from('fee_account_balances').select('balance').eq('learner_id', learnerId)
+        .order('academic_year', { ascending: false }).limit(1).maybeSingle(),
+      this.client.from('attendance_records').select('status').eq('learner_id', learnerId),
+    ]);
+    const records = attRes.data ?? [];
+    const total = records.length;
+    const attended = records.filter((r) => r.status !== 'absent').length;
+    return {
+      balance: balanceRes.data ? Number(balanceRes.data.balance) : null,
+      attendanceRate: total ? Math.round((attended / total) * 100) : null,
+      absences: records.filter((r) => r.status === 'absent').length,
+    };
+  }
+
   /** Upcoming parent-visible events on the school calendars of this parent's children. */
   async schoolEvents(): Promise<SchoolEvent[]> {
     const today = new Date().toISOString().slice(0, 10);
@@ -343,6 +372,12 @@ export interface SchoolEvent {
   notes: string | null;
   school_id: string;
   schools: { name: string } | null;
+}
+
+export interface ChildSummary {
+  balance: number | null;
+  attendanceRate: number | null;
+  absences: number;
 }
 
 export interface AttendanceRecord {
