@@ -228,6 +228,17 @@ export class ApplicationService {
     return { instructions: inst?.[0] ?? null, payments: payments ?? [] };
   }
 
+  /** Notices for this parent's children's schools (everyone / parents audience), pinned first. */
+  async parentNotices(): Promise<ParentNotice[]> {
+    const { data, error } = await this.client
+      .from('notices')
+      .select('id, title, body, pinned, created_at, created_by_name, school_id, schools:school_id(name)')
+      .order('pinned', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as unknown as ParentNotice[];
+  }
+
   /** Upcoming parent-visible events on the school calendars of this parent's children. */
   async schoolEvents(): Promise<SchoolEvent[]> {
     const today = new Date().toISOString().slice(0, 10);
@@ -319,6 +330,17 @@ export interface SchoolEvent {
   event_date: string;
   starts_at: string | null;
   notes: string | null;
+  school_id: string;
+  schools: { name: string } | null;
+}
+
+export interface ParentNotice {
+  id: string;
+  title: string;
+  body: string;
+  pinned: boolean;
+  created_at: string;
+  created_by_name: string | null;
   school_id: string;
   schools: { name: string } | null;
 }

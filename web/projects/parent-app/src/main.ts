@@ -7,6 +7,7 @@ import {
   personCircleOutline, schoolOutline, searchOutline, timeOutline, walletOutline,
   busOutline, folderOpenOutline, homeOutline, receiptOutline, refreshOutline, trashOutline, openOutline,
   phonePortraitOutline, shareOutline, peopleOutline, sendOutline, chevronForwardOutline,
+  calendarOutline, notificationsOutline, pin,
 } from 'ionicons/icons';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
@@ -17,6 +18,8 @@ addIcons({
   documentTextOutline, globeOutline, locationOutline, logOutOutline, mailOpenOutline, mailOutline,
   personCircleOutline, schoolOutline, searchOutline, timeOutline, walletOutline,
   busOutline, folderOpenOutline, homeOutline, receiptOutline, refreshOutline, trashOutline, openOutline,
+  phonePortraitOutline, shareOutline, peopleOutline, sendOutline, chevronForwardOutline,
+  calendarOutline, notificationsOutline, pin,
 });
 
 bootstrapApplication(App, appConfig).catch((err) => console.error(err));

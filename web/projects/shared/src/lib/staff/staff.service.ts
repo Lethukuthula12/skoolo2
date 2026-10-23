@@ -931,6 +931,31 @@ export class StaffService {
     if (error) throw new Error(this.assessmentError((error as { hint?: string }).hint, error.message));
   }
 
+  // ----- Notice board --------------------------------------------------------
+
+  async notices(): Promise<Tables<'notices'>[]> {
+    const { data, error } = await this.client
+      .from('notices')
+      .select('*')
+      .eq('school_id', this.requireSchoolId())
+      .order('pinned', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async saveNotice(notice: { id?: string; title: string; body: string; audience: string; pinned: boolean }): Promise<void> {
+    const { error } = await this.client
+      .from('notices')
+      .upsert({ ...notice, school_id: this.requireSchoolId() } as unknown as TablesInsert<'notices'>);
+    if (error) throw error;
+  }
+
+  async deleteNotice(id: string): Promise<void> {
+    const { error } = await this.client.from('notices').delete().eq('id', id);
+    if (error) throw error;
+  }
+
   // ----- Daily attendance register (Stage 8) ---------------------------------
 
   async classAttendance(classId: string, date: string): Promise<Tables<'attendance_records'>[]> {

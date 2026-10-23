@@ -32,6 +32,7 @@ declare
   v_absenceA uuid; v_threadA uuid;
   v_feeAccountA uuid; v_feePaymentA uuid; v_balance numeric;
   v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid; v_calStaffOnly uuid; v_attendA uuid;
+  v_noticeAll uuid; v_noticeStaff uuid;
   v_assess1 uuid; v_assess2 uuid; v_report2 uuid; v_tmark numeric;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
@@ -728,6 +729,49 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.attendance_records where id = v_attendA;
   if n < 1 then v_fail := v_fail || 'admin A cannot see the register'::text; end if;
+
+  -- ===================== NOTICE BOARD =====================
+  -- Admin A posts an everyone notice and a staff-only notice.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated','email', v_emailAA)::text, true);
+  v_checks := v_checks + 1;
+  begin
+    insert into public.notices (school_id, title, body, audience) values (v_schoolA, 'Term starts', 'Welcome back', 'all') returning id into v_noticeAll;
+    insert into public.notices (school_id, title, body, audience) values (v_schoolA, 'Staff briefing', 'Monday 7am', 'staff') returning id into v_noticeStaff;
+  exception when others then
+    v_fail := v_fail || format('an admin cannot post a notice: %s', sqlerrm);
+  end;
+
+  -- A teacher sees the everyone and staff notices but cannot post.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated','email', v_emailTA)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.notices where id in (v_noticeAll, v_noticeStaff);
+  if n < 2 then v_fail := v_fail || 'a teacher does not see staff notices'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    insert into public.notices (school_id, title, body, audience) values (v_schoolA, 'Nope', 'x', 'all');
+    v_fail := v_fail || 'a teacher posted a notice'::text;
+  exception when others then null;
+  end;
+
+  -- The connected parent sees the everyone notice but not the staff-only one.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pFam, 'role','authenticated','email', v_emailPFam)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.notices where id = v_noticeAll;
+  if n < 1 then v_fail := v_fail || 'a parent cannot see an everyone notice'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.notices where id = v_noticeStaff;
+  if n <> 0 then v_fail := v_fail || 'a parent sees a staff-only notice'::text; end if;
+
+  -- Another school and an unrelated parent see nothing.
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aB, 'role','authenticated','email', v_emailAB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.notices where id in (v_noticeAll, v_noticeStaff);
+  if n <> 0 then v_fail := v_fail || 'admin B sees school A''s notices'::text; end if;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_pB, 'role','authenticated','email', v_emailPB)::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.notices where id in (v_noticeAll, v_noticeStaff);
+  if n <> 0 then v_fail := v_fail || 'an unrelated parent sees school A''s notices'::text; end if;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.

@@ -794,3 +794,20 @@ Portal: an Attendance page (admin + teacher nav) with a class and date picker; e
 present and the teacher flips the exceptions with present/absent/late segments; live counts, "mark all
 present", save, and an Excel export of the day's register. Verified end to end: marked a learner absent
 and another late, saved, and the register reloaded with the same marks. Builds clean.
+
+## Notice board
+
+Added school-wide announcements, separate from the one-to-one messages of Stage 4. A notices table
+holds a title, body, audience ('all' / 'staff' / 'parents') and a pinned flag, with the author stamped
+by a trigger. RLS: the school's admins post and manage notices; staff read the everyone/staff ones;
+connected parents read the everyone/parents ones (reusing the parent_at_school helper). Isolation suite
+now at 111 checks — an admin posts, a teacher sees the everyone and staff notices but cannot post, a
+connected parent sees the everyone notice but not the staff-only one, and another school and an
+unrelated parent see nothing.
+
+Portal: a Notices page (admin + teacher nav). Admins get a post/edit form (title, body, audience, pin);
+everyone sees the list, pinned first, with the author and date; admins can pin/unpin, edit and delete.
+Parent app: a Notices screen (reached from My children) listing the school's parent-facing notices,
+pinned first. Verified: posted a pinned "everyone" notice in the portal and it appeared; the parent
+read path is proven by the isolation suite and the page builds clean (a live parent screenshot was
+blocked by a preview auth-guard timing quirk, not a code issue). Both apps build clean.

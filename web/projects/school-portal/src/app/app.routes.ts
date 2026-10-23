@@ -60,6 +60,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/messages/messages.page').then((m) => m.MessagesPage),
       },
       {
+        path: 'notices',
+        loadComponent: () => import('./features/notices/notices.page').then((m) => m.NoticesPage),
+      },
+      {
         path: 'absences',
         loadComponent: () => import('./features/messages/absences.page').then((m) => m.AbsencesPage),
       },
