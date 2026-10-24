@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
@@ -8,7 +9,7 @@ import { AuthService } from '@skoolo/shared';
 @Component({
   selector: 'app-forgot-password-page',
   imports: [
-    ReactiveFormsModule,
+    ReactiveFormsModule, RouterLink,
     IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `

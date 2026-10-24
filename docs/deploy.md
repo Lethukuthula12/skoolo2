@@ -66,20 +66,27 @@ change the `name` field in the matching `wrangler*.jsonc` file to the project's 
 
 ## Part 4: tell Supabase about the new addresses
 
-Supabase only sends people back to addresses it knows. In `supabase/config.toml` set:
+Supabase only sends people back to addresses it knows. The current deployed addresses in
+`supabase/config.toml` are:
 
 ```toml
-site_url = "https://skoolo-app.pages.dev"
-additional_redirect_urls = ["https://skoolo-app.pages.dev", "https://skoolo-schools.pages.dev", "http://localhost:4200", "http://localhost:4300"]
+site_url = "https://skoolo-app.lethufzikhali.workers.dev"
+additional_redirect_urls = [
+  "https://skoolo-app.lethufzikhali.workers.dev/**",
+  "https://skoolo-schools.lethufzikhali.workers.dev/**",
+  "http://localhost:4200/**",
+  "http://localhost:4300/**"
+]
 ```
 
-then run:
+After reviewing an intentional configuration change against the linked project, apply it with:
 
 ```bash
 npx supabase config push
 ```
 
-(Replace the two addresses with the real ones Cloudflare gave you.)
+Do not switch the Site URL to a new hostname until its HTTPS application is working. Follow the
+domain and email rollout below for `skoolo.co.za`.
 
 ## Part 5: put it on a phone
 
@@ -102,12 +109,138 @@ Open the failed deployment in Cloudflare and read the log.
 - The same build runs on GitHub Actions on every push, so the repository **Actions** tab shows
   whether the code itself builds.
 
-## Custom domain later
+## HOSTAFRICA domain and production email
 
-When you own `skoolo.co.za`: in each Worker open **Domains & Routes**, add `app.skoolo.co.za`
-to the parent app and `schools.skoolo.co.za` to the portal, and follow the DNS instructions shown.
-If the domain's DNS is on Cloudflare, it is one click. Then update the Supabase addresses in
-Part 4 again.
+Target: `skoolo.co.za`, registered with HOSTAFRICA, with DNS on the same Cloudflare account as
+the two Workers. Registration stays with HOSTAFRICA; hosting stays on Cloudflare. This is a rollout
+procedure, not a record of completed setup. On 2026-10-24, public DNS did not resolve and registration
+status was still awaiting confirmation. No DNS, live authentication configuration or SMTP settings
+were changed during the code preparation.
+
+### 1. Activate DNS
+
+1. Confirm the domain purchase is complete. If it already has a website or email, export/review its
+   DNS records first, including MX, SPF, DKIM and DMARC. Preserve those records in Cloudflare before
+   changing delegation; automatic scanning may miss records.
+2. Add `skoolo.co.za` to the Cloudflare account that hosts Skoolo. Use the **two nameservers assigned
+   to this zone**, not example nameservers from a tutorial.
+3. In HOSTAFRICA's client area: **Domains → skoolo.co.za → Manage → Manage Nameservers**. Enter the
+   Cloudflare-assigned pair and save. Follow Cloudflare's DNSSEC guidance if the existing domain has
+   DNSSEC enabled; an old DS record must not remain attached to a different DNS provider.
+4. Wait for Cloudflare to show the zone as **Active** before attaching Worker custom domains.
+
+References: [HOSTAFRICA nameservers](https://help.hostafrica.com/article/how-to-update-the-name-servers-for-your-domain)
+and [Cloudflare zone setup](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/).
+
+### 2. Attach the applications
+
+| Worker | Custom domain |
+|---|---|
+| `skoolo-app` | `app.skoolo.co.za` |
+| `skoolo-schools` | `schools.skoolo.co.za` |
+
+In each Worker's **Settings → Domains & Routes → Add → Custom Domain**, add its hostname.
+Cloudflare creates the DNS record and certificate. Do not manually CNAME a hostname to
+`workers.dev`. Resolve an existing record conflict only after identifying what it serves.
+
+Once the zone is active, record the corresponding route in each Wrangler file so subsequent
+deployments retain it. For `wrangler.jsonc`:
+
+```jsonc
+"workers_dev": true,
+"routes": [{ "pattern": "app.skoolo.co.za", "custom_domain": true }]
+```
+
+Use `schools.skoolo.co.za` in `wrangler.portal.jsonc`. Keep `workers_dev` enabled through the
+transition. Open both applications over HTTPS, including `/auth` on the parent app and `/sign-in`
+on the portal, and verify direct refreshes of `/reset-password` on both. Existing installed PWAs
+and browser sessions belong to the old origin: users will sign in at the new address and can
+install the app again there. Do not add forced redirects until outstanding auth links are handled.
+
+Reference: [Workers custom domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
+
+### 3. Allow the email return addresses
+
+After both custom domains work, update the existing `[auth]` block in `supabase/config.toml`:
+
+```toml
+site_url = "https://app.skoolo.co.za"
+additional_redirect_urls = [
+  "https://app.skoolo.co.za/auth",
+  "https://app.skoolo.co.za/reset-password",
+  "https://schools.skoolo.co.za/join",
+  "https://schools.skoolo.co.za/register-school",
+  "https://schools.skoolo.co.za/reset-password",
+  "https://skoolo-app.lethufzikhali.workers.dev/**",
+  "https://skoolo-schools.lethufzikhali.workers.dev/**",
+  "http://localhost:4200/**",
+  "http://localhost:4300/**"
+]
+```
+
+Review and push the configuration as in Part 4. Signup explicitly chooses `/auth`, `/join` or
+`/register-school` on the app's own origin. Reset emails return to `/reset-password` on the app
+that requested them. Invitation codes, school details and passwords are not put in email return
+URLs. Staff enter their original invite code after confirming; school registration collects
+school details only after login. An email template's verification link must use
+`{{ .ConfirmationURL }}` so the verification token and chosen destination are retained.
+
+Reference: [Supabase redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls).
+
+### 4. Verify the email sender and connect SMTP
+
+Use Resend for transactional authentication email (the provider already named in Stage 0).
+Verify a sending subdomain such as `auth.skoolo.co.za` and use `Skoolo <no-reply@auth.skoolo.co.za>`.
+This is a sending identity, not an inbox service or another Worker.
+
+1. In Resend, add that sending domain. Copy the exact verification, DKIM and SPF records it
+   supplies into Cloudflare DNS. Preserve existing mail records. Wait for Resend verification.
+2. Create a sending API key scoped to the verified domain where available. Keep it in the OS
+   credential store/provider settings; never paste it into chat, commit it, or put it in a web
+   environment file. Disable click tracking on authentication emails.
+3. Configure Supabase custom SMTP with host `smtp.resend.com`, port `465`, username `resend`, the
+   API key as password, sender name `Skoolo`, and the verified sender address.
+
+If managing SMTP through the CLI config, the secret must be an environment reference:
+
+```toml
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "no-reply@auth.skoolo.co.za"
+sender_name = "Skoolo"
+```
+
+Provide that variable securely only for configuration deployment. Review live settings before
+`config push`, including rate limits and confirmation flags. The default Supabase mailer is not a
+production sender. Match email limits to the chosen provider plan and expected signup volume;
+do not assume the existing two-per-hour development setting is sufficient.
+
+References: [Resend SMTP with Supabase](https://resend.com/docs/send-with-supabase-smtp),
+[Resend domain verification](https://resend.com/docs/dashboard/domains/introduction) and
+[Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp).
+
+### 5. Verify delivery, then enable signup confirmation
+
+1. Run the required `npm run test:rls`, auth checks and production builds before releasing an
+   authentication/configuration change.
+2. With a designated test account/mailbox, request reset emails from each custom domain. Verify
+   delivery, same-app return, changing the password, the success screen, sign-in with the new
+   password, and reused/expired link behaviour. Check spam placement as well as provider logs.
+3. Only once delivery works, set `[auth.email].enable_confirmations = true` and deploy that
+   configuration. Test parent signup, staff signup with an invite code, new school registration,
+   existing-account sign-in back to `/join` and `/register-school`, and a claim of an unclaimed
+   test school. Use test data; do not claim a real school's directory entry for a smoke test.
+4. Verify the emails on a real phone, including a link opened in another browser. Record outcomes
+   in `docs/build-log.md`. Automated controller checks do not establish email delivery or live
+   acceptance. Stage 0 stays open until these checks pass.
+
+If delivery fails, keep the existing working app addresses and diagnose SMTP/DNS before switching
+the signup setting. If already enabled, repair delivery and resend confirmation links; do not
+silently bypass verification for unconfirmed accounts.
 
 ## Other hosts
 

@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import {
   IonButton, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
@@ -10,7 +10,7 @@ import { AuthService } from '@skoolo/shared';
 @Component({
   selector: 'app-reset-password-page',
   imports: [
-    ReactiveFormsModule,
+    ReactiveFormsModule, RouterLink,
     IonButton, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `
@@ -20,17 +20,17 @@ import { AuthService } from '@skoolo/shared';
     <ion-content>
       @if (!ready()) {
         <div class="centered"><ion-spinner name="crescent" /></div>
-      } @else if (!canReset()) {
-        <div class="form-card">
-          <h2>This link has expired</h2>
-          <p>Reset links can only be used once and expire after a while. Please request a new one.</p>
-          <ion-button expand="block" routerLink="/auth">Back to sign in</ion-button>
-        </div>
       } @else if (done()) {
         <div class="form-card">
           <h2>Password changed</h2>
           <p>You can now sign in with your new password.</p>
           <ion-button expand="block" routerLink="/auth">Sign in</ion-button>
+        </div>
+      } @else if (!canReset()) {
+        <div class="form-card">
+          <h2>This link has expired</h2>
+          <p>Reset links can only be used once and expire after a while. Please request a new one.</p>
+          <ion-button expand="block" routerLink="/auth">Back to sign in</ion-button>
         </div>
       } @else {
         <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
@@ -53,7 +53,6 @@ import { AuthService } from '@skoolo/shared';
 })
 export class ResetPasswordPage {
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
 
   protected readonly ready = signal(false);
@@ -75,10 +74,12 @@ export class ResetPasswordPage {
   }
 
   protected async submit(): Promise<void> {
+    if (this.busy() || this.done() || !this.ready() || !this.canReset()) return;
     if (this.form.hasError('mismatch')) {
       this.error.set('The two passwords do not match.');
       return;
     }
+    if (this.form.invalid) return;
     this.busy.set(true);
     this.error.set(null);
     const error = await this.auth.updatePassword(this.form.getRawValue().password);

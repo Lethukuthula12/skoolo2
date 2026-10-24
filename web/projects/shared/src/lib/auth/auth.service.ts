@@ -7,6 +7,8 @@ export interface SignUpDetails {
   password: string;
   fullName: string;
   phone: string;
+  /** Same-app confirmation destination; must be in the Supabase redirect allowlist. */
+  emailRedirectTo: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -50,7 +52,10 @@ export class AuthService {
     const { data, error } = await this.client.auth.signUp({
       email: details.email,
       password: details.password,
-      options: { data: { full_name: details.fullName, phone: details.phone } },
+      options: {
+        emailRedirectTo: details.emailRedirectTo,
+        data: { full_name: details.fullName, phone: details.phone },
+      },
     });
     return { error, needsEmailConfirmation: !error && data.session === null };
   }

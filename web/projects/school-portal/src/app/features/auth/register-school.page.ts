@@ -22,21 +22,26 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
         </p>
 
         @if (!auth.isSignedIn()) {
-          <form class="stack" [formGroup]="accountForm">
+          <form class="stack" [formGroup]="accountForm" (ngSubmit)="createAccount()">
             <h2>1. Your login</h2>
+            <p class="small muted">Create and confirm your login first. You will add or claim your school next.</p>
             <div class="form-grid">
               <div class="field"><label for="fullName">Your full name</label><input id="fullName" type="text" formControlName="fullName" autocomplete="name" /></div>
               <div class="field"><label for="phone">Cellphone</label><input id="phone" type="tel" formControlName="phone" autocomplete="tel" /></div>
               <div class="field"><label for="email">Email</label><input id="email" type="email" formControlName="email" autocomplete="email" /></div>
               <div class="field"><label for="password">Choose a password</label><input id="password" type="password" formControlName="password" autocomplete="new-password" /></div>
             </div>
+            @if (notice()) { <p class="auth-notice" role="status">{{ notice() }}</p> }
+            @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+            <button class="btn btn-primary" type="submit" [disabled]="accountForm.invalid || busy()">{{ busy() ? 'Creating your login…' : 'Create login and continue' }}</button>
             <p class="small muted">Already have a login? <a routerLink="/sign-in" [queryParams]="{ returnUrl: '/register-school' }">Sign in first</a>.</p>
           </form>
         } @else {
           <p class="small">Signed in as <strong>{{ auth.user()?.email }}</strong>.</p>
         }
 
-        <h2>{{ auth.isSignedIn() ? '' : '2. ' }}Your school</h2>
+        @if (auth.isSignedIn()) {
+        <h2>Your school</h2>
         <div class="field">
           <label for="search">Is your school already listed? Search by name</label>
           <input id="search" type="text" [value]="searchTerm()" (input)="onSearch($event)" placeholder="Start typing the school's name" />
@@ -78,7 +83,7 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
             <div class="field"><label for="schoolEmail">School email</label><input id="schoolEmail" type="email" formControlName="email" /></div>
           </div>
           @if (error()) { <p class="error">{{ error() }}</p> }
-          <button class="btn btn-primary" type="submit" [disabled]="schoolForm.invalid || (!auth.isSignedIn() && accountForm.invalid) || busy()">
+          <button class="btn btn-primary" type="submit" [disabled]="schoolForm.invalid || busy()">
             {{ busy() ? 'Setting up…' : 'Register my school' }}
           </button>
           <p class="small muted">
@@ -86,6 +91,7 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
             everything up: profile, badge, staff, enrolment period and grades.
           </p>
         </form>
+        }
       </div>
     </div>
   `,
@@ -111,6 +117,7 @@ export class RegisterSchoolPage {
   protected readonly busy = signal(false);
   protected readonly searching = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
   protected readonly searchTerm = signal('');
   protected readonly matches = signal<School[]>([]);
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -152,16 +159,16 @@ export class RegisterSchoolPage {
   }
 
   protected async claim(school: School): Promise<void> {
+    if (!this.auth.isSignedIn() || this.busy()) return;
     await this.run(async () => {
-      await this.ensureSignedIn();
       await this.staff.claimSchool(school.id);
     });
   }
 
   protected async register(): Promise<void> {
+    if (!this.auth.isSignedIn() || this.schoolForm.invalid || this.busy()) return;
     const v = this.schoolForm.getRawValue();
     await this.run(async () => {
-      await this.ensureSignedIn();
       await this.staff.createSchool({
         name: v.name,
         town: v.town,
@@ -174,16 +181,30 @@ export class RegisterSchoolPage {
     });
   }
 
-  private async ensureSignedIn(): Promise<void> {
-    if (this.auth.isSignedIn()) return;
+  protected async createAccount(): Promise<void> {
+    if (this.auth.isSignedIn() || this.accountForm.invalid || this.busy()) return;
+    this.busy.set(true);
+    this.error.set(null);
+    this.notice.set(null);
     const a = this.accountForm.getRawValue();
-    const { error } = await this.auth.signUp({
-      email: a.email.trim(),
-      password: a.password,
-      fullName: a.fullName.trim(),
-      phone: a.phone.trim(),
-    });
-    if (error) throw error;
+    try {
+      const { error, needsEmailConfirmation } = await this.auth.signUp({
+        email: a.email.trim(),
+        password: a.password,
+        fullName: a.fullName.trim(),
+        phone: a.phone.trim(),
+        emailRedirectTo: window.location.origin + '/register-school',
+      });
+      if (error) throw error;
+      this.accountForm.controls.password.reset();
+      if (needsEmailConfirmation) {
+        this.notice.set('Check your email for a confirmation link. It will bring you back here to add or claim your school.');
+      }
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Could not create your login. Please try again.');
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   private async run(action: () => Promise<void>): Promise<void> {

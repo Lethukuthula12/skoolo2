@@ -1059,3 +1059,39 @@ Browser policy still blocks rendered/live verification. Both login pages, parent
 mobile keyboard scrolling/autofill, keyboard focus, password visibility controls, error presentation
 and animation appearance need a real-device visual walkthrough. These checks do not establish
 successful live deployment or school acceptance, and no roadmap stage was marked accepted.
+
+## 2026-10-24 — Authentication preparation for skoolo.co.za
+
+- The user selected `skoolo.co.za` from HOSTAFRICA. Prepared the documented rollout for
+  `app.skoolo.co.za` (parents) and `schools.skoolo.co.za` (schools), Cloudflare DNS/custom domains,
+  and a verified Resend sender with Supabase SMTP. Corrected the old Pages URL examples in the
+  deployment guide. Domain purchase status is awaiting confirmation; public DNS did not resolve
+  at the time of inspection. No nameservers, DNS records, Worker routes, live Supabase settings
+  or SMTP credentials were changed. Email confirmation is not enabled by this commit.
+- Signup now passes an explicit confirmation destination on the current app's origin. The portal
+  waits for confirmation before redeeming an invitation. It retains the invite code in the open
+  form; an email opened elsewhere asks for the original code. No invite codes, passwords or
+  school details are added to confirmation URLs or stored as onboarding drafts.
+- School registration now creates/confirms the administrator's login before collecting school
+  details. This avoids losing a school form when an email link opens a new tab. Authenticated
+  users can then create or claim a school through the existing RPCs. Accounts with no membership
+  can sign in back to `/join` or `/register-school`; other protected destinations still use the
+  no-school page and existing route guards. Database roles, queries and RLS are unchanged.
+- Both reset pages now show completion before checking the signed-out recovery state, fixing
+  the false expired-link message after success. Submissions require a ready valid session and
+  form. Added the missing parent RouterLink imports so the reset sign-in and request Back buttons
+  navigate. Signup also remains compatible with the current confirmation-disabled configuration.
+
+Verification: both production builds passed; parent has no warnings (1.33 MB initial), portal
+retains its existing initial-bundle warning (532.75 kB against 500 kB). The portal's initial
+TypeScript return-path failure was fixed before the successful build. Auth controller/template
+checks pass for confirmation destinations, deferred invitation/school writes, confirmed and
+immediate-session onboarding, no-school routing, signup failure, reset failure/mismatch/expiry,
+and the signed-out success screen. The real shared auth service is exercised with a mock Supabase
+client to check redirect forwarding. `npm run test:rls` passed all 112 isolation checks and the
+coverage guard; no database changes were made. `git diff --check` passed.
+
+Browser origin policy still prevents rendered/live verification. The changed school signup/join
+flow and both reset screens need real-browser/device walkthroughs. DNS, TLS, actual email delivery,
+email link consumption and live signup confirmation remain unverified. The deployment guide lists
+the remaining steps; Stage 0 is not marked accepted.

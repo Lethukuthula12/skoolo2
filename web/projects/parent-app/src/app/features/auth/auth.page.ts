@@ -77,6 +77,7 @@ export class AuthPage {
       password: value.password,
       fullName: value.fullName.trim(),
       phone: value.phone.trim(),
+      emailRedirectTo: window.location.origin + '/auth',
     });
     this.busy.set(false);
     if (error) {

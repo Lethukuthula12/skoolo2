@@ -28,6 +28,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
             <button class="btn btn-primary" type="submit" [disabled]="codeForm.invalid || busy()">{{ busy() ? 'Joining…' : 'Join school' }}</button>
           </form>
         } @else {
+          @if (notice()) { <p class="auth-notice" role="status">{{ notice() }}</p> }
           <form class="stack" [formGroup]="signUpForm" (ngSubmit)="signUpAndRedeem()">
             <div class="field">
               <label for="code">Invite code</label>
@@ -62,6 +63,7 @@ export class JoinPage {
 
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
 
   protected readonly codeForm = this.formBuilder.group({
     code: ['', [Validators.required, Validators.minLength(6)]],
@@ -82,22 +84,33 @@ export class JoinPage {
   }
 
   protected async redeem(): Promise<void> {
+    if (this.codeForm.invalid || this.busy() || !this.auth.isSignedIn()) return;
     await this.run(async () => {
       await this.staff.acceptInvite(this.codeForm.getRawValue().code);
     });
   }
 
   protected async signUpAndRedeem(): Promise<void> {
+    if (this.signUpForm.invalid || this.busy()) return;
     const v = this.signUpForm.getRawValue();
+    this.codeForm.patchValue({ code: v.code });
+    this.notice.set(null);
     await this.run(async () => {
-      const { error } = await this.auth.signUp({
+      const { error, needsEmailConfirmation } = await this.auth.signUp({
         email: v.email.trim(),
         password: v.password,
         fullName: v.fullName.trim(),
         phone: v.phone.trim(),
+        emailRedirectTo: window.location.origin + '/join',
       });
       if (error) throw error;
+      if (needsEmailConfirmation) {
+        this.notice.set('Check your email for a confirmation link. Open it, then enter your school’s invite code to finish joining. Your invitation has not been used yet.');
+        this.signUpForm.controls.password.reset();
+        return false;
+      }
       await this.staff.acceptInvite(v.code);
+      return undefined;
     });
   }
 
@@ -107,11 +120,11 @@ export class JoinPage {
     this.staff.reset();
   }
 
-  private async run(action: () => Promise<void>): Promise<void> {
+  private async run(action: () => Promise<void | false>): Promise<void> {
     this.busy.set(true);
     this.error.set(null);
     try {
-      await action();
+      if (await action() === false) return;
       await this.router.navigateByUrl('/applications');
     } catch (err) {
       console.error(err);

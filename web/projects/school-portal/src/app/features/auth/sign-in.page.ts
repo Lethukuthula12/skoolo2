@@ -36,11 +36,12 @@ export class SignInPage {
     this.staff.reset();
     const schools = await this.staff.loadSchools();
     this.busy.set(false);
-    if (schools.length === 0) {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/applications';
+    const isOnboarding = returnUrl === '/register-school' || returnUrl === '/join' || returnUrl.startsWith('/join?');
+    if (schools.length === 0 && !isOnboarding) {
       await this.router.navigateByUrl('/no-school');
       return;
     }
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/applications';
     await this.router.navigateByUrl(returnUrl);
   }
 }

@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '@skoolo/shared';
 
 /**
@@ -16,14 +16,14 @@ import { AuthService } from '@skoolo/shared';
         <div class="brand">Skoolo <span>for schools</span></div>
         @if (!ready()) {
           <p class="muted">Checking your link…</p>
-        } @else if (!canReset()) {
-          <h1>This link has expired</h1>
-          <p class="muted">Password-reset links can only be used once and expire after a while. Please request a new one.</p>
-          <a routerLink="/forgot-password" class="btn btn-primary">Request a new link</a>
         } @else if (done()) {
           <h1>Password changed</h1>
           <p class="muted">You can now sign in with your new password.</p>
           <a routerLink="/sign-in" class="btn btn-primary">Sign in</a>
+        } @else if (!canReset()) {
+          <h1>This link has expired</h1>
+          <p class="muted">Password-reset links can only be used once and expire after a while. Please request a new one.</p>
+          <a routerLink="/forgot-password" class="btn btn-primary">Request a new link</a>
         } @else {
           <h1>Choose a new password</h1>
           <form class="stack" [formGroup]="form" (ngSubmit)="submit()">
@@ -53,7 +53,6 @@ import { AuthService } from '@skoolo/shared';
 })
 export class ResetPasswordPage {
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
 
   protected readonly ready = signal(false);
@@ -77,10 +76,12 @@ export class ResetPasswordPage {
   }
 
   protected async submit(): Promise<void> {
+    if (this.busy() || this.done() || !this.ready() || !this.canReset()) return;
     if (this.form.hasError('mismatch')) {
       this.error.set('The two passwords do not match.');
       return;
     }
+    if (this.form.invalid) return;
     this.busy.set(true);
     this.error.set(null);
     const error = await this.auth.updatePassword(this.form.getRawValue().password);
