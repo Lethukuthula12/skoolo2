@@ -113,11 +113,17 @@ Open the failed deployment in Cloudflare and read the log.
 
 Target: `skoolo.co.za`, registered with HOSTAFRICA, with DNS on the same Cloudflare account as
 the two Workers. Registration stays with HOSTAFRICA; hosting stays on Cloudflare. This is a rollout
-procedure, not a record of completed setup. On 2026-10-24, the owner confirmed registration at
-HOSTAFRICA with no existing website or email. The earlier public DNS lookup did not resolve.
-Cloudflare dashboard access is blocked by the agent session's administrator browser policy, so
-the owner must add the domain in their browser and provide its assigned nameservers. No DNS,
-live authentication configuration or SMTP settings have been changed.
+procedure; the verified progress as of 2026-10-24 is:
+
+- The owner registered the domain at HOSTAFRICA with no existing website or email, then added it
+  to the existing Cloudflare account on the Free plan.
+- The owner's refreshed HOSTAFRICA screen confirms custom nameservers `leif.ns.cloudflare.com`
+  and `marlowe.ns.cloudflare.com` are saved. Cloudflare currently reports that it is waiting for
+  the registrar to propagate the new nameservers; zone activation is not yet confirmed.
+- Cloudflare dashboard access remains blocked by the agent session's administrator browser
+  policy. The owner performs account actions with step-by-step guidance from screenshots and
+  recordings. No workaround access was used.
+- Worker custom domains, TLS, live authentication URL changes and SMTP setup are still pending.
 
 ### 1. Activate DNS
 
@@ -130,6 +136,8 @@ live authentication configuration or SMTP settings have been changed.
    Cloudflare-assigned pair and save. Follow Cloudflare's DNSSEC guidance if the existing domain has
    DNSSEC enabled; an old DS record must not remain attached to a different DNS provider.
 4. Wait for Cloudflare to show the zone as **Active** before attaching Worker custom domains.
+   The owner's current setup has reached this step. Use **Check nameservers now** to request a
+   check; Cloudflare also checks periodically. Do not replace the saved pair again while waiting.
 
 References: [HOSTAFRICA nameservers](https://help.hostafrica.com/article/how-to-update-the-name-servers-for-your-domain)
 and [Cloudflare zone setup](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/).

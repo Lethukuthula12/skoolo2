@@ -1109,3 +1109,21 @@ the remaining steps; Stage 0 is not marked accepted.
 
 Documentation-only update: reviewed the diff and ran `git diff --check`. No application or
 authentication configuration changed; no new build or database test was required.
+
+## 2026-10-24 — Cloudflare zone added; registrar nameservers saved
+
+- Guided the owner through connecting the existing domain to Cloudflare and choosing the Free
+  plan. The DNS scan found no records, consistent with the owner's report of no website/email.
+- Read Cloudflare's assigned nameservers from the supplied recording:
+  `leif.ns.cloudflare.com` and `marlowe.ns.cloudflare.com`. The owner's subsequent refreshed
+  HOSTAFRICA screenshot shows Custom nameservers with exactly this saved pair.
+- The latest Cloudflare screenshot explicitly reports waiting for registrar propagation. The
+  earlier public DNS lookup still returned HOSTAFRICA's `dan1`–`dan4.host-ww.net` nameservers.
+  Zone activation and TLS are not confirmed; no Worker custom domains or live auth/SMTP changes
+  have been applied. Next independent setup step is the Resend sending account/domain.
+- Account interaction was performed by the owner. Recordings were read locally using the existing
+  decoder; extracted frames stay under ignored `web/.angular/`. Dashboard access restrictions
+  were not bypassed.
+
+Documentation-only update: diff reviewed and `git diff --check` passed. No new build or RLS test
+was required. Live email delivery and Stage 0 acceptance remain open.
