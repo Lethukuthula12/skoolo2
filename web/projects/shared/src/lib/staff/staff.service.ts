@@ -118,9 +118,9 @@ export class StaffService {
       p_highest_grade: input.highestGrade ?? 'G7',
     });
     if (error) throw error;
+    // The write has committed. Let the destination guard refresh memberships so a failed
+    // follow-up read cannot make the caller repeat a successful registration.
     this.reset();
-    await this.loadSchools();
-    this.currentSchoolId.set(data.id);
     return data;
   }
 
@@ -128,8 +128,6 @@ export class StaffService {
     const { data, error } = await this.client.rpc('claim_school', { p_school_id: schoolId });
     if (error) throw error;
     this.reset();
-    await this.loadSchools();
-    this.currentSchoolId.set(data.id);
     return data;
   }
 

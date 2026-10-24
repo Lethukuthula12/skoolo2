@@ -132,9 +132,12 @@ half of it.
 - **Authentication email**: Resend has verified `auth.skoolo.co.za`; the owner configured custom
   SMTP and the custom-domain auth URLs in Supabase, then confirmed both apps' reset email,
   same-app return, password change and subsequent sign-in flows. Email confirmation is enabled;
-  the owner also confirmed the new parent signup/email-confirmation flow worked. Portal staff
-  joining and school-registration confirmation, reused/expired links and mobile/cross-browser
-  checks remain open. SMTP credentials are stored in Supabase, never in the repo.
+  the owner also confirmed the new parent signup/email-confirmation flow worked. Portal school
+  registration reached the signed-in details form and saved a school/admin membership; workspace
+  navigation then failed on a lazy module. The owner confirmed the workspace opens in a new tab.
+  Recovery is implemented but its new panel still needs a live check.
+  Staff joining, reused/expired links and mobile/cross-browser checks remain open. SMTP credentials
+  are stored in Supabase, never in the repo.
 - **Not yet**: CI wiring for the RLS test; remaining authentication rollout checks above.
 
 ## Routine operations

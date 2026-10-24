@@ -63,6 +63,20 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
         }
 
         @if (auth.isSignedIn()) {
+        @if (savedSchool(); as school) {
+          <section #savedPanel class="confirmation-panel" tabindex="-1" aria-labelledby="saved-title">
+            <h2 id="saved-title">Your school is saved</h2>
+            <p role="status"><strong>{{ school.name }}</strong> has been added to your account.</p>
+            @if (workspaceUnavailable()) {
+              <p>We couldn't open your workspace. Reload to continue — you don't need to register again.</p>
+              <div class="confirmation-actions">
+                <a class="btn btn-primary" [href]="schoolUrl()">Reload and continue</a>
+              </div>
+            } @else {
+              <p role="status">Opening your school workspace…</p>
+            }
+          </section>
+        } @else {
         <h2>Your school</h2>
         <div class="field">
           <label for="search">Is your school already listed? Search by name</label>
@@ -114,6 +128,7 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
           </p>
         </form>
         }
+        }
       </div>
     </div>
   `,
@@ -154,6 +169,8 @@ export class RegisterSchoolPage {
   protected readonly searching = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly confirmationEmail = signal<string | null>(null);
+  protected readonly savedSchool = signal<School | null>(null);
+  protected readonly workspaceUnavailable = signal(false);
   protected readonly passwordVisible = signal(false);
   protected readonly searchTerm = signal('');
   protected readonly matches = signal<School[]>([]);
@@ -161,6 +178,11 @@ export class RegisterSchoolPage {
 
   @ViewChild('confirmationPanel')
   protected set confirmationPanel(panel: ElementRef<HTMLElement> | undefined) {
+    panel?.nativeElement.focus();
+  }
+
+  @ViewChild('savedPanel')
+  protected set savedPanel(panel: ElementRef<HTMLElement> | undefined) {
     panel?.nativeElement.focus();
   }
 
@@ -201,26 +223,22 @@ export class RegisterSchoolPage {
   }
 
   protected async claim(school: School): Promise<void> {
-    if (!this.auth.isSignedIn() || this.busy()) return;
-    await this.run(async () => {
-      await this.staff.claimSchool(school.id);
-    });
+    if (!this.auth.isSignedIn() || this.busy() || this.savedSchool()) return;
+    await this.run(() => this.staff.claimSchool(school.id));
   }
 
   protected async register(): Promise<void> {
-    if (!this.auth.isSignedIn() || this.schoolForm.invalid || this.busy()) return;
+    if (!this.auth.isSignedIn() || this.schoolForm.invalid || this.busy() || this.savedSchool()) return;
     const v = this.schoolForm.getRawValue();
-    await this.run(async () => {
-      await this.staff.createSchool({
-        name: v.name,
-        town: v.town,
-        province: v.province as Province,
-        phone: v.phone || null,
-        email: v.email || null,
-        lowestGrade: v.lowestGrade,
-        highestGrade: v.highestGrade,
-      });
-    });
+    await this.run(() => this.staff.createSchool({
+      name: v.name,
+      town: v.town,
+      province: v.province as Province,
+      phone: v.phone || null,
+      email: v.email || null,
+      lowestGrade: v.lowestGrade,
+      highestGrade: v.highestGrade,
+    }));
   }
 
   protected async createAccount(): Promise<void> {
@@ -256,15 +274,27 @@ export class RegisterSchoolPage {
     this.error.set(null);
   }
 
-  private async run(action: () => Promise<void>): Promise<void> {
+  protected schoolUrl(): string {
+    return '/school?school=' + encodeURIComponent(this.savedSchool()!.id);
+  }
+
+  private async run(action: () => Promise<School>): Promise<void> {
     this.busy.set(true);
     this.error.set(null);
     try {
-      await action();
-      await this.router.navigateByUrl('/school');
+      this.savedSchool.set(await action());
     } catch (err) {
-      console.error(err);
       this.error.set(err instanceof Error ? err.message : 'Something went wrong.');
+      this.busy.set(false);
+      return;
+    }
+
+    // Saving and opening the workspace are separate outcomes. A missing lazy chunk (for
+    // example, after a deployment) or membership refresh failure must never replay the write.
+    try {
+      this.workspaceUnavailable.set(!await this.router.navigateByUrl(this.schoolUrl()));
+    } catch {
+      this.workspaceUnavailable.set(true);
     } finally {
       this.busy.set(false);
     }

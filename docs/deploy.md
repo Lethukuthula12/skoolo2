@@ -132,14 +132,19 @@ procedure; the verified progress as of 2026-10-25 is:
   showed the old settings, the owner confirmed saving the new Site URL and redirect entries.
   The owner then reported "both passed" after instructions to request a fresh reset email from
   each app, check the return domain, change the password and sign in again. Reused/expired links,
-  mobile/cross-browser checks and the portal signup paths still need live verification.
+  mobile/cross-browser checks and the staff-invite signup path still need live verification.
 - The repository sets `[auth.email].enable_confirmations = true`. The owner's screenshot shows
   **Confirm email** enabled, followed by a report that the new parent signup/confirmation test
-  worked. Portal staff-invite and school-registration confirmation still need live walkthroughs.
+  worked. Portal staff-invite confirmation still needs a live walkthrough.
 - During the portal registration test, the owner confirmed receiving its confirmation email.
-  Following the link through to the school-details form is still pending. The registration UI
-  now uses a dedicated **Check your email** step with a sign-in return link and email correction
-  action, plus Show/Hide for password entry, to make the required next step clearer.
+  Their next screenshot shows the signed-in school-details form. A read-only database check
+  confirmed one new school and its admin membership after submission, but opening the workspace
+  failed while fetching a lazy-loaded module. The registration UI now separates saved data from
+  navigation failure and provides **Reload and continue**, preserving the school selection only
+  after checking the signed-in user's memberships. The owner confirmed that opening `/school`
+  in a new tab shows the registered school's workspace. The new recovery panel still needs a
+  live check. **Check your email** and password Show/Hide are implemented; their live
+  visual/keyboard checks remain open.
 - SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
   is not a record of live settings. Before any future `config push`, review the proposed changes
   so the working SMTP settings and live email rate limit are preserved.

@@ -1305,3 +1305,34 @@ reused/expired links and real-device/cross-browser checks remain open; Stage 0 i
 
 The portal email has arrived; following it to **Your school**, the staff-invite flow and the
 remaining real-device/link checks still need owner verification. Stage 0 remains in progress.
+
+## 2026-10-25 — Keep saved school registration safe when workspace navigation fails
+
+- The owner reached the signed-in school-details form after email confirmation. Submitting it
+  showed a failed dynamic-module import. A narrowly scoped, read-only database check confirmed
+  one matching school, claimed but not verified, with the signup account as an administrator.
+  No school records were changed by the agent. The owner then confirmed that opening `/school`
+  in a new tab showed the registered school's workspace.
+- The missing shell chunk was from an earlier build, consistent with a tab surviving a
+  deployment. The defect in the page was treating a successful school write and failed workspace
+  navigation as one failed registration, leaving the write action available again.
+- Create/claim now return the committed school before any membership refresh. The destination
+  guard still loads the signed-in user's explicitly filtered memberships. The registration page
+  retains the saved result, replaces the form with **Your school is saved**, and blocks further
+  create/claim submissions on that page. A failed or cancelled navigation offers a normal
+  **Reload and continue** link so the browser fetches the current application assets.
+- The continuation URL includes the destination school. The guard only applies that selection
+  when it belongs to the authenticated user's memberships, preserving the school after a full
+  reload without trusting a URL as an access grant. No RPC, schema, RLS or school-verification
+  rules changed. The change prevents resubmission after a known successful write; it does not
+  introduce server-side idempotency for ambiguous network failures.
+- Controller/template checks passed for create and claim after missing chunks, membership-read
+  failures and cancelled navigation, blocked repeat writes, retryable rejected writes, and the
+  full-document recovery link. Real service/guard checks cover deferred membership refresh,
+  current-user query filtering, restoring a non-first school, ignoring an unowned school hint,
+  membership roles, and signed-out/no-school redirects.
+- Both production builds passed: portal 532.79 kB initial (existing 500 kB budget warning),
+  parent 1.33 MB. The full database suite passed 112 isolation checks and its coverage guard.
+  Browser tooling remains restricted: the new recovery panel's visual layout, focus and
+  end-to-end reload interaction still need a live check. The owner's new-tab recovery confirms
+  existing school access, not visual acceptance of the new panel. Stage 0 remains in progress.

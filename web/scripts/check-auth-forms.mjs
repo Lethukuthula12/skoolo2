@@ -22,6 +22,7 @@ await build({
     export { ResetPasswordPage as ParentReset } from './projects/parent-app/src/app/features/auth/reset-password.page';
     export { ResetPasswordPage as PortalReset } from './projects/school-portal/src/app/features/auth/reset-password.page';
     export { AuthService, StaffService, SchoolDirectoryService, SUPABASE_CLIENT } from './projects/shared/src/public-api';
+    export { staffGuard } from './projects/shared/src/lib/staff/staff.guard';
   `, resolveDir: root, sourcefile: 'auth-check.ts' },
   outfile: output, bundle: true, platform: 'node', format: 'esm', packages: 'external',
   tsconfig: path.join(root, 'tsconfig.json'),
@@ -33,12 +34,12 @@ await build({
       'export const IonBackButton={}, IonButton={}, IonButtons={}, IonContent={}, IonHeader={}, IonIcon={}, IonInput={}, IonSpinner={}, IonTitle={}, IonToolbar={};', loader: 'js' }));
   }}],
 });
-const { AuthPage, SignInPage, JoinPage, RegisterSchoolPage, ParentReset, PortalReset, AuthService, StaffService, SchoolDirectoryService, SUPABASE_CLIENT } = await import(pathToFileURL(output).href);
+const { AuthPage, SignInPage, JoinPage, RegisterSchoolPage, ParentReset, PortalReset, AuthService, StaffService, SchoolDirectoryService, SUPABASE_CLIENT, staffGuard } = await import(pathToFileURL(output).href);
 globalThis.window = { location: { origin: 'https://app.skoolo.co.za' } };
 const fixtures = [];
 function fixture(Page, params = {}) {
   const calls = [], navigation = [];
-  const result = { signIn: null, signUp: { error: null, needsEmailConfirmation: true }, updatePassword: null, schools: [{ id: 'school' }] };
+  const result = { signIn: null, signUp: { error: null, needsEmailConfirmation: true }, updatePassword: null, schools: [{ id: 'school' }], navigation: true, navigationError: null, schoolError: null };
   const signedIn = signal(false), recovery = signal(false);
   const injector = Injector.create({ providers: [
     { provide: FormBuilder, useValue: new FormBuilder() },
@@ -52,11 +53,11 @@ function fixture(Page, params = {}) {
     { provide: StaffService, useValue: {
       reset: () => calls.push(['staff.reset']), loadSchools: async () => result.schools,
       acceptInvite: async code => calls.push(['acceptInvite', code]),
-      claimSchool: async id => calls.push(['claimSchool', id]),
-      createSchool: async school => calls.push(['createSchool', school]),
+      claimSchool: async id => { calls.push(['claimSchool', id]); if (result.schoolError) throw result.schoolError; return { id, name: 'Claimed School' }; },
+      createSchool: async school => { calls.push(['createSchool', school]); if (result.schoolError) throw result.schoolError; return { ...school, id: 'new-school' }; },
     } },
     { provide: SchoolDirectoryService, useValue: { grades: async () => [] } },
-    { provide: Router, useValue: { navigateByUrl: async url => { navigation.push(url); return true; } } },
+    { provide: Router, useValue: { navigateByUrl: async url => { navigation.push(url); if (result.navigationError) throw result.navigationError; return result.navigation; } } },
     { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: key => params[key] ?? null } } } },
   ]});
   const item = { page: runInInjectionContext(injector, () => new Page()), calls, navigation, result, injector, signedIn, recovery };
@@ -211,9 +212,12 @@ assert.equal(registration.page.confirmationEmail(), 'another-admin@example.com',
 registration.signedIn.set(true);
 await registration.page.register();
 assert.equal(registration.calls.at(-1)[0], 'createSchool');
-assert.equal(registration.navigation.at(-1), '/school');
-await registration.page.claim({ id: 'unclaimed-school' });
-assert.deepEqual(registration.calls.at(-1), ['claimSchool', 'unclaimed-school']);
+assert.equal(registration.navigation.at(-1), '/school?school=new-school');
+const claimRegistration = fixture(RegisterSchoolPage);
+claimRegistration.signedIn.set(true);
+await claimRegistration.page.claim({ id: 'unclaimed-school' });
+assert.deepEqual(claimRegistration.calls.at(-1), ['claimSchool', 'unclaimed-school']);
+assert.equal(claimRegistration.navigation.at(-1), '/school?school=unclaimed-school');
 const immediateRegistration = fixture(RegisterSchoolPage);
 immediateRegistration.page.accountForm.setValue(account);
 immediateRegistration.result.signUp.needsEmailConfirmation = false;
@@ -230,6 +234,105 @@ assert.equal(failedRegistration.page.busy(), false);
 assert.equal(failedRegistration.signedIn(), false);
 assert.equal(failedRegistration.page.confirmationEmail(), null, 'A failed signup stays on the form');
 assert.equal(failedRegistration.page.accountForm.value.password, account.password, 'A failed signup retains input for correction');
+
+// Once the write succeeds, neither an old deployment chunk nor a cancelled navigation can
+// expose the registration form again or replay either onboarding mutation.
+for (const method of ['register', 'claim']) {
+  for (const failure of ['chunk', 'membership', 'cancelled']) {
+    const saved = fixture(RegisterSchoolPage);
+    saved.signedIn.set(true);
+    saved.page.schoolForm.patchValue({ name: 'Example School', town: 'Example Town', province: 'Gauteng' });
+    if (failure === 'cancelled') saved.result.navigation = false;
+    else saved.result.navigationError = new Error(failure === 'chunk'
+      ? 'Failed to fetch dynamically imported module: https://schools.example/chunk-OLD.js'
+      : 'Membership refresh unavailable');
+    await saved.page[method]({ id: 'claimed-school' });
+    const id = method === 'register' ? 'new-school' : 'claimed-school';
+    assert.equal(saved.page.savedSchool().id, id);
+    assert.equal(saved.page.workspaceUnavailable(), true);
+    assert.equal(saved.page.error(), null, 'A navigation failure must not be described as a failed registration');
+    assert.equal(saved.page.busy(), false);
+    assert.equal(saved.page.schoolUrl(), '/school?school=' + id, 'A full reload retains the destination school');
+    await saved.page.register();
+    await saved.page.claim({ id: 'another-school' });
+    assert.equal(saved.calls.length, 1, 'Never repeat the saved mutation or start another claim on this page');
+  }
+}
+const rejectedSchool = fixture(RegisterSchoolPage);
+rejectedSchool.signedIn.set(true);
+rejectedSchool.page.schoolForm.patchValue({ name: 'Example School', town: 'Example Town', province: 'Gauteng' });
+rejectedSchool.result.schoolError = new Error('School could not be created');
+await rejectedSchool.page.register();
+assert.equal(rejectedSchool.page.savedSchool(), null);
+assert.equal(rejectedSchool.page.error(), 'School could not be created');
+assert.equal(rejectedSchool.page.busy(), false);
+assert.equal(rejectedSchool.navigation.length, 0);
+rejectedSchool.result.schoolError = null;
+await rejectedSchool.page.register();
+assert.equal(rejectedSchool.calls.length, 2, 'A genuine rejected write remains retryable');
+assert.equal(rejectedSchool.page.workspaceUnavailable(), false);
+const savedBranch = registrationNodes.find(node => node.branches?.some(branch => branch.expression?.source === 'savedSchool()')).branches[0];
+const savedNodes = descendants(savedBranch.children);
+assert.equal(savedNodes.some(node => node.name === 'form'), false, 'Saved schools replace the creation form');
+assert.ok(savedNodes.some(node => node.name === 'a' && node.inputs.some(input => input.name === 'href' && input.value.source === 'schoolUrl()') && !node.inputs.some(input => input.name === 'routerLink')), 'Recovery uses a document load to fetch current assets');
+
+// Use the real service and guard: the RPC result is returned before any follow-up reads.
+// On continuation, refreshed memberships are scoped to the current user, and URL hints cannot
+// select another tenant. No production data or actual requests are involved.
+const staffCalls = [];
+const staffResult = { rpcError: null, readError: null, signedIn: true, rows: [
+  { role: 'staff', schools: { id: 'first-school' } },
+  { role: 'admin', schools: { id: 'new-school' } },
+] };
+let realStaff;
+const staffInjector = Injector.create({ providers: [
+  { provide: SUPABASE_CLIENT, useValue: {
+    rpc: async (name, input) => { staffCalls.push(['rpc', name, input]); return { data: { id: 'new-school', name: 'Example School' }, error: staffResult.rpcError }; },
+    auth: { getSession: async () => ({ data: { session: staffResult.signedIn ? { user: { id: 'current-user' } } : null } }) },
+    from: table => ({ select: columns => ({ eq: async (column, value) => {
+      staffCalls.push(['read', table, columns, column, value]);
+      return { data: staffResult.rows, error: staffResult.readError };
+    } }) }),
+  } },
+  { provide: StaffService, useFactory: () => realStaff },
+  { provide: AuthService, useValue: { whenReady: async () => {}, isSignedIn: () => staffResult.signedIn } },
+  { provide: Router, useValue: { createUrlTree: (commands, extras) => ({ commands, extras }) } },
+] });
+realStaff = runInInjectionContext(staffInjector, () => new StaffService());
+const guard = school => runInInjectionContext(staffInjector, () => staffGuard(
+  { queryParamMap: { get: key => key === 'school' ? school : null } }, { url: '/school?school=' + school },
+));
+for (const method of ['createSchool', 'claimSchool']) {
+  staffCalls.length = 0;
+  staffResult.readError = new Error('Read unavailable');
+  const saved = await realStaff[method](method === 'createSchool' ? { name: 'Example School', town: 'Example Town', province: 'Gauteng' } : 'new-school');
+  assert.equal(saved.id, 'new-school', 'A committed write is returned even when the subsequent membership read will fail');
+  assert.equal(staffCalls.length, 1);
+  assert.equal(realStaff.loaded(), false, 'The destination must refresh memberships');
+  await assert.rejects(guard('new-school'), /Read unavailable/);
+  assert.equal(realStaff.loaded(), false);
+  staffResult.readError = null;
+  assert.equal(await guard('new-school'), true);
+  assert.equal(realStaff.currentSchoolId(), 'new-school', 'Recovery restores the created school even if it is not the first membership');
+  assert.equal(realStaff.isAdmin(), true);
+  assert.deepEqual(staffCalls.at(-1), ['read', 'school_staff', 'school_id, role, schools(*)', 'user_id', 'current-user']);
+  assert.equal(staffCalls.filter(call => call[0] === 'rpc').length, 1, 'Membership recovery never replays the RPC');
+  realStaff.reset();
+  assert.equal(await guard('other-tenant'), true);
+  assert.equal(realStaff.currentSchoolId(), 'first-school', 'An unowned URL hint cannot select another tenant');
+  assert.equal(realStaff.isAdmin(), false, 'School selection keeps the role from the actual membership');
+  staffResult.rpcError = new Error('Write denied');
+  await assert.rejects(realStaff[method](method === 'createSchool' ? { name: 'Example School' } : 'new-school'), /Write denied/);
+  assert.equal(realStaff.currentSchoolId(), 'first-school', 'A rejected write does not discard valid membership state');
+  staffResult.rpcError = null;
+}
+staffResult.signedIn = false;
+realStaff.reset();
+assert.deepEqual((await guard('new-school')).commands, ['/sign-in']);
+staffResult.signedIn = true;
+staffResult.rows = [];
+assert.deepEqual((await guard('new-school')).commands, ['/no-school']);
+staffInjector.destroy();
 
 for (const [Page, app] of [[ParentReset, 'parent-app'], [PortalReset, 'school-portal']]) {
   const reset = fixture(Page);
@@ -281,4 +384,4 @@ assert.equal(confirmation.needsEmailConfirmation, true);
 serviceInjector.destroy();
 for (const item of fixtures) item.injector.destroy();
 delete globalThis.window;
-console.log('Auth checks passed: form contracts, login failures, app-specific confirmation URLs, verified onboarding, immediate-session compatibility, no-school routing and password-reset success/expiry/failure.');
+console.log('Auth checks passed: form contracts, login failures, app-specific confirmation URLs, verified onboarding, saved-school navigation recovery, membership-scoped school selection, immediate-session compatibility, no-school routing and password-reset success/expiry/failure.');
