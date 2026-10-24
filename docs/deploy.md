@@ -113,7 +113,7 @@ Open the failed deployment in Cloudflare and read the log.
 
 Target: `skoolo.co.za`, registered with HOSTAFRICA, with DNS on the same Cloudflare account as
 the two Workers. Registration stays with HOSTAFRICA; hosting stays on Cloudflare. This is a rollout
-procedure; the verified progress as of 2026-10-24 is:
+procedure; the verified progress as of 2026-10-25 is:
 
 - The owner registered the domain at HOSTAFRICA with no existing website or email, then added it
   to the existing Cloudflare account on the Free plan.
@@ -129,8 +129,13 @@ procedure; the verified progress as of 2026-10-24 is:
 - The owner saved Resend SMTP in Supabase (`smtp.resend.com:465`, username `resend`, sender
   `Skoolo <no-reply@auth.skoolo.co.za>`). The API key was entered directly in Supabase. The owner
   then reported that the complete password-reset flow worked using the parent Workers address.
-  Portal reset, app custom domains/TLS, production auth URL changes and signup confirmation are
-  still pending.
+  Production auth URL changes, reset verification on both custom domains and signup confirmation
+  are still pending.
+- The owner attached `app.skoolo.co.za` and `schools.skoolo.co.za` to their corresponding Workers
+  and confirmed both load correctly. Supplied browser screenshots show the parent directory and
+  portal sign-in page at those addresses. Both Wrangler files now preserve these custom domains
+  and keep the original Workers addresses enabled. This does not verify authentication email
+  returns on the new origins.
 - SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
   is not a record of live settings. Before any future `config push`, review the proposed changes
   so the working SMTP settings and live email rate limit are preserved.
@@ -159,12 +164,15 @@ and [Cloudflare zone setup](https://developers.cloudflare.com/dns/zone-setups/fu
 | `skoolo-app` | `app.skoolo.co.za` |
 | `skoolo-schools` | `schools.skoolo.co.za` |
 
-In each Worker's **Settings → Domains & Routes → Add → Custom Domain**, add its hostname.
+In each Worker's **Domains → Add Domain**, first search for and select the existing zone
+`skoolo.co.za`. On the next screen enter only `app` or `schools` in **Subdomain**, keep
+**Production** selected, then click **Add domain**. The owner completed this flow for both apps.
+Some dashboard versions use **Settings → Domains & Routes → Add → Custom Domain** instead.
 Cloudflare creates the DNS record and certificate. Do not manually CNAME a hostname to
 `workers.dev`. Resolve an existing record conflict only after identifying what it serves.
 
-Once the zone is active, record the corresponding route in each Wrangler file so subsequent
-deployments retain it. For `wrangler.jsonc`:
+The corresponding routes are recorded in each Wrangler file so subsequent deployments retain
+the domains attached by the owner. For `wrangler.jsonc`:
 
 ```jsonc
 "workers_dev": true,

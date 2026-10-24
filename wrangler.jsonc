@@ -3,6 +3,8 @@
 {
   "name": "skoolo-app",
   "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "routes": [{ "pattern": "app.skoolo.co.za", "custom_domain": true }],
   "assets": {
     "directory": "./web/dist/parent-app/browser",
     "not_found_handling": "single-page-application",

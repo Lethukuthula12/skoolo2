@@ -1165,3 +1165,28 @@ repository checks. Stage 0 has not been marked accepted.
 
 Documentation-only release: diff reviewed and `git diff --check` passed. No application code,
 Worker routes or live authentication settings were changed by the agent in this milestone.
+
+## 2026-10-25 — Custom domains load; replace the portal's Angular favicon
+
+- The owner attached `app.skoolo.co.za` and `schools.skoolo.co.za` to the existing Workers and
+  confirmed both work. Supplied screenshots show the parent directory and portal sign-in page
+  on the new addresses. The dashboard first selects the root zone, then accepts `app` or
+  `schools` in a separate subdomain field; deployment instructions now reflect that sequence.
+- Recorded these already-attached custom domains in both Wrangler files, explicitly retaining
+  `workers_dev: true` and the existing static asset and SPA settings. No Cloudflare dashboard,
+  API or CLI access was used to work around the administrator's browser restriction.
+- Replaced the portal's Angular starter favicon with the existing parent app's Skoolo S icon.
+  The new `skoolo-favicon.png` filename avoids reusing the cached Angular icon URL; the original
+  `favicon.ico` is removed from the public assets.
+- Both production builds passed. Parent initial bundle: 1.33 MB, no warnings. Portal: 532.75 kB,
+  with the existing 500 kB initial-bundle warning unchanged. Checked the generated portal HTML,
+  verified its icon bytes match the parent icon, and confirmed the Angular favicon is absent
+  from the build. Both Wrangler configs parse with the intended domains and Workers fallback.
+- `git diff --check` passed. No authentication settings, data access, or permissions changed,
+  so a fresh database test run was not required for this release.
+- The icon was inspected locally and its production artifact checked. The new browser-tab icon
+  has not been observed live by the agent because app browser access is restricted. The owner
+  can refresh the portal after deployment to confirm it.
+
+Supabase production URL settings, email reset checks on both new domains and signup confirmation
+remain open. The working SMTP setup is unchanged and Stage 0 remains in progress.

@@ -3,6 +3,8 @@
 {
   "name": "skoolo-schools",
   "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "routes": [{ "pattern": "schools.skoolo.co.za", "custom_domain": true }],
   "assets": {
     "directory": "./web/dist/school-portal/browser",
     "not_found_handling": "single-page-application",

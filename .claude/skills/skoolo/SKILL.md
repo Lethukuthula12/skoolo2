@@ -121,8 +121,9 @@ half of it.
 - **Database**: migrations under `supabase/migrations/`, every rule above, buckets
   `application-documents` (private), `staff-documents` (private), `school-badges` (public).
 - **Hosting**: Cloudflare Workers with static assets, redeploying from `main` on every push.
-  Parent app <https://skoolo-app.lethufzikhali.workers.dev>, portal
-  <https://skoolo-schools.lethufzikhali.workers.dev>. See `docs/deploy.md`.
+  Parent app <https://app.skoolo.co.za>, portal <https://schools.skoolo.co.za>.
+  The owner confirmed both custom addresses load; the original Workers addresses remain enabled.
+  See `docs/deploy.md`.
 - **Tests**: `npm run test:rls` runs two files against the linked project and rolls back.
   `tenant_isolation.sql` builds two schools and proves cross-school isolation and role enforcement
   (112 checks). `rls_coverage.sql` fails if any public table loses RLS, any SECURITY DEFINER
@@ -130,8 +131,8 @@ half of it.
   isolation test with every new school-owned table or RPC; the coverage guard catches the rest.
 - **Authentication email**: Resend has verified `auth.skoolo.co.za`; the owner configured custom
   SMTP in Supabase and confirmed the complete parent password-reset flow on the Workers address.
-  App custom domains, auth URL updates, the portal's live reset walkthrough and enabling/testing
-  signup confirmation remain open. SMTP credentials are stored in Supabase, never in the repo.
+  Auth URL updates, reset verification on both custom domains and enabling/testing signup
+  confirmation remain open. SMTP credentials are stored in Supabase, never in the repo.
 - **Not yet**: CI wiring for the RLS test; remaining authentication rollout checks above.
 
 ## Routine operations
