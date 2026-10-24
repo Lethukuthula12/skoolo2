@@ -1146,3 +1146,22 @@ was required. Live email delivery and Stage 0 acceptance remain open.
 
 This milestone changes documentation only; diff review and `git diff --check` are the relevant
 repository checks. Stage 0 has not been marked accepted.
+
+## 2026-10-24 — Parent password reset works through production SMTP
+
+- The owner confirmed saving custom SMTP in Supabase with Resend's host `smtp.resend.com`,
+  port `465`, username `resend`, sender `no-reply@auth.skoolo.co.za` and display name `Skoolo`.
+  The owner entered the API key directly in Supabase; the agent never received the credential.
+- Before the save, `npm run test:rls` passed all 112 isolation checks and the coverage guard.
+- Guided a live password-reset test from the existing parent app's `/forgot-password` page.
+  The owner reported that the whole flow worked. This is owner-reported end-to-end verification
+  on the parent Workers address, not an agent browser observation or proof of the portal flow.
+- The next rollout step is attaching `app.skoolo.co.za` and `schools.skoolo.co.za` to their existing
+  Workers, followed by auth URL settings and live checks on those addresses. Signup confirmation
+  has not yet been enabled. No roadmap stage is marked accepted.
+- Updated the skill's current-state notes to reflect working parent email delivery and the
+  current test count. The local Supabase config still has a commented SMTP example; future config
+  deployments must preserve the live dashboard-managed SMTP setup and email rate limit.
+
+Documentation-only release: diff reviewed and `git diff --check` passed. No application code,
+Worker routes or live authentication settings were changed by the agent in this milestone.

@@ -125,10 +125,14 @@ half of it.
   <https://skoolo-schools.lethufzikhali.workers.dev>. See `docs/deploy.md`.
 - **Tests**: `npm run test:rls` runs two files against the linked project and rolls back.
   `tenant_isolation.sql` builds two schools and proves cross-school isolation and role enforcement
-  (21 checks). `rls_coverage.sql` fails if any public table loses RLS, any SECURITY DEFINER
+  (112 checks). `rls_coverage.sql` fails if any public table loses RLS, any SECURITY DEFINER
   function loses its pinned search_path, or any view stops being security_invoker. Extend the
   isolation test with every new school-owned table or RPC; the coverage guard catches the rest.
-- **Not yet**: password reset (needs a domain and an email provider); CI wiring for the RLS test.
+- **Authentication email**: Resend has verified `auth.skoolo.co.za`; the owner configured custom
+  SMTP in Supabase and confirmed the complete parent password-reset flow on the Workers address.
+  App custom domains, auth URL updates, the portal's live reset walkthrough and enabling/testing
+  signup confirmation remain open. SMTP credentials are stored in Supabase, never in the repo.
+- **Not yet**: CI wiring for the RLS test; remaining authentication rollout checks above.
 
 ## Routine operations
 

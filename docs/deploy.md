@@ -126,7 +126,14 @@ procedure; the verified progress as of 2026-10-24 is:
 - Cloudflare dashboard access remains blocked by the agent session's administrator browser
   policy. The owner performs account actions with step-by-step guidance from screenshots and
   recordings. No workaround access was used.
-- Worker custom domains, TLS, live authentication URL changes and SMTP setup are still pending.
+- The owner saved Resend SMTP in Supabase (`smtp.resend.com:465`, username `resend`, sender
+  `Skoolo <no-reply@auth.skoolo.co.za>`). The API key was entered directly in Supabase. The owner
+  then reported that the complete password-reset flow worked using the parent Workers address.
+  Portal reset, app custom domains/TLS, production auth URL changes and signup confirmation are
+  still pending.
+- SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
+  is not a record of live settings. Before any future `config push`, review the proposed changes
+  so the working SMTP settings and live email rate limit are preserved.
 
 ### 1. Activate DNS
 
