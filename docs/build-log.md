@@ -1127,3 +1127,22 @@ authentication configuration changed; no new build or database test was required
 
 Documentation-only update: diff reviewed and `git diff --check` passed. No new build or RLS test
 was required. Live email delivery and Stage 0 acceptance remain open.
+
+## 2026-10-24 — Cloudflare active and Resend sending domain verified
+
+- Public DNS now returns `leif.ns.cloudflare.com` and `marlowe.ns.cloudflare.com`. The owner's
+  Cloudflare screenshot confirms the zone is active.
+- The owner approved Resend's one-time DNS setup in Cloudflare. Public DNS resolves
+  `send.auth.skoolo.co.za` to `send.forge.rmta.net` and `rsend.auth.skoolo.co.za` to
+  `rsend-euw1.forge.rmta.net`; `resend._domainkey.auth.skoolo.co.za` has a public DKIM key.
+- The owner's Resend screenshot confirms Verified status for `auth.skoolo.co.za`, sending in
+  Ireland (`eu-west-1`) and Forge enabled. This proves sender setup, not delivery of an auth email.
+- Guided creation of a `Skoolo Supabase Auth` API key with Sending access restricted to the
+  sending domain. The owner reports the key is created; no secret was requested, read or stored
+  in the repository. The owner has opened the Supabase custom SMTP form, which is still blank
+  in the supplied recording. Saving SMTP settings and testing delivery remain pending.
+- App custom domains, production auth URL changes and signup confirmation still remain to be
+  completed. The existing Workers addresses stay in service.
+
+This milestone changes documentation only; diff review and `git diff --check` are the relevant
+repository checks. Stage 0 has not been marked accepted.

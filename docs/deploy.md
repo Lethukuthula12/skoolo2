@@ -118,8 +118,11 @@ procedure; the verified progress as of 2026-10-24 is:
 - The owner registered the domain at HOSTAFRICA with no existing website or email, then added it
   to the existing Cloudflare account on the Free plan.
 - The owner's refreshed HOSTAFRICA screen confirms custom nameservers `leif.ns.cloudflare.com`
-  and `marlowe.ns.cloudflare.com` are saved. Cloudflare currently reports that it is waiting for
-  the registrar to propagate the new nameservers; zone activation is not yet confirmed.
+  and `marlowe.ns.cloudflare.com` are saved. Public DNS now returns that pair, and the owner's
+  Cloudflare screenshot confirms zone activation.
+- Resend shows `auth.skoolo.co.za` as Verified, with sending enabled, Ireland (`eu-west-1`) as the
+  region and Forge enabled. Public DNS confirms both sending CNAMEs and the DKIM TXT record.
+  The owner reports creating a sending API key; its value has not been shared with the agent.
 - Cloudflare dashboard access remains blocked by the agent session's administrator browser
   policy. The owner performs account actions with step-by-step guidance from screenshots and
   recordings. No workaround access was used.
@@ -136,8 +139,8 @@ procedure; the verified progress as of 2026-10-24 is:
    Cloudflare-assigned pair and save. Follow Cloudflare's DNSSEC guidance if the existing domain has
    DNSSEC enabled; an old DS record must not remain attached to a different DNS provider.
 4. Wait for Cloudflare to show the zone as **Active** before attaching Worker custom domains.
-   The owner's current setup has reached this step. Use **Check nameservers now** to request a
-   check; Cloudflare also checks periodically. Do not replace the saved pair again while waiting.
+   This step is confirmed complete for the current domain. For future migrations, use
+   **Check nameservers now** to request a check; Cloudflare also checks periodically.
 
 References: [HOSTAFRICA nameservers](https://help.hostafrica.com/article/how-to-update-the-name-servers-for-your-domain)
 and [Cloudflare zone setup](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/).
