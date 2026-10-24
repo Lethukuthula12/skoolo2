@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
+import { escapePrintText as text, openPrintDocument, printImageUrl, PRINT_DOCUMENT_POLICY } from '../../ui/print-document';
 import {
   ACHIEVEMENT_LEVELS, AcademicTerm, Grade, ReportCardFull, ReportMarkFull, SchoolDirectoryService,
   StaffService, achievementLevel,
@@ -239,14 +240,15 @@ export class ReportsPage {
     const school = this.staff.currentSchool();
     const cls = this.selectedClass();
     const learner = report.learner;
+    const stampUrl = printImageUrl(school?.stamp_url);
     const marks = [...report.report_marks].filter((m) => m.subjects).sort((a, b) => (a.subjects!.sort_order) - (b.subjects!.sort_order));
     const rows = marks.map((m) => {
       const lvl = achievementLevel(m.mark);
       const desc = this.levels.find((l) => l.level === lvl)?.description ?? '';
-      return `<tr><td>${m.subjects!.name}</td><td class="c">${m.mark ?? ''}</td><td class="c">${lvl ?? ''}</td><td>${desc}</td></tr>`;
+      return `<tr><td>${text(m.subjects!.name)}</td><td class="c">${text(m.mark)}</td><td class="c">${text(lvl)}</td><td>${text(desc)}</td></tr>`;
     }).join('');
-    const codeTable = this.levels.map((l) => `<tr><td class="c">${l.level}</td><td>${l.description}</td><td class="c">${l.band}</td></tr>`).join('');
-    const html = `<!doctype html><html><head><title>Report ${learner?.first_name} ${learner?.last_name}</title><style>
+    const codeTable = this.levels.map((l) => `<tr><td class="c">${text(l.level)}</td><td>${text(l.description)}</td><td class="c">${text(l.band)}</td></tr>`).join('');
+    const html = `<!doctype html><html><head>${PRINT_DOCUMENT_POLICY}<title>Report ${text(learner?.first_name)} ${text(learner?.last_name)}</title><style>
       body{font-family:system-ui,Segoe UI,sans-serif;color:#14213d;padding:28px;max-width:800px;margin:auto}
       .head{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #1f4bd8;padding-bottom:12px}
       .head h1{margin:0;font-size:20px;color:#1f4bd8} .head img{height:64px}
@@ -256,24 +258,23 @@ export class ReportsPage {
       .sig{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:28px;font-size:12px}
       .sig div{border-top:1px solid #999;padding-top:4px} .small{font-size:11px;color:#666}
       @media print{body{padding:0}}</style></head><body>
-      <div class="head"><div><h1>${school?.name ?? ''}</h1><div class="small">${school?.tagline ?? ''}</div></div>
-        ${school?.stamp_url ? `<img src="${school.stamp_url}" alt="stamp" />` : ''}</div>
-      <h2>Term ${report.term_number} report · ${report.academic_year}</h2>
+      <div class="head"><div><h1>${text(school?.name)}</h1><div class="small">${text(school?.tagline)}</div></div>
+        ${stampUrl ? `<img src="${text(stampUrl)}" alt="stamp" referrerpolicy="no-referrer" />` : ''}</div>
+      <h2>Term ${text(report.term_number)} report · ${text(report.academic_year)}</h2>
       <div class="meta">
-        <div><strong>Learner:</strong> ${learner?.first_name} ${learner?.last_name}</div>
-        <div><strong>Class:</strong> ${cls?.grade_code} ${cls?.name}</div>
-        <div><strong>Date of birth:</strong> ${learner?.date_of_birth ?? ''}</div>
-        <div><strong>Days absent:</strong> ${report.days_absent ?? 0}</div>
+        <div><strong>Learner:</strong> ${text(learner?.first_name)} ${text(learner?.last_name)}</div>
+        <div><strong>Class:</strong> ${text(cls?.grade_code)} ${text(cls?.name)}</div>
+        <div><strong>Date of birth:</strong> ${text(learner?.date_of_birth)}</div>
+        <div><strong>Days absent:</strong> ${text(report.days_absent ?? 0)}</div>
       </div>
       <h2>Subjects</h2>
       <table><thead><tr><th>Subject</th><th class="c">%</th><th class="c">Level</th><th>Achievement</th></tr></thead><tbody>${rows}</tbody></table>
-      ${report.teacher_comment ? `<h2>Class teacher's comment</h2><p>${report.teacher_comment}</p>` : ''}
-      ${report.principal_comment ? `<h2>Principal's comment</h2><p>${report.principal_comment}</p>` : ''}
+      ${report.teacher_comment ? `<h2>Class teacher's comment</h2><p>${text(report.teacher_comment)}</p>` : ''}
+      ${report.principal_comment ? `<h2>Principal's comment</h2><p>${text(report.principal_comment)}</p>` : ''}
       <h2>How to read the levels</h2>
       <table><thead><tr><th class="c">Level</th><th>Description</th><th class="c">%</th></tr></thead><tbody>${codeTable}</tbody></table>
       <div class="sig"><div>Class teacher</div><div>Principal</div><div>Parent / guardian</div></div>
       </body></html>`;
-    const w = window.open('', '_blank');
-    if (w) { w.document.write(html); w.document.close(); w.focus(); w.print(); }
+    openPrintDocument(html);
   }
 }

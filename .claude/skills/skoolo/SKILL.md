@@ -139,6 +139,12 @@ half of it.
   Staff joining, reused/expired links and mobile/cross-browser checks remain open. SMTP credentials
   are stored in Supabase, never in the repo.
 - **Not yet**: CI wiring for the RLS test; remaining authentication rollout checks above.
+- **Browser security**: print values are escaped, stamp URLs restricted to HTTPS, and print
+  documents block scripts. SheetJS is pinned to the official fixed 0.20.3 tarball; Angular 20
+  build tooling is patched. Both apps ship baseline security headers and a full CSP in report-only
+  mode. Synthetic print/import/header checks and a dependency audit run in GitHub CI. Live print
+  previews/header verification, CSP enforcement, session lifecycle, HttpOnly sessions and MFA
+  remain open in the Stage 0 security plan.
 
 ## Routine operations
 

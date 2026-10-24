@@ -10,7 +10,41 @@ The repository carries everything the host needs:
 - `.node-version` pins Node 22 for the host build (Wrangler needs 22; Angular 20 supports it).
 - `wrangler.jsonc` deploys the parent app; `wrangler.portal.jsonc` deploys the portal. Both serve
   the built folder as static assets with single-page-app routing.
-- `_headers` in each app's `public/` folder keeps the service worker files uncached.
+- `_headers` in each app's `public/` folder keeps the service worker files uncached and defines
+  browser security headers.
+
+## Browser security rollout
+
+Both apps' static responses now configure `X-Content-Type-Options: nosniff`, `X-Frame-Options:
+DENY`, `Referrer-Policy: no-referrer`, and restricted geolocation/microphone/payment/USB permissions.
+The enforced CSP disallows framing and embedded objects and restricts the base URL to the same
+origin. A separate **report-only** CSP restricts scripts to the app origin and lists the current
+Supabase and Google Fonts origins. Inline styles remain allowed for Angular/Ionic compatibility;
+inline scripts and eval are not permitted in the proposed policy. Existing static SVG icon
+templates are code-owned; arbitrary user HTML must never be passed to a trust-bypass API.
+
+Report-only violations currently appear in browser DevTools; there is no collection endpoint.
+Before enforcing the full policy, check sign-in, confirmation/reset returns, navigation, school
+branding, file uploads, print previews and the installed parent PWA on both custom domains.
+Inspect document response headers on nested routes as well as the root. Angular's generated
+critical-CSS loading and any host-injected scripts may produce violations that must be resolved
+deliberately. Do not add broad script exceptions just to silence them. HSTS expansion and Trusted
+Types enforcement remain pending compatibility and live HTTPS checks.
+
+The report and roster print documents separately enforce a script-free meta CSP, escape stored
+text, accept only credential-free absolute HTTPS stamp URLs and detach the popup's opener.
+Their printed layout and stamp loading still need a live browser check. Agent browser access is
+restricted, so compiled files and parsed HTML checks are not proof of the deployed headers or
+browser behaviour.
+
+Run `npm run check:security` in `web/` for the synthetic-data security/import checks. GitHub Actions
+runs them and `npm audit --audit-level=high` before its production builds, using Node 22 from the
+same `.node-version` file as hosting. Cloudflare's Git-triggered builds are separate from that
+workflow; this is not a claim that GitHub CI gates deployment. SheetJS 0.20.3 comes from its
+[official pinned tarball](https://docs.sheetjs.com/docs/getting-started/installation/nodejs/), with
+SHA-512 integrity in `web/package-lock.json`. Do not replace it with npm's older 0.18.5 package.
+Local Node 20 still produces the existing Supabase SDK engine warning; the local runtime has not
+been changed by this batch.
 
 ## Part 1: create the account and connect GitHub (once)
 

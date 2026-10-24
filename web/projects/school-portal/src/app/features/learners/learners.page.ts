@@ -5,6 +5,7 @@ import { PortalDrawerComponent } from '../../ui/portal-drawer.component';
 import { TablePaginationComponent } from '../../ui/table-pagination.component';
 import { TablePagination } from '../../ui/table-pagination';
 import * as XLSX from 'xlsx';
+import { escapePrintText as text, openPrintDocument, PRINT_DOCUMENT_POLICY } from '../../ui/print-document';
 import {
   ClassRow, Learner, LearnerGuardian, LearnerInsert, RegisterLearnerRow, SchoolDirectoryService,
   StaffService, isValidSaIdentityNumber,
@@ -407,18 +408,17 @@ export class LearnersPage {
     const cls = this.selectedClass();
     const title = `${this.staff.currentSchool()?.name ?? ''} — ${cls ? this.gradeLabelOf(cls) + ' ' + cls.name : 'Unassigned'} (${this.year()})`;
     const body = this.roster()
-      .map((l, i) => `<tr><td>${i + 1}</td><td>${l.last_name}</td><td>${l.first_name}</td><td>${l.date_of_birth}</td><td>${l.gender}</td><td>${l.identity_number || l.passport_number || ''}</td></tr>`)
+      .map((l, i) => `<tr><td>${i + 1}</td><td>${text(l.last_name)}</td><td>${text(l.first_name)}</td><td>${text(l.date_of_birth)}</td><td>${text(l.gender)}</td><td>${text(l.identity_number || l.passport_number)}</td></tr>`)
       .join('');
-    const html = `<!doctype html><html><head><title>${title}</title><style>
+    const html = `<!doctype html><html><head>${PRINT_DOCUMENT_POLICY}<title>${text(title)}</title><style>
       body{font-family:system-ui,sans-serif;padding:24px;color:#14213d}
       h1{font-size:18px} table{width:100%;border-collapse:collapse;margin-top:12px}
       th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;font-size:13px}
       th{background:#f0f0f0}</style></head><body>
-      <h1>${title}</h1>
+      <h1>${text(title)}</h1>
       <table><thead><tr><th>#</th><th>Surname</th><th>First name</th><th>Date of birth</th><th>Gender</th><th>ID / passport</th></tr></thead>
       <tbody>${body}</tbody></table></body></html>`;
-    const w = window.open('', '_blank');
-    if (w) { w.document.write(html); w.document.close(); w.focus(); w.print(); }
+    openPrintDocument(html);
   }
 
   // ----- loading -----

@@ -1,3 +1,13 @@
+# Baseline protections are enforced. Validate the full script/resource policy in the browser
+# before promoting it from report-only; violations are currently visible in DevTools only.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: geolocation=(), microphone=(), payment=(), usb=()
+  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://chfebhulyqawuhjbmlhw.supabase.co; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://chfebhulyqawuhjbmlhw.supabase.co wss://chfebhulyqawuhjbmlhw.supabase.co; worker-src 'self'; manifest-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+
 /index.html
   Cache-Control: no-cache
 /ngsw.json

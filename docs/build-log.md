@@ -1358,3 +1358,38 @@ remaining real-device/link checks still need owner verification. Stage 0 remains
   or live data changed; no new tests were created. Existing required checks remain in force for
   later security fixes. Reviewed the diff and ran `git diff --check`; application builds and a
   repeat RLS run are not required for this planning-only change.
+
+## 2026-10-25 — Implement the first browser-security batch
+
+- Escaped stored values in report-card and class-roster print documents, including names,
+  comments, subjects, class labels and quoted stamp attributes. Print documents include a
+  script-free meta CSP before any data and detach their opener reference. Stamps accept only
+  absolute HTTPS URLs without embedded credentials; rejected URLs omit the image. No school
+  data, query, authentication, tenant-selection or permission rules changed.
+- Replaced vulnerable SheetJS 0.18.5 with the official pinned 0.20.3 tarball and its SHA-512
+  lockfile integrity. Patched Angular 20 build/CLI tools to 20.3.41 and their affected development
+  dependencies, including MCP SDK, Vite and body-parser. The final full dependency audit passed
+  with zero reported vulnerabilities. That audit result is not a security clearance for the app.
+- Both apps now configure anti-framing, MIME-sniffing, referrer and feature-permission headers.
+  The enforced CSP restricts framing, embedded objects and base URLs. The full script/resource
+  policy is **report-only**, with violations visible in DevTools and no collection endpoint.
+  It must pass live compatibility checks before enforcement. HSTS expansion and Trusted Types
+  remain deferred. Built `_headers` files match their sources in both production outputs.
+- Added `npm run check:security`: synthetic payloads exercise the actual report and roster
+  controllers, parsing the resulting HTML to check literal text, safe attributes, policy
+  placement, stamp URL restrictions and popup handling. Workbook round-trip and the actual
+  XLSX/CSV import parser retain dates, Unicode and leading-zero admission numbers. These checks
+  passed, along with all existing authentication-form/controller checks. They do not execute
+  the print documents in a browser or verify real print layout.
+- GitHub CI now runs those security checks and a full high-severity dependency-audit gate before
+  its builds, using the existing Node 22 hosting version. Cloudflare's deployments are separate
+  from this workflow. Local Node 20 continues to emit the existing Supabase SDK engine warning;
+  the local runtime was not changed.
+- Both production builds passed: portal 532.79 kB initial (existing 500 kB budget warning),
+  parent 1.33 MB. No fresh RLS run was needed for this rendering/dependency/header-only batch.
+  Reviewed the diff and passed `git diff --check`. Browser access remains restricted, so deployed
+  headers, live print previews, stamp loading and report-only CSP compatibility remain open.
+
+The first fixes are implemented; Stage 0 remains in progress. Session persistence is unchanged.
+Next work is logout/error handling, expiry and stale-session cleanup, followed by the planned
+server-managed HttpOnly session design and administrator MFA.

@@ -55,6 +55,15 @@ expansion. The immediate concern is login/session storage, not a reported unauth
 incident. This is a plan and source review, not a completed penetration test or security clearance.
 Existing isolation checks remain required when changing authentication or access controls.
 
+**Implementation update, 2026-10-25:** the first batch escapes stored print data, constrains stamp
+URLs, blocks scripts in print documents, upgrades SheetJS to 0.20.3 and patches the Angular 20
+development tools. Both apps now configure enforced framing/object/base-URL protections plus a
+full resource/script policy in report-only mode. `npm run check:security` covers print injection,
+image URL restrictions, workbook/CSV compatibility and header configuration, and runs in CI.
+The full dependency audit now reports zero vulnerabilities. Live print-preview and deployed-header
+checks remain open; report-only script rules are not yet an enforced XSS defence. The initial
+findings below record the review baseline. Session lifecycle, HttpOnly migration and MFA remain open.
+
 #### What the review establishes
 
 | Finding | Evidence and significance |
@@ -130,8 +139,11 @@ permission rules; they cannot protect an account whose valid session has been st
 Each batch ships with the security checks necessary to prove its fix. General feature-test
 expansion can wait; authentication changes still require affected production builds, targeted
 security regressions and the full RLS suite. Keep findings, hosted-setting evidence and unresolved
-risks explicit. No application code, provider configuration or live data was changed by this review.
-The next implementation batch is item 1, before a broad session-architecture migration.
+risks explicit. The initial review changed no application code, provider configuration or live data;
+the implementation update above records subsequent fixes.
+The next implementation batch is item 2, alongside live verification of item 1's deployed headers
+and print previews. Promote the full CSP only after compatibility is checked. HSTS scope and
+Trusted Types enforcement also remain future work; neither was enabled without verification.
 
 #### Reference guidance
 
