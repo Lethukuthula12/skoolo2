@@ -1217,3 +1217,17 @@ remain open. The working SMTP setup is unchanged and Stage 0 remains in progress
 Owner confirmation of the dashboard save, reset emails on both custom domains and signup
 confirmation testing remain pending. No live authentication setting or stage acceptance is
 claimed by this configuration preparation.
+
+## 2026-10-25 — Owner saved the custom-domain authentication URLs
+
+- The owner replied "saved" after instructions to add the five exact custom-domain return URLs,
+  retain all four existing entries and save `https://app.skoolo.co.za` as the Supabase Site URL.
+  Recorded this as owner-reported completion, not an independently inspected dashboard save.
+- Next verification is a fresh reset email from the school portal, returning to
+  `schools.skoolo.co.za/reset-password`, followed by the parent app returning to
+  `app.skoolo.co.za/reset-password`; each must allow a password change and sign-in afterward.
+- No configuration or application code changed in this milestone. Documentation diff reviewed
+  and `git diff --check` passed; the full RLS suite and auth checks passed in the preceding release.
+
+Live reset checks on both new addresses and signup confirmation remain pending. Stage 0 remains
+in progress.

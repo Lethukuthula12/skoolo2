@@ -71,10 +71,10 @@ now sets `https://app.skoolo.co.za` as the Site URL and includes the five exact 
 return paths listed in step 3 below, alongside the four existing Workers/local development URLs.
 Both apps have been confirmed to load on their custom domains.
 
-The latest owner-supplied Supabase screen still shows the old Workers Site URL and four redirect
-URLs. Saving the new values in **Authentication → URL Configuration** is pending. Add the five
-new return URLs, retain the four existing entries, then change the Site URL and save it.
-Committing this file does not update the hosted Supabase settings.
+The owner confirmed saving these settings in **Authentication → URL Configuration** on
+2026-10-25, after instructions to add the five new return URLs, retain the four existing entries,
+and change the Site URL. This is owner-reported completion; fresh password-reset email tests on
+both custom domains remain pending. Committing this file does not update hosted Supabase settings.
 
 Use the dashboard's URL settings for this rollout. SMTP credentials and the live email rate limit
 are managed there and are not represented by the commented SMTP example and local defaults.
@@ -122,16 +122,15 @@ procedure; the verified progress as of 2026-10-25 is:
 - The owner saved Resend SMTP in Supabase (`smtp.resend.com:465`, username `resend`, sender
   `Skoolo <no-reply@auth.skoolo.co.za>`). The API key was entered directly in Supabase. The owner
   then reported that the complete password-reset flow worked using the parent Workers address.
-  Production auth URL changes, reset verification on both custom domains and signup confirmation
-  are still pending.
+  Reset verification on both custom domains and signup confirmation are still pending.
 - The owner attached `app.skoolo.co.za` and `schools.skoolo.co.za` to their corresponding Workers
   and confirmed both load correctly. Supplied browser screenshots show the parent directory and
   portal sign-in page at those addresses. Both Wrangler files now preserve these custom domains
   and keep the original Workers addresses enabled. This does not verify authentication email
   returns on the new origins.
-- The repository now includes the custom-domain auth return URLs. The owner's latest URL
-  Configuration screenshots still show the Workers Site URL and four old allowlist entries;
-  the dashboard save and subsequent email tests are pending.
+- The repository includes the custom-domain auth return URLs. After the initial screenshots
+  showed the old settings, the owner confirmed saving the new Site URL and redirect entries.
+  Fresh email/reset tests on both custom domains are still needed to verify the return paths.
 - SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
   is not a record of live settings. Before any future `config push`, review the proposed changes
   so the working SMTP settings and live email rate limit are preserved.
