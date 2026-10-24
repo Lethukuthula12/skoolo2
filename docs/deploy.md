@@ -132,9 +132,10 @@ procedure; the verified progress as of 2026-10-25 is:
   showed the old settings, the owner confirmed saving the new Site URL and redirect entries.
   The owner then reported "both passed" after instructions to request a fresh reset email from
   each app, check the return domain, change the password and sign in again. Reused/expired links,
-  mobile/cross-browser checks and signup confirmation still need live verification.
-- The repository now sets `[auth.email].enable_confirmations = true`. Enabling **Confirm email**
-  in the hosted project's Email provider and testing new-account signup are still pending.
+  mobile/cross-browser checks and the portal signup paths still need live verification.
+- The repository sets `[auth.email].enable_confirmations = true`. The owner's screenshot shows
+  **Confirm email** enabled, followed by a report that the new parent signup/confirmation test
+  worked. Portal staff-invite and school-registration confirmation still need live walkthroughs.
 - SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
   is not a record of live settings. Before any future `config push`, review the proposed changes
   so the working SMTP settings and live email rate limit are preserved.
@@ -260,10 +261,12 @@ References: [Resend SMTP with Supabase](https://resend.com/docs/send-with-supaba
    password, and reused/expired link behaviour. Check spam placement as well as provider logs.
 3. Delivery and the successful reset path are now confirmed by the owner on both domains. The
    repository sets `[auth.email].enable_confirmations = true`; in the hosted dashboard open
-   **Authentication → Sign In / Providers → Email**, enable **Confirm email**, and save. Use
+   **Authentication → Sign In / Providers**, enable **Confirm email**, and save. The owner's
+   dashboard shows this switch above the Auth Providers list; some layouts place it under Email. Use
    this targeted dashboard setting rather than a broad config push that could alter SMTP.
-   New signups must verify their inbox before signing in. This setting is not yet confirmed saved.
-   Test parent signup, staff signup with an invite code, new school registration,
+   New signups must verify their inbox before signing in. The owner supplied the enabled-switch
+   screenshot and reported the parent confirmation test worked. Still test staff signup with an
+   invite code, new school registration,
    existing-account sign-in back to `/join` and `/register-school`, and a claim of an unclaimed
    test school. Use test data; do not claim a real school's directory entry for a smoke test.
 4. Verify the emails on a real phone, including a link opened in another browser. Record outcomes

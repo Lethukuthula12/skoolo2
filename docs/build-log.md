@@ -1251,3 +1251,20 @@ in progress.
 
 New-account confirmation, reused/expired reset links and real-device/cross-browser checks remain
 open. No credentials or reset links were requested. Stage 0 remains in progress.
+
+## 2026-10-25 — Parent signup confirmation passed
+
+- The owner supplied a Supabase screenshot showing **Confirm email** switched on, then reported
+  "confirmed, it worked" after the guided fresh parent signup and email-confirmation test.
+  Recorded parent confirmation as owner-verified; the agent did not operate the browser or mailbox.
+- The actual dashboard places the confirmation switch above the Auth Providers list, so the
+  deployment instructions now include that location.
+- Reviewed the portal registration flow: **Create login and continue** sends confirmation to
+  `/register-school`, and school details are shown only after authentication. The next live
+  check is this login/confirmation step, stopping at the school details form. A separate staff
+  invitation walkthrough is still needed; parent confirmation does not prove either portal path.
+- Documentation-only milestone; diff reviewed and `git diff --check` passed. No application,
+  authentication settings or database records were changed by the agent.
+
+Both custom-domain resets and parent signup confirmation are owner-verified. Portal confirmation,
+reused/expired links and real-device/cross-browser checks remain open; Stage 0 is not accepted.
