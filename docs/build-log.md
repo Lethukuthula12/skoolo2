@@ -1268,3 +1268,13 @@ open. No credentials or reset links were requested. Stage 0 remains in progress.
 
 Both custom-domain resets and parent signup confirmation are owner-verified. Portal confirmation,
 reused/expired links and real-device/cross-browser checks remain open; Stage 0 is not accepted.
+
+## 2026-10-25 — Note school-registration password visibility improvement
+
+- During the portal signup walkthrough, the owner asked to note that **Choose a password** on
+  `/register-school` needs a Show/Hide control. Added it as pending work in Stage 0, with masking
+  by default, value preservation and keyboard access. No password or entered account details
+  from the screenshot were copied into the repository.
+- This request records the improvement; it does not implement it or confirm completion of the
+  portal signup test. Application behaviour is unchanged while that live walkthrough continues.
+- Documentation-only change: diff reviewed and `git diff --check` passed.
