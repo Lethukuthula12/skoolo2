@@ -130,10 +130,11 @@ half of it.
   function loses its pinned search_path, or any view stops being security_invoker. Extend the
   isolation test with every new school-owned table or RPC; the coverage guard catches the rest.
 - **Authentication email**: Resend has verified `auth.skoolo.co.za`; the owner configured custom
-  SMTP in Supabase and confirmed the complete parent password-reset flow on the Workers address.
-  The owner reports saving the custom-domain auth URLs. Reset verification on both custom domains
-  and enabling/testing signup confirmation remain open. SMTP credentials are stored in Supabase,
-  never in the repo.
+  SMTP and the custom-domain auth URLs in Supabase, then confirmed both apps' reset email,
+  same-app return, password change and subsequent sign-in flows. The repository now requires
+  email confirmation for new accounts; the hosted Email provider toggle and live signup tests
+  remain pending, along with reused/expired-link and mobile/cross-browser checks. SMTP credentials
+  are stored in Supabase, never in the repo.
 - **Not yet**: CI wiring for the RLS test; remaining authentication rollout checks above.
 
 ## Routine operations

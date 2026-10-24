@@ -1231,3 +1231,23 @@ claimed by this configuration preparation.
 
 Live reset checks on both new addresses and signup confirmation remain pending. Stage 0 remains
 in progress.
+
+## 2026-10-25 — Both custom-domain resets passed; prepare signup confirmation
+
+- The owner reported "both passed" after testing fresh password-reset emails from the parent
+  and school apps: email delivery, return to each app's custom domain, password change and
+  subsequent sign-in. This records owner verification, not an agent browser walkthrough.
+- Set `[auth.email].enable_confirmations = true` in the repository. Existing parent signup,
+  staff joining and school registration already handle confirmation before onboarding writes.
+  The hosted Email provider's **Confirm email** setting still needs to be enabled and saved
+  by the owner, followed by live signup tests. No Supabase config push or dashboard edit was made.
+- Full RLS suite passed (112 isolation checks plus coverage guard), and the existing auth
+  form/controller checks passed, including deferred and immediate-session signup flows.
+  TOML comparison confirms email confirmation is the only semantic configuration change;
+  SMTP, redirects, rate limits, SMS and other settings remain unchanged.
+- `git diff --check` passed. The application source is unchanged; the passing production builds
+  from the favicon/domain release remain applicable. The auth checks printed the existing
+  Supabase JS Node 20 deprecation notice; no runtime upgrade was made.
+
+New-account confirmation, reused/expired reset links and real-device/cross-browser checks remain
+open. No credentials or reset links were requested. Stage 0 remains in progress.

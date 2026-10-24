@@ -73,8 +73,9 @@ Both apps have been confirmed to load on their custom domains.
 
 The owner confirmed saving these settings in **Authentication → URL Configuration** on
 2026-10-25, after instructions to add the five new return URLs, retain the four existing entries,
-and change the Site URL. This is owner-reported completion; fresh password-reset email tests on
-both custom domains remain pending. Committing this file does not update hosted Supabase settings.
+and change the Site URL. The owner subsequently reported both fresh password-reset tests passed:
+delivery, return to the requesting app, password change and sign-in with the new password.
+Committing this file does not update hosted Supabase settings.
 
 Use the dashboard's URL settings for this rollout. SMTP credentials and the live email rate limit
 are managed there and are not represented by the commented SMTP example and local defaults.
@@ -122,15 +123,18 @@ procedure; the verified progress as of 2026-10-25 is:
 - The owner saved Resend SMTP in Supabase (`smtp.resend.com:465`, username `resend`, sender
   `Skoolo <no-reply@auth.skoolo.co.za>`). The API key was entered directly in Supabase. The owner
   then reported that the complete password-reset flow worked using the parent Workers address.
-  Reset verification on both custom domains and signup confirmation are still pending.
+  The owner subsequently confirmed successful reset flows on both custom domains as well.
 - The owner attached `app.skoolo.co.za` and `schools.skoolo.co.za` to their corresponding Workers
   and confirmed both load correctly. Supplied browser screenshots show the parent directory and
   portal sign-in page at those addresses. Both Wrangler files now preserve these custom domains
-  and keep the original Workers addresses enabled. This does not verify authentication email
-  returns on the new origins.
+  and keep the original Workers addresses enabled.
 - The repository includes the custom-domain auth return URLs. After the initial screenshots
   showed the old settings, the owner confirmed saving the new Site URL and redirect entries.
-  Fresh email/reset tests on both custom domains are still needed to verify the return paths.
+  The owner then reported "both passed" after instructions to request a fresh reset email from
+  each app, check the return domain, change the password and sign in again. Reused/expired links,
+  mobile/cross-browser checks and signup confirmation still need live verification.
+- The repository now sets `[auth.email].enable_confirmations = true`. Enabling **Confirm email**
+  in the hosted project's Email provider and testing new-account signup are still pending.
 - SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
   is not a record of live settings. Before any future `config push`, review the proposed changes
   so the working SMTP settings and live email rate limit are preserved.
@@ -254,8 +258,12 @@ References: [Resend SMTP with Supabase](https://resend.com/docs/send-with-supaba
 2. With a designated test account/mailbox, request reset emails from each custom domain. Verify
    delivery, same-app return, changing the password, the success screen, sign-in with the new
    password, and reused/expired link behaviour. Check spam placement as well as provider logs.
-3. Only once delivery works, set `[auth.email].enable_confirmations = true` and deploy that
-   configuration. Test parent signup, staff signup with an invite code, new school registration,
+3. Delivery and the successful reset path are now confirmed by the owner on both domains. The
+   repository sets `[auth.email].enable_confirmations = true`; in the hosted dashboard open
+   **Authentication → Sign In / Providers → Email**, enable **Confirm email**, and save. Use
+   this targeted dashboard setting rather than a broad config push that could alter SMTP.
+   New signups must verify their inbox before signing in. This setting is not yet confirmed saved.
+   Test parent signup, staff signup with an invite code, new school registration,
    existing-account sign-in back to `/join` and `/register-school`, and a claim of an unclaimed
    test school. Use test data; do not claim a real school's directory entry for a smoke test.
 4. Verify the emails on a real phone, including a link opened in another browser. Record outcomes
