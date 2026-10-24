@@ -1095,3 +1095,17 @@ Browser origin policy still prevents rendered/live verification. The changed sch
 flow and both reset screens need real-browser/device walkthroughs. DNS, TLS, actual email delivery,
 email link consumption and live signup confirmation remain unverified. The deployment guide lists
 the remaining steps; Stage 0 is not marked accepted.
+
+## 2026-10-24 — Domain ownership confirmed; DNS setup awaits account access
+
+- The owner confirmed that `skoolo.co.za` is registered in their HOSTAFRICA account and has no
+  existing website or email service.
+- Attempted to open `https://dash.cloudflare.com/` through the available in-app browser. The
+  administrator-enforced origin policy rejected access. No alternate browser, API or CLI route
+  was used to work around that restriction, and no Cloudflare or HOSTAFRICA settings changed.
+- Next input: the two nameservers Cloudflare assigns after the owner adds the domain to the
+  existing Cloudflare account. These exact values are needed for HOSTAFRICA delegation; example
+  nameservers must not be substituted. DNS, TLS, SMTP and live email verification remain pending.
+
+Documentation-only update: reviewed the diff and ran `git diff --check`. No application or
+authentication configuration changed; no new build or database test was required.

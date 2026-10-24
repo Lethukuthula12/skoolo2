@@ -113,9 +113,11 @@ Open the failed deployment in Cloudflare and read the log.
 
 Target: `skoolo.co.za`, registered with HOSTAFRICA, with DNS on the same Cloudflare account as
 the two Workers. Registration stays with HOSTAFRICA; hosting stays on Cloudflare. This is a rollout
-procedure, not a record of completed setup. On 2026-10-24, public DNS did not resolve and registration
-status was still awaiting confirmation. No DNS, live authentication configuration or SMTP settings
-were changed during the code preparation.
+procedure, not a record of completed setup. On 2026-10-24, the owner confirmed registration at
+HOSTAFRICA with no existing website or email. The earlier public DNS lookup did not resolve.
+Cloudflare dashboard access is blocked by the agent session's administrator browser policy, so
+the owner must add the domain in their browser and provide its assigned nameservers. No DNS,
+live authentication configuration or SMTP settings have been changed.
 
 ### 1. Activate DNS
 
