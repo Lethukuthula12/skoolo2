@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService, StaffService } from '@skoolo/shared';
@@ -22,20 +22,42 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
         </p>
 
         @if (!auth.isSignedIn()) {
-          <form class="stack" [formGroup]="accountForm" (ngSubmit)="createAccount()">
+          @if (confirmationEmail(); as email) {
+            <section #confirmationPanel class="confirmation-panel" tabindex="-1" aria-labelledby="confirmation-title">
+              <span class="confirmation-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7" stroke-linejoin="round"/></svg>
+              </span>
+              <h2 id="confirmation-title">Check your email</h2>
+              <p role="status">Check <strong>{{ email }}</strong> and open the confirmation link to continue.</p>
+              <p>Once you confirm, you can add or claim your school.</p>
+              <p class="small muted">Can't find it? Check your spam folder. If you already have a Skoolo login, sign in with that account.</p>
+              <div class="confirmation-actions">
+                <a class="btn btn-primary" routerLink="/sign-in" [queryParams]="{ returnUrl: '/register-school' }">Continue to sign in</a>
+                <button class="btn btn-outline" type="button" (click)="editAccount()">Use a different email</button>
+              </div>
+            </section>
+          } @else {
+          <form class="stack" [formGroup]="accountForm" (ngSubmit)="createAccount()" [attr.aria-busy]="busy()">
             <h2>1. Your login</h2>
             <p class="small muted">Create and confirm your login first. You will add or claim your school next.</p>
             <div class="form-grid">
               <div class="field"><label for="fullName">Your full name</label><input id="fullName" type="text" formControlName="fullName" autocomplete="name" /></div>
               <div class="field"><label for="phone">Cellphone</label><input id="phone" type="tel" formControlName="phone" autocomplete="tel" /></div>
               <div class="field"><label for="email">Email</label><input id="email" type="email" formControlName="email" autocomplete="email" /></div>
-              <div class="field"><label for="password">Choose a password</label><input id="password" type="password" formControlName="password" autocomplete="new-password" /></div>
+              <div class="field">
+                <label for="password">Choose a password</label>
+                <div class="registration-password">
+                  <input id="password" [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" aria-describedby="password-hint" />
+                  <button class="registration-password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" aria-controls="password" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'">{{ passwordVisible() ? 'Hide' : 'Show' }}</button>
+                </div>
+                <small id="password-hint" class="muted">Use at least 8 characters.</small>
+              </div>
             </div>
-            @if (notice()) { <p class="auth-notice" role="status">{{ notice() }}</p> }
             @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
             <button class="btn btn-primary" type="submit" [disabled]="accountForm.invalid || busy()">{{ busy() ? 'Creating your login…' : 'Create login and continue' }}</button>
             <p class="small muted">Already have a login? <a routerLink="/sign-in" [queryParams]="{ returnUrl: '/register-school' }">Sign in first</a>.</p>
           </form>
+          }
         } @else {
           <p class="small">Signed in as <strong>{{ auth.user()?.email }}</strong>.</p>
         }
@@ -100,6 +122,20 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
     .card { width: 100%; max-width: 640px; }
     .brand { font-weight: 800; font-size: 1.3rem; color: var(--brand); }
     .brand span { font-weight: 500; color: var(--muted); font-size: 1rem; }
+    .registration-password { position: relative; }
+    .registration-password input { min-height: 48px; padding-right: 74px; }
+    .registration-password-toggle { position: absolute; inset: 2px 3px 2px auto; min-width: 62px; min-height: 44px; border: 0; border-radius: 8px; background: transparent; color: var(--brand-ink); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .registration-password-toggle:hover { background: var(--brand-soft); }
+    .registration-password-toggle:focus-visible, .confirmation-actions .btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .confirmation-panel { display: grid; gap: 16px; min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--brand-soft); overflow-wrap: anywhere; }
+    .confirmation-panel:focus { outline: 2px solid var(--brand); outline-offset: 3px; }
+    .confirmation-panel h2 { font-size: 1.5rem; margin: 0; }
+    .confirmation-panel p { margin: 0; }
+    .confirmation-icon { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; background: var(--card); color: var(--brand-ink); }
+    .confirmation-icon svg { width: 28px; height: 28px; }
+    .confirmation-actions { display: grid; gap: 10px; margin-top: 8px; }
+    .confirmation-actions .btn { white-space: normal; text-align: center; }
+    @media (max-width: 600px) { .confirmation-panel { padding: 18px; } }
     h2 { margin: 6px 0 0; font-size: 1.05rem; }
     .matches { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
     .matches li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
@@ -117,10 +153,16 @@ export class RegisterSchoolPage {
   protected readonly busy = signal(false);
   protected readonly searching = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly notice = signal<string | null>(null);
+  protected readonly confirmationEmail = signal<string | null>(null);
+  protected readonly passwordVisible = signal(false);
   protected readonly searchTerm = signal('');
   protected readonly matches = signal<School[]>([]);
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  @ViewChild('confirmationPanel')
+  protected set confirmationPanel(panel: ElementRef<HTMLElement> | undefined) {
+    panel?.nativeElement.focus();
+  }
 
   protected readonly accountForm = this.formBuilder.group({
     fullName: ['', [Validators.required, Validators.minLength(2)]],
@@ -182,10 +224,9 @@ export class RegisterSchoolPage {
   }
 
   protected async createAccount(): Promise<void> {
-    if (this.auth.isSignedIn() || this.accountForm.invalid || this.busy()) return;
+    if (this.auth.isSignedIn() || this.confirmationEmail() || this.accountForm.invalid || this.busy()) return;
     this.busy.set(true);
     this.error.set(null);
-    this.notice.set(null);
     const a = this.accountForm.getRawValue();
     try {
       const { error, needsEmailConfirmation } = await this.auth.signUp({
@@ -197,14 +238,22 @@ export class RegisterSchoolPage {
       });
       if (error) throw error;
       this.accountForm.controls.password.reset();
+      this.passwordVisible.set(false);
       if (needsEmailConfirmation) {
-        this.notice.set('Check your email for a confirmation link. It will bring you back here to add or claim your school.');
+        this.confirmationEmail.set(a.email.trim());
       }
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Could not create your login. Please try again.');
     } finally {
       this.busy.set(false);
     }
+  }
+
+  protected editAccount(): void {
+    this.confirmationEmail.set(null);
+    this.passwordVisible.set(false);
+    this.accountForm.controls.password.reset();
+    this.error.set(null);
   }
 
   private async run(action: () => Promise<void>): Promise<void> {

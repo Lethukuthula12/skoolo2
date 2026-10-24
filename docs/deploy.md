@@ -136,6 +136,10 @@ procedure; the verified progress as of 2026-10-25 is:
 - The repository sets `[auth.email].enable_confirmations = true`. The owner's screenshot shows
   **Confirm email** enabled, followed by a report that the new parent signup/confirmation test
   worked. Portal staff-invite and school-registration confirmation still need live walkthroughs.
+- During the portal registration test, the owner confirmed receiving its confirmation email.
+  Following the link through to the school-details form is still pending. The registration UI
+  now uses a dedicated **Check your email** step with a sign-in return link and email correction
+  action, plus Show/Hide for password entry, to make the required next step clearer.
 - SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
   is not a record of live settings. Before any future `config push`, review the proposed changes
   so the working SMTP settings and live email rate limit are preserved.

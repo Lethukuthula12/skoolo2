@@ -66,13 +66,16 @@ function fixture(Page, params = {}) {
 function descendants(nodes) {
   return nodes.flatMap(node => [node, ...descendants(node.children ?? node.branches ?? [])]);
 }
-async function checkFields(relative, page) {
-  const parsed = parseTemplate(await readFile(path.join(root, relative), 'utf8'), relative);
+async function checkFields(relative, page, selectedForm) {
+  const source = await readFile(path.join(root, relative), 'utf8');
+  const template = relative.endsWith('.ts') ? source.match(/template: `([\s\S]*?)`,/)[1] : source;
+  const parsed = parseTemplate(template, relative);
   assert.equal(parsed.errors, null);
   const nodes = descendants(parsed.nodes);
   const attr = (node, name) => node.attributes?.find(a => a.name === name)?.value;
   for (const form of nodes.filter(node => node.name === 'form')) {
     const binding = form.inputs.find(input => input.name === 'formGroup').value.source;
+    if (selectedForm && binding !== selectedForm) continue;
     const controls = descendants(form.children).filter(node => node.name === 'input');
     assert.deepEqual(controls.map(node => attr(node, 'formControlName')).sort(), Object.keys(page[binding].controls).sort(), 'Every form field remains connected to its reactive control');
     for (const input of controls) {
@@ -88,6 +91,7 @@ async function checkFields(relative, page) {
     assert.equal(attr(toggle, 'type'), 'button', 'Password visibility must not submit the form');
     assert.ok(nodes.some(node => node.name === 'input' && attr(node, 'id') === attr(toggle, 'aria-controls')));
   }
+  return nodes;
 }
 
 const parent = fixture(AuthPage, { returnUrl: '/apply/example-school' });
@@ -169,16 +173,41 @@ await immediateJoin.page.signUpAndRedeem();
 assert.deepEqual(immediateJoin.calls.at(-1), ['acceptInvite', 'NEWCODE1'], 'Current confirmation-disabled setup still works');
 
 const registration = fixture(RegisterSchoolPage);
+const registrationNodes = await checkFields('projects/school-portal/src/app/features/auth/register-school.page.ts', registration.page, 'accountForm');
+assert.equal(registration.page.passwordVisible(), false, 'Registration passwords are hidden initially');
+assert.equal(registration.page.confirmationEmail(), null, 'New registrations start at the login form');
 registration.page.accountForm.setValue(account);
+registration.page.passwordVisible.set(true);
+assert.equal(registration.page.accountForm.value.password, account.password, 'Revealing the password retains its value');
 registration.page.schoolForm.patchValue({ name: 'Example School', town: 'Example Town', province: 'Gauteng' });
 await registration.page.register();
 await registration.page.claim({ id: 'unclaimed-school' });
 assert.equal(registration.calls.length, 0, 'School writes require a signed-in account');
 await registration.page.createAccount();
 assert.equal(registration.calls[0][1].emailRedirectTo, 'https://schools.skoolo.co.za/register-school');
-assert.match(registration.page.notice(), /confirmation link/);
+assert.equal(registration.page.confirmationEmail(), account.email, 'A successful request moves to the email-confirmation step');
+assert.equal(registration.page.accountForm.value.password, '', 'The confirmation step does not retain the password');
+assert.equal(registration.page.passwordVisible(), false, 'The password is masked again after submitting');
 assert.equal(registration.calls.length, 1, 'Creating an unconfirmed login does not create or claim a school');
 assert.deepEqual(registration.navigation, []);
+const confirmationBranch = registrationNodes.find(node => node.branches?.some(branch => branch.expression?.source === 'confirmationEmail()')).branches[0];
+const confirmationNodes = descendants(confirmationBranch.children);
+assert.ok(confirmationNodes.some(node => node.name === 'section' && node.attributes.some(attr => attr.name === 'aria-labelledby' && attr.value === 'confirmation-title')));
+assert.equal(confirmationNodes.some(node => node.name === 'input' || node.name === 'form'), false, 'The confirmation step replaces the login fields instead of leaving a disabled submit button');
+assert.ok(confirmationNodes.some(node => node.name === 'a' && node.inputs.some(input => input.name === 'queryParams' && input.value.source.includes('/register-school'))), 'Signing in from the confirmation step returns to school registration');
+registration.page.accountForm.patchValue({ password: account.password });
+await registration.page.createAccount();
+await registration.page.register();
+await registration.page.claim({ id: 'unclaimed-school' });
+assert.equal(registration.calls.length, 1, 'Waiting for confirmation neither resubmits signup nor writes a school');
+registration.page.editAccount();
+assert.equal(registration.page.confirmationEmail(), null, 'Changing the email returns to the login form');
+assert.equal(registration.page.accountForm.value.email, account.email, 'Keep the entered details available for correction');
+assert.equal(registration.page.accountForm.value.password, '', 'Returning to the form clears the password');
+assert.equal(registration.page.passwordVisible(), false);
+registration.page.accountForm.patchValue({ email: 'another-admin@example.com', password: account.password });
+await registration.page.createAccount();
+assert.equal(registration.page.confirmationEmail(), 'another-admin@example.com', 'The next confirmation step displays the corrected email');
 registration.signedIn.set(true);
 await registration.page.register();
 assert.equal(registration.calls.at(-1)[0], 'createSchool');
@@ -190,6 +219,7 @@ immediateRegistration.page.accountForm.setValue(account);
 immediateRegistration.result.signUp.needsEmailConfirmation = false;
 await immediateRegistration.page.createAccount();
 assert.equal(immediateRegistration.signedIn(), true);
+assert.equal(immediateRegistration.page.confirmationEmail(), null, 'An immediate session does not display an unnecessary email step');
 assert.equal(immediateRegistration.calls.length, 1, 'Account creation precedes school details even when confirmation is disabled');
 const failedRegistration = fixture(RegisterSchoolPage);
 failedRegistration.page.accountForm.setValue(account);
@@ -198,6 +228,8 @@ await failedRegistration.page.createAccount();
 assert.equal(failedRegistration.page.error(), 'Email delivery unavailable');
 assert.equal(failedRegistration.page.busy(), false);
 assert.equal(failedRegistration.signedIn(), false);
+assert.equal(failedRegistration.page.confirmationEmail(), null, 'A failed signup stays on the form');
+assert.equal(failedRegistration.page.accountForm.value.password, account.password, 'A failed signup retains input for correction');
 
 for (const [Page, app] of [[ParentReset, 'parent-app'], [PortalReset, 'school-portal']]) {
   const reset = fixture(Page);

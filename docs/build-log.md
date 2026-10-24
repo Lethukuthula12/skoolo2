@@ -1278,3 +1278,30 @@ reused/expired links and real-device/cross-browser checks remain open; Stage 0 i
 - This request records the improvement; it does not implement it or confirm completion of the
   portal signup test. Application behaviour is unchanged while that live walkthrough continues.
 - Documentation-only change: diff reviewed and `git diff --check` passed.
+
+## 2026-10-25 — Make portal email confirmation visible; add password Show/Hide
+
+- The owner reported that **Create login and continue** appeared to do nothing. The supplied
+  screenshot already showed the existing confirmation notice and a cleared password; the owner
+  then confirmed receiving the email. The request reached the email-confirmation step, but its
+  feedback was too subtle. Completion through the email link is not yet reported.
+- Replaced the remaining input form and disabled submit button with a dedicated **Check your
+  email** panel. It names the entered email, explains the next step and offers **Continue to sign
+  in** with `/register-school` as its return URL. **Use a different email** restores editable
+  account details with the password cleared. The panel receives focus when it appears.
+- Added the requested labelled, keyboard-accessible Show/Hide control. It is a non-submit button;
+  the existing password field and validation remain intact, with an eight-character hint.
+  Successful submission clears and masks the password again. No password is persisted.
+- Kept the Supabase signup request, return URL and school-write guards. The pending email step
+  prevents repeat signup submission, and school creation/claim still requires a signed-in user.
+- Expanded existing auth checks for the separate confirmation view, return navigation, no
+  duplicate submission or premature school writes, email correction, password masking and
+  retention, immediate sessions and error recovery. All auth checks passed. The full RLS suite
+  passed 112 isolation checks and its coverage guard.
+- Portal production build passed (532.78 kB initial bundle; existing 500 kB budget warning).
+  Parent app source is unchanged. Diff reviewed and `git diff --check` passed. Browser access
+  remains restricted, so live layout, focus and password-toggle interaction are unverified;
+  controller/template checks and compilation are not presented as visual verification.
+
+The portal email has arrived; following it to **Your school**, the staff-invite flow and the
+remaining real-device/link checks still need owner verification. Stage 0 remains in progress.
