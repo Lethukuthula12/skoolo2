@@ -66,27 +66,20 @@ change the `name` field in the matching `wrangler*.jsonc` file to the project's 
 
 ## Part 4: tell Supabase about the new addresses
 
-Supabase only sends people back to addresses it knows. The current deployed addresses in
-`supabase/config.toml` are:
+Supabase only sends people back to addresses it knows. The repository's `supabase/config.toml`
+now sets `https://app.skoolo.co.za` as the Site URL and includes the five exact custom-domain
+return paths listed in step 3 below, alongside the four existing Workers/local development URLs.
+Both apps have been confirmed to load on their custom domains.
 
-```toml
-site_url = "https://skoolo-app.lethufzikhali.workers.dev"
-additional_redirect_urls = [
-  "https://skoolo-app.lethufzikhali.workers.dev/**",
-  "https://skoolo-schools.lethufzikhali.workers.dev/**",
-  "http://localhost:4200/**",
-  "http://localhost:4300/**"
-]
-```
+The latest owner-supplied Supabase screen still shows the old Workers Site URL and four redirect
+URLs. Saving the new values in **Authentication → URL Configuration** is pending. Add the five
+new return URLs, retain the four existing entries, then change the Site URL and save it.
+Committing this file does not update the hosted Supabase settings.
 
-After reviewing an intentional configuration change against the linked project, apply it with:
-
-```bash
-npx supabase config push
-```
-
-Do not switch the Site URL to a new hostname until its HTTPS application is working. Follow the
-domain and email rollout below for `skoolo.co.za`.
+Use the dashboard's URL settings for this rollout. SMTP credentials and the live email rate limit
+are managed there and are not represented by the commented SMTP example and local defaults.
+Do not run a broad `npx supabase config push` until all proposed changes have been reviewed
+against the live project and the working mail setup is preserved.
 
 ## Part 5: put it on a phone
 
@@ -136,6 +129,9 @@ procedure; the verified progress as of 2026-10-25 is:
   portal sign-in page at those addresses. Both Wrangler files now preserve these custom domains
   and keep the original Workers addresses enabled. This does not verify authentication email
   returns on the new origins.
+- The repository now includes the custom-domain auth return URLs. The owner's latest URL
+  Configuration screenshots still show the Workers Site URL and four old allowlist entries;
+  the dashboard save and subsequent email tests are pending.
 - SMTP is currently managed in Supabase's dashboard; the repository's commented SMTP example
   is not a record of live settings. Before any future `config push`, review the proposed changes
   so the working SMTP settings and live email rate limit are preserved.
@@ -189,7 +185,7 @@ Reference: [Workers custom domains](https://developers.cloudflare.com/workers/co
 
 ### 3. Allow the email return addresses
 
-After both custom domains work, update the existing `[auth]` block in `supabase/config.toml`:
+Both custom domains work, and the existing `[auth]` block in `supabase/config.toml` now contains:
 
 ```toml
 site_url = "https://app.skoolo.co.za"
@@ -206,7 +202,8 @@ additional_redirect_urls = [
 ]
 ```
 
-Review and push the configuration as in Part 4. Signup explicitly chooses `/auth`, `/join` or
+Apply only these URL settings in the dashboard as described in Part 4. The redirect list should
+then have nine entries. Signup explicitly chooses `/auth`, `/join` or
 `/register-school` on the app's own origin. Reset emails return to `/reset-password` on the app
 that requested them. Invitation codes, school details and passwords are not put in email return
 URLs. Staff enter their original invite code after confirming; school registration collects

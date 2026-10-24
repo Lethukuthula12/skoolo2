@@ -1190,3 +1190,30 @@ Worker routes or live authentication settings were changed by the agent in this 
 
 Supabase production URL settings, email reset checks on both new domains and signup confirmation
 remain open. The working SMTP setup is unchanged and Stage 0 remains in progress.
+
+## 2026-10-25 — Prepare authentication returns for the custom domains
+
+- The owner's Supabase URL Configuration screenshots confirm the hosted Site URL still points
+  to the parent Workers address, with only the two Workers and two localhost redirect entries.
+- Updated `supabase/config.toml` to use `https://app.skoolo.co.za` as the Site URL and allow five
+  exact return paths: parent `/auth` and `/reset-password`; portal `/join`, `/register-school`
+  and `/reset-password`. All four old entries remain, for a total of nine.
+- Checked the return paths against the signup and recovery code. Existing calls already use
+  the current app origin; no application code change is needed for these domains.
+- The hosted change is handed to the owner through **Authentication → URL Configuration**.
+  No configuration push was run: the working SMTP credentials and hosted email rate limit are
+  managed in the dashboard. Updated deployment instructions to avoid overwriting them with
+  local defaults. A repository push alone does not apply hosted Supabase settings.
+- Full `npm run test:rls` passed: 112 isolation checks and the coverage guard. The existing auth
+  form/controller checks also passed, including app-specific confirmation URLs and password
+  reset success, expiry and failure handling. They use mocks and do not prove live delivery.
+- Parsed the TOML and compared it with the preceding committed configuration: only `site_url`
+  and `additional_redirect_urls` change semantically. Confirmed nine unique URLs, preservation
+  of the four old entries, and unchanged SMTP, rate limits and other auth settings.
+- Diff reviewed and `git diff --check` passed. Application bundles are unchanged; both production
+  builds passed in the preceding release. The auth check printed the existing Node 20 deprecation
+  notice from Supabase JS; runtime dependencies were not changed.
+
+Owner confirmation of the dashboard save, reset emails on both custom domains and signup
+confirmation testing remain pending. No live authentication setting or stage acceptance is
+claimed by this configuration preparation.

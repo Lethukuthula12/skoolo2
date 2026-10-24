@@ -157,11 +157,21 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "https://skoolo-app.lethufzikhali.workers.dev"
+site_url = "https://app.skoolo.co.za"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://skoolo-app.lethufzikhali.workers.dev/**", "https://skoolo-schools.lethufzikhali.workers.dev/**", "http://localhost:4200/**", "http://localhost:4300/**"]
+additional_redirect_urls = [
+  "https://app.skoolo.co.za/auth",
+  "https://app.skoolo.co.za/reset-password",
+  "https://schools.skoolo.co.za/join",
+  "https://schools.skoolo.co.za/register-school",
+  "https://schools.skoolo.co.za/reset-password",
+  "https://skoolo-app.lethufzikhali.workers.dev/**",
+  "https://skoolo-schools.lethufzikhali.workers.dev/**",
+  "http://localhost:4200/**",
+  "http://localhost:4300/**"
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -234,6 +244,8 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
+# Hosted SMTP is configured directly in Supabase. The example below is not the live setup.
+# Review SMTP and email rate limits before any config push; see docs/deploy.md.
 # Use a production-ready SMTP server
 # [auth.email.smtp]
 # enabled = true
