@@ -148,3 +148,12 @@ The existing parent lookup is preserved: the first linked learner returned by th
 supplies the school theme. It has no explicit ordering or multi-school preference, so this update
 does not promise a particular school for families linked to several schools. Choosing a preferred
 school remains a separate product decision. No schema, access rules or query scope changed.
+
+## Amendment, 2026-10-25 — Prioritise login and session security
+
+The owner asked to plan and prioritise security before broader system-test expansion, clarifying
+that the concern is login/session storage. Stage 0 now contains a source-based security plan with
+confirmed findings, hosted settings still to verify, delivery order and acceptance checks.
+Server-managed HttpOnly sessions and administrator MFA are recommendations, not implemented or
+approved infrastructure changes. Security regression and isolation checks remain part of each
+security fix; the request does not remove the existing release requirements.

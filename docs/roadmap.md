@@ -48,6 +48,105 @@ automated proof, and a forgotten password must not lock anyone out.
 | Password reset | **Both custom-domain reset flows verified by the owner:** fresh email delivery, return to the requesting app, password change and subsequent sign-in passed on `app.skoolo.co.za` and `schools.skoolo.co.za`. Email confirmation is enabled; parent signup/confirmation passed, and portal registration reached school details and saved the school/admin membership. Workspace navigation then failed on a lazy module; the owner confirmed the workspace opens in a new tab. **Still needed:** live check of the new registration recovery panel, staff-invite signup, reused/expired reset links and mobile/cross-browser behaviour. Both apps handle confirmation before protected onboarding writes. The owner performs dashboard steps because agent browser access is blocked. See `docs/deploy.md`. |
 | Demo data | The test application `ENR-E5D24T` and the test accounts are deleted or kept as a labelled demo before real parents use the system. (Grades, bank details and the rest are the admin's to set and correct in the portal, so we do not chase the school to confirm them.) |
 
+### Login and session security plan
+
+Priority set by the owner on 2026-10-25, ahead of new feature work and broader functional-test
+expansion. The immediate concern is login/session storage, not a reported unauthorised-access
+incident. This is a plan and source review, not a completed penetration test or security clearance.
+Existing isolation checks remain required when changing authentication or access controls.
+
+#### What the review establishes
+
+| Finding | Evidence and significance |
+|---|---|
+| Sessions are accessible to site JavaScript | `web/projects/shared/src/lib/supabase-client.ts` enables persistent, automatically refreshed sessions with Supabase's default browser storage. The empty Cookies panel is consistent with that architecture; it does not prove compromise. A script-injection flaw could expose access and refresh tokens. |
+| Unsafe HTML in print views — first remediation priority | `reports.page.ts` (`printReport`) and `learners.page.ts` (`printRoster`) interpolate stored names/comments and other values into HTML passed to `document.write` in a same-origin popup. These values bypass Angular template escaping. The report also interpolates a stamp URL into an attribute. The unsafe construction is confirmed in source; no malicious records were inserted and no live exploit was attempted. |
+| Browser defence headers are absent from repository configuration | Both apps' `public/_headers` files define cache directives only. No CSP or framing policy is configured there. Cloudflare may add headers independently: live response headers remain unverified because browser access is restricted. |
+| A production dependency has published high-severity advisories | `npm audit --omit=dev --json` reports one affected direct dependency, `xlsx` 0.18.5, with prototype-pollution and regular-expression denial-of-service advisories. The learner importer calls `XLSX.read` on uploaded workbooks. The audit reports no automatic npm fix; replacing or sourcing a maintained version needs review, not `npm audit fix --force`. This finding is not evidence of exploitation. |
+| Session lifecycle needs explicit handling | `AuthService.signOut` discards the returned sign-out error. Auth events update the session but do not centrally clear school-specific state or navigate an already-open protected page away. Recovery state is set on `PASSWORD_RECOVERY` and explicitly reset only by the service's sign-out method. Review cross-tab logout, refresh failure and account switching before declaring these flows secure. |
+| Stronger login controls are not implemented in the app | No MFA enrolment/challenge or recent-authentication flow was found. Repository configuration disables TOTP, leaves session lifetime settings commented, and sets `secure_password_change = false`. These are repository facts, not a verified dump of hosted settings. |
+
+The project already has authenticated database access, row-level security, role-scoped RPCs,
+private document storage, email confirmation and refresh-token rotation in its design. The last
+release passed 112 isolation checks plus the coverage guard. Those checks establish the covered
+permission rules; they cannot protect an account whose valid session has been stolen.
+
+#### Delivery order and acceptance
+
+1. **Close script-injection paths and dependency exposure.** Replace raw print HTML containing
+   stored values with safe text rendering, or context-correct escaping and constrained image URLs.
+   Review every direct DOM sink; the shell's trusted SVG map currently contains code-owned icons,
+   so it should not be labelled a confirmed injection flaw merely for using a bypass API.
+   Remediate the affected workbook parser. Define CSP, framing, MIME-sniffing and referrer
+   protections for both apps, accounting for Angular/Ionic styles, fonts, images and Supabase
+   connections. Validate CSP in report-only mode before enforcing it; do not allow arbitrary
+   scripts just to suppress errors. Verify HTTPS before tightening HSTS scope. **Acceptance:**
+   attacker-like text in names/comments prints as text, image URLs cannot introduce markup,
+   imports/exports still work, and actual deployed headers match the policy. No production
+   attack payloads or customer-data mutations are required for this verification.
+
+2. **Make logout, expiry and account changes dependable.** Handle sign-out errors, clear
+   sensitive in-memory state on session loss, synchronise open tabs, reset recovery state, and
+   prevent one account seeing another's cached school state. Read the hosted session lifetime,
+   refresh rotation, password-change and rate-limit settings without exposing secrets or
+   overwriting working SMTP configuration. Remove unused production redirect wildcards and
+   development callbacks after separate development access is established. Add server-validated
+   abuse protection for signup/reset/sign-in, preserving generic account-existence responses.
+   Proposed portal policy: 30 minutes idle and an eight-hour maximum session, with a warning
+   before expiry; confirm this and a separate parent-device policy before implementation.
+   **Acceptance:** logout/expiry/account switching behave correctly across tabs and both apps;
+   server enforcement matches the chosen policy. A browser timer alone is not enforcement.
+   Document the residual lifetime of already-issued JWTs and how revocation is enforced.
+
+3. **Move browser session tokens behind a server layer.** Recommended target: a Cloudflare
+   Worker backend for each app's authenticated requests, keeping Supabase access/refresh tokens
+   on the server. The browser receives an opaque, host-only `__Host-` session cookie with
+   `HttpOnly`, `Secure`, `Path=/` and an explicit `SameSite` policy compatible with email-link
+   navigation (proposed `Lax`). Do not share a `.skoolo.co.za` cookie between the apps. Preserve
+   RLS by forwarding the authenticated user's identity; never replace ordinary user requests
+   with an unrestricted service-role client. Route authenticated database/RPC/storage calls
+   through this layer; moving only login while returning tokens to Angular would leave the
+   original exposure. Use server-verified, one-use callback handling for confirmation/reset,
+   validate destinations and define the cross-browser email-link behaviour.
+   Add CSRF tokens and exact-origin validation to state-changing requests, including session
+   operations; SameSite alone is insufficient. Authenticated responses must not enter CDN or
+   service-worker caches. Define token encryption, session-store consistency, concurrent refresh,
+   invalidation, rate limits, logging redaction and outage behaviour before implementation.
+   Storage choice, hosting costs and migration/rollback steps remain design work, not approved
+   infrastructure changes. **Acceptance:** tokens are absent from browser storage, JavaScript
+   responses and logs; cookies have the required flags; forged cross-origin mutations fail;
+   refresh/logout/reset work; existing tenant restrictions remain intact. HttpOnly reduces token
+   theft by JavaScript but does not fix XSS or hide cookies from the device owner's DevTools.
+
+4. **Require stronger proof for privileged access.** Recommend authenticator-app MFA for school
+   administrators, with enrolment, recovery and lost-device procedures before enforcement.
+   Require recent authentication for password/email changes and sensitive administration.
+   Enforce assurance levels in the server/database and SECURITY DEFINER RPCs as appropriate,
+   not only route guards; preserve the exact admin/staff/parent permission boundaries. Confirm
+   hosted feature availability instead of trusting old config comments about plan restrictions.
+   **Acceptance:** bypassing the MFA screen cannot perform protected actions through direct API
+   calls, and legitimate account recovery does not strand school administrators.
+
+Each batch ships with the security checks necessary to prove its fix. General feature-test
+expansion can wait; authentication changes still require affected production builds, targeted
+security regressions and the full RLS suite. Keep findings, hosted-setting evidence and unresolved
+risks explicit. No application code, provider configuration or live data was changed by this review.
+The next implementation batch is item 1, before a broad session-architecture migration.
+
+#### Reference guidance
+
+- [Supabase browser session defaults](https://supabase.com/docs/reference/javascript/auth)
+  explain the current local-storage behaviour.
+- [OWASP HTML5 storage guidance](https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html)
+  explains the JavaScript exposure; [Angular 20 security guidance](https://v20.angular.dev/best-practices/security)
+  covers unsafe DOM APIs, escaping, CSP and Trusted Types.
+- [OWASP session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+  informs cookie scope and flags. [Supabase sessions](https://supabase.com/docs/guides/auth/sessions)
+  documents token/session lifetimes, hosted limits and the need for server access when using HttpOnly cookies.
+- [Supabase MFA](https://supabase.com/docs/guides/auth/auth-mfa) covers enrolment and enforcement.
+- Spreadsheet advisories: [CVE-2023-30533](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6)
+  and [CVE-2024-22363](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9).
+
 ## Stage 1 — Learners, classes and subjects
 
 Why: every other request needs to know which learner is in which class, which subjects they take,

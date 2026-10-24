@@ -1336,3 +1336,25 @@ remaining real-device/link checks still need owner verification. Stage 0 remains
   Browser tooling remains restricted: the new recovery panel's visual layout, focus and
   end-to-end reload interaction still need a live check. The owner's new-tab recovery confirms
   existing school access, not visual acceptance of the new panel. Stage 0 remains in progress.
+
+## 2026-10-25 — Plan login and session security hardening
+
+- The owner prioritised security and clarified that the concern is login/session storage after
+  viewing an empty browser Cookies panel. Reviewed the shared Supabase client/auth service,
+  route/session handling, print HTML, static-host headers, auth config, workbook import and CI.
+- Confirmed persistent browser sessions, unescaped stored values in both print views, cache-only
+  repository header files, and missing app MFA/recent-authentication flows. These are source
+  findings; hosted auth settings and response headers remain unverified. The screenshot alone
+  does not establish compromise, and no production exploit or customer-data mutation was run.
+- Ran the read-only production dependency audit: exit 1, one high-severity affected dependency
+  (`xlsx` 0.18.5), covering two published advisories; no automatic npm fix available. No packages
+  were installed, changed or removed. This is a recorded vulnerability finding, not a passing
+  dependency-security check.
+- Added the ordered plan to Stage 0: unsafe rendering/dependency/headers first, session lifecycle
+  and hosted controls next, then a server-managed cookie design and administrator MFA. Documented
+  why changing storage flags alone is insufficient and how the proposed backend must preserve
+  per-user RLS, CSRF protection, token secrecy and reliable refresh/revocation.
+- This change is documentation only. No authentication implementation, provider setting, schema
+  or live data changed; no new tests were created. Existing required checks remain in force for
+  later security fixes. Reviewed the diff and ran `git diff --check`; application builds and a
+  repeat RLS run are not required for this planning-only change.
