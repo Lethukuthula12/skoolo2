@@ -1,5 +1,6 @@
 /* Parent app foundation. Saved school branding drives colours across the app. */
 @use '../../shared/src/styles/motion';
+@use '../../shared/src/styles/auth-form';
 :root {
   --ion-color-primary: #5145b5;
   --ion-color-primary-rgb: 81, 69, 181;

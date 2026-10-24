@@ -1,0 +1,62 @@
+<div class="auth-stage">
+  <div class="auth-layout">
+    <aside class="auth-story" aria-label="Welcome to Skoolo">
+      <div class="identity">
+        <div class="wordmark"><span class="brand-mark" aria-hidden="true">s</span>skoolo<span class="brand-dot">.</span></div>
+        <span class="audience">{{ audience() === 'school' ? 'School portal' : 'Parent app' }}</span>
+      </div>
+      <div class="story-copy">
+        <p class="eyebrow">A LITTLE CLOSER, EVERY DAY</p>
+        <h2>@if (audience() === 'school') { Your school day.<br>All together. } @else { Their school day.<br>Closer to home. }</h2>
+        <p>{{ audience() === 'school' ? 'More room for teaching, learning and the people who make your school.' : 'The little updates and big milestones. Stay connected to your child’s school life.' }}</p>
+      </div>
+
+      <!-- A decorative campus illustration, not a preview of school records. -->
+      <svg class="campus" viewBox="0 0 480 290" fill="none" aria-hidden="true" focusable="false">
+        <circle cx="240" cy="149" r="126" fill="#ffffff" fill-opacity=".06"/>
+        <circle cx="240" cy="149" r="101" stroke="#ffffff" stroke-opacity=".15" stroke-dasharray="4 8"/>
+        <circle class="sun" cx="354" cy="64" r="27" fill="#fcc43e"/>
+        <path d="M58 234H419" stroke="#c2baf2" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="245" cy="247" rx="150" ry="13" fill="#29245f" fill-opacity=".35"/>
+        <path d="M126 147H354V233H126V147Z" fill="#dfdbf7"/>
+        <path d="M112 147L142 122H338L368 147H112Z" fill="#b6aee8"/>
+        <path d="M185 106L240 68L295 106V234H185V106Z" fill="#ffffff"/>
+        <path d="M175 109L240 62L305 109" stroke="#fb7d5b" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="240" cy="119" r="18" fill="#eeecfa"/>
+        <path d="M240 108V119L248 123" stroke="#5145b5" stroke-width="3" stroke-linecap="round"/>
+        <path d="M220 235V193C220 182 229 173 240 173C251 173 260 182 260 193V235" fill="#5145b5"/>
+        <path d="M240 180V234" stroke="#7368c6" stroke-width="2"/>
+        <g fill="#8c81cb">
+          <rect x="143" y="162" width="23" height="28" rx="5"/><rect x="143" y="201" width="23" height="22" rx="5"/>
+          <rect x="314" y="162" width="23" height="28" rx="5"/><rect x="314" y="201" width="23" height="22" rx="5"/>
+        </g>
+        <path d="M154 163V189M315 176H336M143 176H165M325 163V189" stroke="#dfdbf7" stroke-width="3"/>
+        <path d="M85 231V172" stroke="#c7bef4" stroke-width="6" stroke-linecap="round"/>
+        <path d="M87 194L68 178M86 210L106 191" stroke="#c7bef4" stroke-width="4" stroke-linecap="round"/>
+        <path d="M85 122C111 141 121 159 116 178C113 192 99 198 84 196C64 195 52 187 53 173C54 153 69 137 85 122Z" fill="#fb7d5b"/>
+        <path d="M85 153V193" stroke="#c64f36" stroke-width="3" stroke-linecap="round"/>
+        <path d="M389 232V194" stroke="#c7bef4" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="389" cy="177" r="25" fill="#b4d5ae"/>
+        <path d="M389 170V196L399 184" stroke="#608b66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <g class="book">
+          <rect x="270" y="231" width="93" height="17" rx="4" fill="#fb7d5b"/>
+          <path d="M278 239H354" stroke="#ffe5dc" stroke-width="4" stroke-linecap="round"/>
+          <rect x="262" y="215" width="91" height="17" rx="4" fill="#fcc43e"/>
+          <path d="M269 223H344" stroke="#fff1c7" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <g class="note">
+          <rect x="83" y="55" width="64" height="53" rx="12" transform="rotate(-9 83 55)" fill="#ffffff"/>
+          <path d="M99 74L106 79L117 64" stroke="#5145b5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M99 91L127 86" stroke="#d9d5ef" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <path d="M392 109V121M386 115H398M157 51V59M153 55H161" stroke="#d7d1f2" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="60" cy="107" r="3" fill="#fcc43e"/><circle cx="418" cy="208" r="3" fill="#fb7d5b"/>
+      </svg>
+      <div class="story-footer"><span class="connection" aria-hidden="true"><i></i><i></i><i></i></span><p>{{ audience() === 'school' ? 'Learners. Learning. Community.' : 'One family. A world of possibility.' }}</p></div>
+    </aside>
+    <section class="auth-main" aria-label="Account access">
+      <div class="auth-main-inner"><ng-content /></div>
+      <p class="auth-footer"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3L20 6V12C20 17 12 21 12 21S4 17 4 12V6L12 3Z"/><path d="M8 12L11 15L16 9"/></svg> Your space for school life.</p>
+    </section>
+  </div>
+</div>

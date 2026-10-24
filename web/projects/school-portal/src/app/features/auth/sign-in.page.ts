@@ -1,45 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService, StaffService } from '@skoolo/shared';
+import { AuthLayoutComponent, AuthService, StaffService } from '@skoolo/shared';
 
 @Component({
   selector: 'app-sign-in-page',
-  imports: [ReactiveFormsModule, RouterLink],
-  template: `
-    <div class="wrap">
-      <form class="card" [formGroup]="form" (ngSubmit)="signIn()">
-        <div class="brand">Skoolo <span>for schools</span></div>
-        <h1>Sign in</h1>
-        <p class="muted">For principals, admin staff and teachers.</p>
-        <div class="field">
-          <label for="email">Email</label>
-          <input id="email" type="email" formControlName="email" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input id="password" type="password" formControlName="password" autocomplete="current-password" />
-        </div>
-        @if (error()) { <p class="error">{{ error() }}</p> }
-        <button class="btn btn-primary" type="submit" [disabled]="form.invalid || busy()">
-          {{ busy() ? 'Signing in…' : 'Sign in' }}
-        </button>
-        <div class="links">
-          <a routerLink="/forgot-password">Forgot password?</a>
-          <a routerLink="/join">I have an invite code</a>
-          <a routerLink="/register-school">Put my school on Skoolo</a>
-        </div>
-      </form>
-    </div>
-  `,
-  styles: `
-    .wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-    .card { width: 100%; max-width: 400px; display: grid; gap: 14px; }
-    .brand { font-weight: 800; font-size: 1.3rem; color: var(--brand); }
-    .brand span { font-weight: 500; color: var(--muted); font-size: 1rem; }
-    .btn { margin-top: 6px; }
-    .links { display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; margin-top: 4px; flex-wrap: wrap; }
-  `,
+  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent],
+  templateUrl: './sign-in.page.html',
 })
 export class SignInPage {
   private readonly auth = inject(AuthService);
@@ -48,6 +15,7 @@ export class SignInPage {
   private readonly route = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
 
+  protected readonly passwordVisible = signal(false);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly form = this.formBuilder.group({

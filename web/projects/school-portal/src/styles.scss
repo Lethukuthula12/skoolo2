@@ -3,6 +3,7 @@
    primary with a coral accent), rebuilt in our own tokens. Everything themes from :root, so the
    whole portal restyles from here. */
 @use '../../shared/src/styles/motion';
+@use '../../shared/src/styles/auth-form';
 :root {
   /* Brand: a Skoolo-tuned indigo with a coral accent. */
   --brand: #5145b5;

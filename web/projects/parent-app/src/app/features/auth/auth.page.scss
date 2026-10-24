@@ -1,0 +1,13 @@
+ion-content.welcome-content { --padding-bottom: 0; }
+.profile { display: flex; align-items: center; gap: 16px; padding: 6px 0 24px; }
+.profile > div { min-width: 0; }
+.profile .avatar { width: 64px; height: 64px; border-radius: 20px; flex-shrink: 0; display: grid; place-items: center; font-size: 38px; color: var(--skoolo-brand-ink); background: var(--skoolo-brand-soft); }
+.profile-label { color: var(--skoolo-brand-ink); font-size: 11px; }
+.profile h2 { margin: 4px 0 0; font-size: 19px; }
+.profile p { color: var(--skoolo-muted); margin: 4px 0 0; font-size: 12px; overflow-wrap: anywhere; }
+.account-links a { display: flex; align-items: center; gap: 15px; border-top: 1px solid var(--skoolo-line); padding: 19px 0; color: var(--skoolo-title); text-decoration: none; }
+.account-links ion-icon { font-size: 22px; flex-shrink: 0; color: var(--skoolo-brand-ink); }
+.account-links strong { display: block; font-size: 14px; font-weight: 500; }
+.account-links small { display: block; font-size: 11px; color: var(--skoolo-muted); margin-top: 5px; }
+.account-links ion-icon:last-child { margin-left: auto; font-size: 16px; color: var(--skoolo-muted); }
+.sign-out { margin: 8px 0 0; }

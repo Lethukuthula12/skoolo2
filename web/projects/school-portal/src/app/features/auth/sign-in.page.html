@@ -1,0 +1,31 @@
+<skoolo-auth-layout audience="school">
+  <div class="auth-form-area">
+    <div class="auth-heading">
+      <p class="auth-kicker">FOR YOUR SCHOOL</p>
+      <h1>Welcome back.</h1>
+      <p>Sign in to your school workspace.<br>For principals, admin staff and teachers.</p>
+    </div>
+    <form class="auth-form" [formGroup]="form" (ngSubmit)="signIn()" [attr.aria-busy]="busy()">
+      <div class="auth-field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" inputmode="email" formControlName="email" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="you@school.co.za" [readOnly]="busy()" />
+      </div>
+      <div class="auth-field">
+        <div class="auth-label-row"><label for="password">Password</label><a routerLink="/forgot-password">Forgot password?</a></div>
+        <div class="auth-password">
+          <input id="password" name="password" [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" placeholder="Enter your password" [readOnly]="busy()" />
+          <button class="password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" aria-controls="password">{{ passwordVisible() ? 'Hide' : 'Show' }}</button>
+        </div>
+      </div>
+      @if (error()) { <p class="auth-error" role="alert">{{ error() }}</p> }
+      <button class="auth-submit" type="submit" [disabled]="form.invalid || busy()">
+        @if (busy()) { <span class="busy-mark" aria-hidden="true"></span> Signing in… }
+        @else { Sign in <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12H19M13 6L19 12L13 18" stroke-linecap="round" stroke-linejoin="round"/></svg> }
+      </button>
+    </form>
+    <div class="auth-alternatives">
+      <p>Joining your school’s team? <a routerLink="/join">Use an invite code</a></p>
+      <p>New to Skoolo? <a routerLink="/register-school">Register your school</a></p>
+    </div>
+  </div>
+</skoolo-auth-layout>

@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  --auth-canvas: var(--bg, var(--ion-background-color, #e9edf2));
+  --auth-surface: var(--card, var(--skoolo-surface, #fff));
+  --auth-muted: var(--muted, var(--skoolo-muted, #697087));
+}
+.auth-stage { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: max(28px, env(safe-area-inset-top)) 28px max(28px, env(safe-area-inset-bottom)); background: var(--auth-canvas); }
+.auth-layout { display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 1180px; min-height: 730px; border-radius: 24px; overflow: hidden; background: var(--auth-surface); box-shadow: 0 24px 80px rgba(35, 34, 74, .07); }
+.auth-story { position: relative; display: flex; flex-direction: column; padding: 44px 48px 32px; overflow: hidden; background: #4d44a8; color: #fff; }
+.identity { position: relative; z-index: 1; }
+.wordmark { display: flex; align-items: center; font: 700 34px/1 'Poppins', sans-serif; letter-spacing: -1.5px; }
+.brand-mark { display: grid; place-items: center; width: 43px; height: 43px; margin-right: 12px; border-radius: 14px; background: #fb7d5b; color: #41251d; font-size: 33px; }
+.brand-dot { color: #fcc43e; }
+.audience { display: block; margin: 12px 0 0 55px; font-size: 11px; color: #e4e0fa; letter-spacing: .4px; }
+.story-copy { position: relative; z-index: 1; margin-top: 58px; }
+.eyebrow { margin: 0 0 18px; color: #e4e0fa; font-size: 10px; font-weight: 500; letter-spacing: 1.8px; }
+.story-copy h2 { margin: 0 0 20px; color: #fff; font-size: clamp(30px, 3.2vw, 42px); line-height: 1.25; letter-spacing: -1.4px; font-weight: 600; }
+.story-copy > p:last-child { max-width: 340px; margin: 0; color: #e4e0fa; font-size: 13px; line-height: 1.9; }
+.campus { display: block; width: calc(100% + 40px); max-width: 520px; height: auto; margin: auto -20px 0; }
+.note { animation: welcome-note 600ms var(--ease-out, ease) both; transform-origin: 110px 80px; }
+.book { animation: welcome-book 700ms var(--ease-out, ease) both; }
+.story-footer { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.story-footer p { font-size: 11px; color: #e4e0fa; margin: 0; }
+.connection { display: flex; padding-right: 4px; }
+.connection i { width: 15px; height: 15px; border-radius: 50%; background: #fb7d5b; border: 2px solid #4d44a8; }
+.connection i + i { margin-left: -4px; background: #fcc43e; }
+.connection i:last-child { background: #b4d5ae; }
+.auth-main { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 60px clamp(28px, 4.5vw, 64px) 28px; }
+.auth-main-inner { width: 100%; max-width: 420px; margin: auto; animation: surface-enter var(--motion-slow, 300ms) var(--ease-out, ease); }
+.auth-footer { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 36px 0 0; color: var(--auth-muted); font-size: 11px; }
+.auth-footer svg { width: 16px; height: 16px; }
+@keyframes welcome-note { from { opacity: 0; transform: translateY(10px) rotate(-5deg); } to { opacity: 1; transform: none; } }
+@keyframes welcome-book { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 900px) {
+  .auth-layout { grid-template-columns: 1fr; max-width: 560px; min-height: 0; }
+  .auth-story { padding: 26px 30px; min-height: 135px; }
+  .wordmark { font-size: 30px; }
+  .story-copy, .story-footer { display: none; }
+  .campus { position: absolute; width: 170px; right: 8px; top: 0; margin: 0; }
+  .auth-main { padding: 36px 40px 24px; }
+}
+@media (max-width: 540px) {
+  .auth-stage { padding: 0; display: block; background: var(--auth-surface); }
+  .auth-layout { border-radius: 0; box-shadow: none; min-height: 100svh; grid-template-rows: auto 1fr; }
+  .auth-story { padding: calc(25px + env(safe-area-inset-top)) 24px 25px; border-radius: 0 0 26px 26px; }
+  .campus { width: 145px; right: 0; top: env(safe-area-inset-top); }
+  .auth-main { padding: 30px 24px max(22px, env(safe-area-inset-bottom)); }
+  .auth-main-inner { margin: 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) { .note, .book, .auth-main-inner { animation: none; } }

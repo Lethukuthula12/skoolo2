@@ -1,0 +1,88 @@
+@if (auth.isSignedIn()) {
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
+      <ion-title>Your account</ion-title>
+    </ion-toolbar>
+  </ion-header>
+}
+<ion-content [class.welcome-content]="!auth.isSignedIn()">
+  @if (auth.isSignedIn()) {
+    <div class="screen-intro"><p class="eyebrow">YOUR SPACE</p><h1>Home and school, connected.</h1><p>Your family, applications and conversations in one place.</p></div>
+    <div class="form-card account">
+      <div class="profile"><span class="avatar"><ion-icon name="person-circle-outline" aria-hidden="true" /></span><div><span class="profile-label">Parent account</span><h2>{{ auth.user()?.user_metadata?.['full_name'] || 'Parent' }}</h2><p>{{ auth.user()?.email }}</p></div></div>
+      <nav class="account-links" aria-label="Account shortcuts">
+        <a routerLink="/children"><ion-icon name="people-outline" aria-hidden="true" /><span><strong>My family</strong><small>Children, reports and school life</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+        <a routerLink="/applications"><ion-icon name="folder-open-outline" aria-hidden="true" /><span><strong>Applications</strong><small>Follow your enrolment progress</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+        <a routerLink="/inbox"><ion-icon name="mail-outline" aria-hidden="true" /><span><strong>Inbox</strong><small>Updates about your applications</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+        <a routerLink="/schools"><ion-icon name="school-outline" aria-hidden="true" /><span><strong>Explore schools</strong><small>Find a place for their next chapter</small></span><ion-icon name="chevron-forward-outline" aria-hidden="true" /></a>
+      </nav>
+      <ion-button class="sign-out" fill="clear" color="medium" (click)="signOut()"><ion-icon slot="start" name="log-out-outline" /> Sign out</ion-button>
+    </div>
+  } @else {
+    <skoolo-auth-layout audience="parent">
+      <div class="auth-form-area">
+        <div class="auth-heading">
+          <p class="auth-kicker">FOR PARENTS &amp; GUARDIANS</p>
+          <h1>{{ mode() === 'sign_up' ? 'A new chapter starts here.' : 'Welcome back.' }}</h1>
+          <p>{{ mode() === 'sign_up' ? 'Create a free account to apply to schools and follow your applications.' : 'Sign in for the moments that matter, from school updates to your child’s progress.' }}</p>
+        </div>
+        <div class="auth-switch" role="group" aria-label="Account access options">
+          <button type="button" [attr.aria-pressed]="mode() === 'sign_in'" [disabled]="busy()" (click)="switchMode('sign_in')">Sign in</button>
+          <button type="button" [attr.aria-pressed]="mode() === 'sign_up'" [disabled]="busy()" (click)="switchMode('sign_up')">Create account</button>
+        </div>
+        @if (notice()) { <p class="auth-notice" role="status">{{ notice() }}</p> }
+        @if (mode() === 'sign_up') {
+          <form class="auth-form" [formGroup]="signUpForm" (ngSubmit)="signUp()" [attr.aria-busy]="busy()">
+            <div class="auth-field">
+              <label for="parent-name">Your full name</label>
+              <input id="parent-name" name="fullName" type="text" formControlName="fullName" autocomplete="name" placeholder="First and last name" [readOnly]="busy()" />
+            </div>
+            <div class="auth-field">
+              <label for="parent-phone">Cellphone number</label>
+              <input id="parent-phone" name="phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" placeholder="e.g. 0821234567" aria-describedby="phone-hint" [readOnly]="busy()" />
+              <small id="phone-hint">Enter 10 digits without spaces, or start with +27. Your school uses this to contact you.</small>
+            </div>
+            <div class="auth-field">
+              <label for="create-email">Email address</label>
+              <input id="create-email" name="email" type="email" inputmode="email" formControlName="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="you@example.com" [readOnly]="busy()" />
+            </div>
+            <div class="auth-field">
+              <label for="create-password">Password</label>
+              <div class="auth-password">
+                <input id="create-password" name="password" [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" placeholder="Choose a password" aria-describedby="password-hint" [readOnly]="busy()" />
+                <button class="password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" aria-controls="create-password">{{ passwordVisible() ? 'Hide' : 'Show' }}</button>
+              </div>
+              <small id="password-hint">Use at least 8 characters.</small>
+            </div>
+            @if (error()) { <p class="auth-error" role="alert">{{ error() }}</p> }
+            <button class="auth-submit" type="submit" [disabled]="signUpForm.invalid || busy()">
+              @if (busy()) { <span class="busy-mark" aria-hidden="true"></span> Creating account… }
+              @else { Create account <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12H19M13 6L19 12L13 18" stroke-linecap="round" stroke-linejoin="round"/></svg> }
+            </button>
+          </form>
+        } @else {
+          <form class="auth-form" [formGroup]="signInForm" (ngSubmit)="signIn()" [attr.aria-busy]="busy()">
+            <div class="auth-field">
+              <label for="parent-email">Email address</label>
+              <input id="parent-email" name="email" type="email" inputmode="email" formControlName="email" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="you@example.com" [readOnly]="busy()" />
+            </div>
+            <div class="auth-field">
+              <div class="auth-label-row"><label for="parent-password">Password</label><a routerLink="/forgot-password">Forgot password?</a></div>
+              <div class="auth-password">
+                <input id="parent-password" name="password" [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" placeholder="Enter your password" [readOnly]="busy()" />
+                <button class="password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" aria-controls="parent-password">{{ passwordVisible() ? 'Hide' : 'Show' }}</button>
+              </div>
+            </div>
+            @if (error()) { <p class="auth-error" role="alert">{{ error() }}</p> }
+            <button class="auth-submit" type="submit" [disabled]="signInForm.invalid || busy()">
+              @if (busy()) { <span class="busy-mark" aria-hidden="true"></span> Signing in… }
+              @else { Sign in <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12H19M13 6L19 12L13 18" stroke-linecap="round" stroke-linejoin="round"/></svg> }
+            </button>
+          </form>
+        }
+        <div class="auth-alternatives"><p>Looking for the right school? <a routerLink="/schools">Explore schools</a></p></div>
+      </div>
+    </skoolo-auth-layout>
+  }
+</ion-content>

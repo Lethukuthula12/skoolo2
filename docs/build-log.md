@@ -1024,3 +1024,38 @@ Browser origin policy still prevents rendered and live end-to-end verification. 
 parent refresh on separate real sessions/devices, toolbar/navigation colours, light/dark Ionic
 controls and all affected parent screens still need a visual walkthrough. Automated service and
 contrast checks are not a claim of real-device acceptance or successful deployment verification.
+
+
+## 2026-10-24 — Matching school and parent login design
+
+- Replaced the plain school sign-in card and parent sign-in introduction with a shared welcome
+  layout: an indigo panel, original decorative campus SVG, coral/yellow accents, clear audience
+  labels and a separate form area. The illustration uses short entry motion with reduced-motion
+  support. It contains no school records, sample metrics or external image dependencies.
+- Desktop uses two columns; tablet/phone layouts use a compact illustrated header and a single
+  form column, with safe-area padding and 16px phone inputs. Parent account creation uses the same
+  design. Existing signed-in account shortcuts and sign-out remain in the parent account screen.
+- Both apps now use matching native form controls with persistent labels, autofill hints,
+  Show/Hide password buttons, visible focus states, loading labels and announced errors. Parent
+  mode switches hide the password again. Controls retain their original reactive forms and
+  validators. Password reset, staff invitations, school registration and school-directory links
+  remain available. Form surfaces and colours use each app's existing theme tokens; the welcome
+  illustration and panel use Skoolo's own identity before a school is selected.
+- Authentication methods, account creation/confirmation, return URLs, school membership loading,
+  route guards, database queries and access rules were not changed. This is presentation work;
+  it does not require a fresh RLS suite under the change-specific release rules.
+
+Verification: both production builds passed. Parent has no warnings (1.33 MB initial); portal has
+its existing initial-bundle warning (now 532.71 kB against the 500 kB warning threshold). No stylesheet
+budget warnings or budget changes. `node web/scripts/check-auth-forms.mjs` checks actual controllers
+with mock services and parses the Angular templates for control bindings, labels, autofill, help
+associations and non-submitting password buttons. It passes validation, failed sign-in, return URL,
+parent email-confirmation, sign-out, signup-link mode and no-school routing cases. Ionic view metadata
+is stubbed in this Node check; actual templates/Ionic integration are compiled by the production
+builds. Existing school-theme sync, portal presentation/pagination and parent motion checks pass.
+`git diff --check` passed.
+
+Browser policy still blocks rendered/live verification. Both login pages, parent account creation,
+mobile keyboard scrolling/autofill, keyboard focus, password visibility controls, error presentation
+and animation appearance need a real-device visual walkthrough. These checks do not establish
+successful live deployment or school acceptance, and no roadmap stage was marked accepted.
