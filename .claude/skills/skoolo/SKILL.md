@@ -112,6 +112,11 @@ half of it.
 - **Parent app** (Ionic, PWA): directory and search, school panel, sign-up, three-step
   application with guardian details and live grade availability, documents, EFT payment screen
   with unique reference, mark paid, My applications, inbox.
+- **Parent installation**: startup capture of Chrome's install offer, an explicit Install Skoolo
+  action, Android/iOS manual steps and Account help even after dismissing the directory card.
+  `check:install` verifies event handling and manifest icons. Real-phone acceptance remains open;
+  follow `docs/deploy.md`. The owner deferred staff session enforcement to 2026-10-26 and asked
+  to prioritise phone installation first; track this in `docs/roadmap.md`.
 - **School portal** (Angular): sign-in, join by invite code, register or claim a school,
   applications queue and detail (administrators only; teachers land on a placeholder home),
   confirm payment (sends welcome message), status changes with messages, enrolment periods and

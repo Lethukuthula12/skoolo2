@@ -36,6 +36,17 @@ The school's requests, in their words:
 
 ## Stage 0 — Make what exists solid
 
+### Next work agreed with the owner
+
+- [ ] **2026-10-26: resume staff session enforcement.** Implement the agreed 30-minute idle and
+  eight-hour maximum limits, warning before expiry, and the server-side protections in
+  `docs/session-security-design.md`. Parent session limits still need a separate decision.
+  Deferred at the owner's request on 2026-10-25; these limits are not active.
+- [ ] **Current priority: parent-app installation on Android and iOS.** Fix the missing Android
+  install entry point and verify the real-phone installation path. **Entry point and manual help
+  implemented; real-phone checks pending.** This takes priority over staff-session implementation
+  for this work session. See the phone checklist in `docs/deploy.md`.
+
 Why first: the enrolment flow, portal and self-service onboarding were built in five days and
 checked by hand. Before more people depend on them, the rules that protect each school's data need
 automated proof, and a forgotten password must not lock anyone out.

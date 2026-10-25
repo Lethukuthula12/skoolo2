@@ -19,6 +19,7 @@
       </nav>
       <ion-button class="sign-out" fill="clear" color="medium" (click)="signOut()"><ion-icon slot="start" name="log-out-outline" /> Sign out</ion-button>
     </div>
+    <app-install-hint [alwaysVisible]="true" />
   } @else {
     <skoolo-auth-layout audience="parent">
       <div class="auth-form-area">

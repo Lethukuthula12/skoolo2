@@ -241,12 +241,63 @@ against the live project and the working mail setup is preserved.
 
 ## Part 5: put it on a phone
 
-Open the parent app address in Chrome on Android, tap the menu, and choose **Install app** or
-**Add to Home screen**. On iPhone, open it in Safari, tap **Share**, then **Add to Home Screen**.
-The icon and the full-screen behaviour come from the manifest in the build.
+Use **https://app.skoolo.co.za** for the parent PWA. The school portal is a separate browser app.
+An old installation from the Workers address is a different origin; install from the custom
+domain for this test. Wait for the latest Cloudflare build to succeed before checking the UI.
 
-Share the parent app address with the school. A QR code of the URL on a poster at the gate works
-well; any free QR generator will do.
+### Android / Chrome
+
+1. Open the URL directly in a normal Chrome tab, rather than inside WhatsApp or another app.
+2. On Explore schools, find **Skoolo, one tap away**. Tap **Install Skoolo** when Chrome makes
+   its native installation prompt available, then confirm in the browser dialog.
+3. If there is no button, expand **Installation steps**. Chrome's menu provides
+   **Install and create shortcut → Install**; some versions call it **Add to Home screen**
+   or **Install app**. Browser eligibility and previous dismissals affect automatic promotion;
+   the app cannot force a native popup. An already-installed app may not receive another offer.
+4. Open the Skoolo icon from the home screen. Check that it launches without the normal browser
+   address bar and the installation card disappears. If Chrome offers only a shortcut, record
+   that outcome and the Chrome version; a shortcut is not proof of standalone PWA installation.
+
+The app captures `beforeinstallprompt` during startup, before lazy routes load, and only invokes
+it on an explicit tap. Cancellation/failure keeps manual help available and a used event cannot
+be reused. Directory dismissal lasts for the browser tab session, not indefinitely in localStorage.
+Signed-in users can still find the help under **Account**, even after dismissing the directory card.
+The app does not have a reliable cross-browser inventory of installations; standalone launch and
+`appinstalled` are the signals it uses to hide the card.
+
+### iPhone / Safari
+
+1. Open **Safari** and visit **https://app.skoolo.co.za** in a normal tab.
+2. Tap **Share**. Depending on the Safari layout, open the page menu first to find Share.
+3. Scroll to **Add to Home Screen**. If missing, use **Edit Actions** to add it.
+4. Keep **Open as Web App** switched on if shown, leave the name **Skoolo**, and tap **Add**.
+5. Go to the Home Screen and open the new Skoolo icon. Expect an app window without Safari's
+   ordinary address bar. iOS uses this manual flow; do not wait for Chrome's install dialog.
+
+### Real-phone acceptance checks (still pending)
+
+- Search for a school before sign-in; check the installation guidance and narrow-screen layout.
+- Launch from the installed icon, complete the security check and sign in with a designated
+  parent test account. Check Home, Applications, Inbox and Account navigation, keyboard layout,
+  and portrait/landscape scrolling without sideways overflow.
+- Close and reopen the installed app; check account restoration, then sign out and check that
+  protected content is no longer shown. Browser tabs and installed iOS apps can have different
+  session contexts; test the installed app itself. Staff time limits are not part of this test.
+- Test reset-email links separately. They may open a browser instead of the installed app;
+  after resetting, verify sign-in to the installed app with the new password.
+- Check a connection failure and recovery. The shell may be cached, but school data, security
+  checks, sign-in and submissions require a connection; installation does not promise offline work.
+
+`npm run check:install` covers synthetic browser events and actual 192/512px manifest icons.
+It does not validate live Chrome eligibility, operating-system installation or iPhone rendering.
+Agent browser access to the local preview was denied by policy; no alternative browser access
+was attempted. Record real-device results and versions in the build log.
+
+References: [Chrome installation](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&hl=en),
+[Apple's web-app steps](https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios),
+[browser installation events](https://web.dev/learn/pwa/installation-prompt).
+
+Share the parent app address with the school. A QR code of that URL can be used on a poster.
 
 ## If a build fails
 

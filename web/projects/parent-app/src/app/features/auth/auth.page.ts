@@ -5,13 +5,14 @@ import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
 import { AuthLayoutComponent, AuthService, AuthChallengeComponent } from '@skoolo/shared';
+import { InstallHintComponent } from '../directory/install-hint.component';
 
 type Mode = 'sign_in' | 'sign_up';
 
 @Component({
   selector: 'app-auth-page',
   imports: [
-    ReactiveFormsModule, RouterLink, AuthLayoutComponent, AuthChallengeComponent,
+    ReactiveFormsModule, RouterLink, AuthLayoutComponent, AuthChallengeComponent, InstallHintComponent,
     IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar,
   ],
   templateUrl: './auth.page.html',

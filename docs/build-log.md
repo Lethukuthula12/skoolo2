@@ -1507,3 +1507,32 @@ and MFA. Browser token storage remains unchanged.
 Stage 0 remains in progress. The app-side CAPTCHA integration is complete; direct API abuse
 protection requires the hosted activation above. Browser token storage and staff session limits
 remain unchanged until the proposed server session work is implemented and verified.
+
+## 2026-10-25 — Repair parent-app installation discovery
+
+- The owner reported no installation request in Chrome on Android and asked for iOS testing
+  instructions. Code review found only an iOS-specific directory hint: Android relied on Chrome's
+  automatic promotion and the app had no `beforeinstallprompt` handler.
+- Added an app-startup installation service that captures the browser offer before lazy routes
+  load. The directory card exposes **Install Skoolo** when that offer is available. The browser
+  prompt opens only from a user tap; duplicate taps cannot reuse an event. Accepted, dismissed
+  and failed requests are handled without falsely declaring an installation complete.
+- Android and iOS have expandable manual instructions even when there is no native offer.
+  Account also includes the card for signed-in mobile users after a directory dismissal.
+  Dismissal uses sessionStorage instead of an indefinite localStorage flag. Standalone launches,
+  display-mode changes and `appinstalled` hide the suggestion. No browser can be forced to
+  offer a native popup, and this does not change its eligibility rules.
+- Added `npm run check:install` to CI. Checks passed for early event capture, single-use prompts,
+  cancellation/failure, late results, installation lifecycle, listener cleanup, iOS/iPad/Android
+  detection, blocked preference storage, Account visibility and real manifest PNG dimensions.
+  Both required 192/512px icons and standalone manifest settings were already present.
+- The final parent production build passed (1.35 MB initial). Existing session/auth/CAPTCHA and
+  browser-security checks also passed. No authentication behavior, data access, role or tenant
+  rule changed: Account only gains installation help, so a fresh RLS run was not required.
+  The school portal is unchanged. Existing local Node 20 SDK deprecation warnings remain.
+- The local production preview was denied by browser security policy. No workaround was used.
+  Visual layout, actual Chrome installation eligibility and real Android/iOS/PWA behavior remain
+  unverified. `docs/deploy.md` now records exact phone steps and acceptance checks; Stage 0 stays open.
+- At the owner's request, recorded staff session enforcement on the roadmap to-do list for
+  **2026-10-26**, with 30-minute idle/eight-hour maximum limits and a separate parent-policy
+  decision. It was not implemented in this installation fix and no automatic reminder was created.
