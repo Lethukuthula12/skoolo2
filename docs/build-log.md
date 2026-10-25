@@ -1536,3 +1536,19 @@ remain unchanged until the proposed server session work is implemented and verif
 - At the owner's request, recorded staff session enforcement on the roadmap to-do list for
   **2026-10-26**, with 30-minute idle/eight-hour maximum limits and a separate parent-policy
   decision. It was not implemented in this installation fix and no automatic reminder was created.
+
+## 2026-10-25 — Record phone security warnings during installation acceptance
+
+- The owner reports that iOS installation completed but Safari's address bar showed an insecure
+  connection warning. Android installation was blocked with the older-Android privacy warning;
+  the owner confirmed it occurred directly from Chrome/Install Skoolo, not a downloaded APK file.
+- Local review found the static Worker/PWA deployment, no native Android build or target-SDK
+  configuration, and no explicit HTTP resource URLs in the app sources. This does not establish
+  the live TLS/redirect state or the Android wrapper's actual target SDK.
+- Google's official guidance ties that warning to APK target API compatibility. Chromium documents
+  that Chrome's installation service generates the WebAPK wrapper. Android/Chrome versions and
+  an explicit-HTTPS check on the iPhone have been requested; the underlying causes remain open.
+- Recorded these as failed phone acceptance checks rather than claiming the installation UI fix
+  resolved platform warnings. No application, provider, certificate or security setting changed.
+  Browser-policy restrictions were respected. Documentation-only update; diff review required,
+  no new build or database run. Staff-session work remains deferred as requested.
