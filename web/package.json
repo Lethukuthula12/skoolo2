@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "check:security": "node scripts/check-browser-security.mjs",
+    "check:sessions": "node scripts/check-session-security.mjs && node scripts/check-auth-forms.mjs",
     "start:parent": "ng serve parent-app --port 4200",
     "start:portal": "ng serve school-portal --port 4300",
     "build:parent": "ng build parent-app",

@@ -15,6 +15,9 @@ export const staffGuard: CanActivateFn = async (_route, state) => {
   if (!staff.loaded()) {
     await staff.loadSchools();
   }
+  if (!auth.isSignedIn()) {
+    return router.createUrlTree(['/sign-in'], { queryParams: { returnUrl: state.url } });
+  }
   if (staff.schools().length === 0) {
     return router.createUrlTree(['/no-school']);
   }

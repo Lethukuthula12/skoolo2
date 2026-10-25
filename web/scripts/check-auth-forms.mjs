@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { Injector, runInInjectionContext, signal } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -35,7 +36,9 @@ await build({
   }}],
 });
 const { AuthPage, SignInPage, JoinPage, RegisterSchoolPage, ParentReset, PortalReset, AuthService, StaffService, SchoolDirectoryService, SUPABASE_CLIENT, staffGuard } = await import(pathToFileURL(output).href);
-globalThis.window = { location: { origin: 'https://app.skoolo.co.za' } };
+let reloads = 0;
+globalThis.window = { location: { origin: 'https://app.skoolo.co.za', reload: () => { ++reloads; } }, addEventListener() {}, removeEventListener() {} };
+globalThis.document = { addEventListener() {}, removeEventListener() {} };
 const fixtures = [];
 function fixture(Page, params = {}) {
   const calls = [], navigation = [];
@@ -47,6 +50,7 @@ function fixture(Page, params = {}) {
       signIn: async (...args) => { calls.push(['signIn', ...args]); return result.signIn; },
       signUp: async value => { calls.push(['signUp', value]); if (!result.signUp.error && !result.signUp.needsEmailConfirmation) signedIn.set(true); return result.signUp; },
       signOut: async () => { calls.push(['signOut']); signedIn.set(false); recovery.set(false); },
+      signOutFailed: () => false,
       isSignedIn: signedIn, isPasswordRecovery: recovery, whenReady: async () => {},
       updatePassword: async value => { calls.push(['updatePassword', value]); return result.updatePassword; },
     }},
@@ -167,6 +171,8 @@ join.signedIn.set(true);
 await join.page.redeem();
 assert.deepEqual(join.calls.at(-1), ['acceptInvite', 'TESTCODE']);
 assert.equal(join.navigation.at(-1), '/applications');
+await join.page.switchAccount({ preventDefault() {} });
+assert.equal(reloads, 1, 'Switching invite accounts reloads the invitation URL without cached pages');
 const immediateJoin = fixture(JoinPage);
 immediateJoin.result.signUp.needsEmailConfirmation = false;
 immediateJoin.page.signUpForm.setValue({ ...account, code: 'NEWCODE1' });
@@ -295,7 +301,11 @@ const staffInjector = Injector.create({ providers: [
     } }) }),
   } },
   { provide: StaffService, useFactory: () => realStaff },
-  { provide: AuthService, useValue: { whenReady: async () => {}, isSignedIn: () => staffResult.signedIn } },
+  { provide: AuthService, useValue: {
+    whenReady: async () => {}, isSignedIn: () => staffResult.signedIn,
+    user: () => staffResult.signedIn ? { id: 'current-user' } : null,
+    stateInvalidated: new Subject(),
+  } },
   { provide: Router, useValue: { createUrlTree: (commands, extras) => ({ commands, extras }) } },
 ] });
 realStaff = runInInjectionContext(staffInjector, () => new StaffService());
@@ -373,7 +383,8 @@ const forgotSource = await readFile(path.join(root, 'projects/parent-app/src/app
 assert.match(forgotSource, /imports:\s*\[\s*ReactiveFormsModule, RouterLink/, 'Forgot-password Back button has its router directive');
 let signupRequest;
 const serviceInjector = Injector.create({ providers: [{ provide: SUPABASE_CLIENT, useValue: { auth: {
-  getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => {},
+  getSession: async () => ({ data: { session: null } }),
+  onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
   signUp: async request => { signupRequest = request; return { data: { session: null }, error: null }; },
 } } }] });
 const service = runInInjectionContext(serviceInjector, () => new AuthService());
@@ -384,4 +395,5 @@ assert.equal(confirmation.needsEmailConfirmation, true);
 serviceInjector.destroy();
 for (const item of fixtures) item.injector.destroy();
 delete globalThis.window;
+delete globalThis.document;
 console.log('Auth checks passed: form contracts, login failures, app-specific confirmation URLs, verified onboarding, saved-school navigation recovery, membership-scoped school selection, immediate-session compatibility, no-school routing and password-reset success/expiry/failure.');

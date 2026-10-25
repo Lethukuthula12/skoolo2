@@ -4,6 +4,7 @@ export * from './lib/supabase-client';
 export * from './lib/models';
 export * from './lib/auth/auth.service';
 export * from './lib/auth/auth-layout.component';
+export * from './lib/auth/session-ended.component';
 export * from './lib/auth/signed-in.guard';
 export * from './lib/directory/school-directory.service';
 export * from './lib/applications/application.service';

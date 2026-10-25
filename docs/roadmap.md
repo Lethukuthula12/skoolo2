@@ -62,7 +62,16 @@ full resource/script policy in report-only mode. `npm run check:security` covers
 image URL restrictions, workbook/CSV compatibility and header configuration, and runs in CI.
 The full dependency audit now reports zero vulnerabilities. Live print-preview and deployed-header
 checks remain open; report-only script rules are not yet an enforced XSS defence. The initial
-findings below record the review baseline. Session lifecycle, HttpOnly migration and MFA remain open.
+findings below record the review baseline. HttpOnly migration and MFA remain open.
+
+**Session lifecycle update, 2026-10-25:** both apps now remove their routed pages on sign-out,
+session loss, account changes or unrenewed access-token expiry. A dedicated status screen reports
+logout failures and continues through a full document load. School memberships and selection are
+cleared synchronously, and obsolete membership/storage responses cannot restore a previous account.
+Recovery state and timers/listeners are cleaned up. Synthetic lifecycle/form checks and the full
+112-check RLS suite plus coverage guard pass. Live cross-tab/device checks remain unverified.
+This implements the client lifecycle portion of item 2; hosted controls, abuse protection and a
+confirmed timeout policy remain open. Persistent browser token storage is unchanged.
 
 #### What the review establishes
 
@@ -141,9 +150,10 @@ expansion can wait; authentication changes still require affected production bui
 security regressions and the full RLS suite. Keep findings, hosted-setting evidence and unresolved
 risks explicit. The initial review changed no application code, provider configuration or live data;
 the implementation update above records subsequent fixes.
-The next implementation batch is item 2, alongside live verification of item 1's deployed headers
-and print previews. Promote the full CSP only after compatibility is checked. HSTS scope and
-Trusted Types enforcement also remain future work; neither was enabled without verification.
+Continue with item 2's hosted-setting review, abuse protection and timeout-policy decisions,
+alongside live verification of the new session boundary and item 1's headers/print previews.
+Then design item 3's server-managed sessions. Promote the full CSP only after compatibility is
+checked. HSTS scope and Trusted Types enforcement also remain future work.
 
 #### Reference guidance
 

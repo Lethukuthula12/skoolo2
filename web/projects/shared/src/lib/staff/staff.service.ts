@@ -1,5 +1,6 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { injectSupabase } from '../supabase-client';
+import { AuthService } from '../auth/auth.service';
 import type {
   AcademicTerm, Application, ApplicationDocument, ApplicationStatus, ClassSubjectTeacher, EnrolmentPeriod, Learner,
   LearnerGuardian, LearnerGuardianInsert, LearnerInsert, PeriodGrade, Profile, Province, ReportCard, ReportMark,
@@ -56,6 +57,8 @@ const APPLICATION_SELECT = `*, learner:learners(*), parent:profiles!applications
 @Injectable({ providedIn: 'root' })
 export class StaffService {
   private readonly client = injectSupabase();
+  private readonly auth = inject(AuthService);
+  private requestVersion = 0;
 
   /** Schools the signed-in user belongs to, with their role. Loaded once by the staff guard. */
   readonly memberships = signal<SchoolMembership[]>([]);
@@ -69,31 +72,40 @@ export class StaffService {
   readonly currentSchool = computed(() => this.currentMembership()?.school ?? null);
   readonly isAdmin = computed(() => this.currentMembership()?.role === 'admin');
 
+  constructor() {
+    const subscription = this.auth.stateInvalidated.subscribe(() => this.reset());
+    inject(DestroyRef).onDestroy(() => subscription.unsubscribe());
+  }
+
   async loadSchools(): Promise<School[]> {
+    await this.auth.whenReady();
+    const version = ++this.requestVersion;
     // Staff can see their colleagues' rows too, so filter to the signed-in user's own memberships.
-    const userId = (await this.client.auth.getSession()).data.session?.user.id;
+    const userId = this.auth.user()?.id;
     if (!userId) {
-      this.memberships.set([]);
-      this.loaded.set(true);
+      this.reset();
       return [];
     }
     const { data, error } = await this.client
       .from('school_staff')
       .select('school_id, role, schools(*)')
       .eq('user_id', userId);
+    // Logout, account changes and newer membership reads invalidate outstanding responses.
+    if (version !== this.requestVersion || this.auth.user()?.id !== userId) return [];
     if (error) throw error;
     const memberships = (data ?? [])
       .map((row) => ({ school: row.schools as unknown as School, role: row.role as StaffRole }))
       .filter((m) => !!m.school);
     this.memberships.set(memberships);
-    if (!this.currentSchoolId() && memberships.length > 0) {
-      this.currentSchoolId.set(memberships[0].school.id);
+    if (!memberships.some(m => m.school.id === this.currentSchoolId())) {
+      this.currentSchoolId.set(memberships[0]?.school.id ?? null);
     }
     this.loaded.set(true);
     return memberships.map((m) => m.school);
   }
 
   reset(): void {
+    ++this.requestVersion;
     this.memberships.set([]);
     this.currentSchoolId.set(null);
     this.loaded.set(false);
@@ -101,7 +113,7 @@ export class StaffService {
 
   private requireSchoolId(): string {
     const id = this.currentSchoolId();
-    if (!id) throw new Error('No school selected');
+    if (!this.auth.isSignedIn() || !id) throw new Error('No school selected');
     return id;
   }
 

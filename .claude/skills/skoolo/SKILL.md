@@ -143,8 +143,13 @@ half of it.
   documents block scripts. SheetJS is pinned to the official fixed 0.20.3 tarball; Angular 20
   build tooling is patched. Both apps ship baseline security headers and a full CSP in report-only
   mode. Synthetic print/import/header checks and a dependency audit run in GitHub CI. Live print
-  previews/header verification, CSP enforcement, session lifecycle, HttpOnly sessions and MFA
+  previews/header verification, CSP enforcement, hosted session controls, HttpOnly sessions and MFA
   remain open in the Stage 0 security plan.
+- **Session lifecycle**: both apps remove routed pages on logout, session loss/account changes
+  and unrenewed token expiry; a fresh-document continuation avoids old account page caches.
+  Logout failures are surfaced, recovery state is reset and stale membership/storage responses
+  are ignored. `npm run check:sessions` runs synthetic lifecycle/form checks in CI. Live multi-tab,
+  device and offline checks remain open; this is not server-enforced idle expiry or HttpOnly storage.
 
 ## Routine operations
 

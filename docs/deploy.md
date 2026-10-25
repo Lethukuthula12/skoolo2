@@ -46,6 +46,44 @@ SHA-512 integrity in `web/package-lock.json`. Do not replace it with npm's older
 Local Node 20 still produces the existing Supabase SDK engine warning; the local runtime has not
 been changed by this batch.
 
+## Session lifecycle rollout
+
+Both apps remove their routed content on sign-out, session loss, a different signed-in account,
+or access-token expiry without renewal. A status screen offers a normal link that starts a fresh
+document, rather than reusing Angular/Ionic page instances. Portal memberships/selection and themes
+are reset, and late membership/storage responses are ignored after the account context changes.
+Switching accounts on an invitation reloads the existing invitation URL after successful sign-out.
+Password-change completion clears the entered passwords and retains its success message.
+
+Sign-out keeps the existing Supabase `global` scope. A returned error or thrown request is surfaced:
+if the SDK has removed the local session, the message says that remote sign-out was not confirmed;
+if credentials remain, account pages stay hidden and a retry is offered. No tokens or raw provider
+errors are included in that message. Ordinary token refresh for the same account keeps the workspace.
+Expiry is checked against the SDK's access-token timestamp and again on focus/resume. This protects
+displayed state; it is not an idle-timeout policy or a new server authorization check.
+
+Supabase broadcasts auth events between same-origin tabs. The two production subdomains have
+separate browser storage; there is no immediate cross-domain logout broadcast. Successful global
+sign-out revokes refresh tokens, but already-issued access tokens can remain valid until their
+expiry. This batch adds no per-request `auth.sessions` check. See
+[Supabase sign-out semantics](https://supabase.com/docs/guides/auth/signout).
+
+Run `npm run check:sessions` in `web/` for the lifecycle and existing auth-form checks. They use
+synthetic SDK/storage responses, not real browser tabs. Before accepting Stage 0, check both apps:
+sign out in one of two open tabs, switch accounts, resume after expiry, simulate an offline logout,
+retry, follow a reset email and switch accounts from an invitation. Check browser Back and the
+installed parent PWA too. Browser access remains restricted, so these live checks are still open.
+
+Hosted session/JWT settings, refresh rotation, password-change controls, CAPTCHA/rate limits and
+redirect allowlists still need verification. Do not change working SMTP configuration as part of
+that review. The proposed 30-minute staff idle/eight-hour maximum policy and a separate parent
+policy are not enabled. Supabase's hosted lifetime controls require Pro or above and measure
+inactivity using session refresh, which is not the same as keyboard/mouse inactivity; verify the
+project plan before choosing an implementation. See
+[Supabase session limits](https://supabase.com/docs/guides/auth/sessions#limiting-session-lifetime-and-number-of-allowed-sessions-per-user).
+HttpOnly server-managed sessions and MFA remain future work; tokens still use the existing SDK
+browser storage in this release.
+
 ## Part 1: create the account and connect GitHub (once)
 
 1. Go to <https://dash.cloudflare.com/sign-up> and create an account with your personal email.

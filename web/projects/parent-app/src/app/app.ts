@@ -3,14 +3,17 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { IonApp, IonIcon, IonRouterOutlet } from '@ionic/angular/standalone';
 import { filter, map, startWith } from 'rxjs';
-import { AuthService } from '@skoolo/shared';
+import { AuthService, SessionEndedComponent } from '@skoolo/shared';
 import { SchoolThemeService } from './school-theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [IonApp, IonIcon, IonRouterOutlet, RouterLink],
+  imports: [IonApp, IonIcon, IonRouterOutlet, RouterLink, SessionEndedComponent],
   template: `
     <ion-app>
+      @if (auth.boundary()) {
+        <skoolo-session-ended audience="parent" />
+      } @else {
       <ion-router-outlet [style.bottom]="showNavigation() ? 'var(--parent-nav-height)' : '0'" />
       @if (showNavigation()) {
         <nav class="parent-nav" aria-label="Main navigation">
@@ -25,6 +28,7 @@ import { SchoolThemeService } from './school-theme.service';
           }
           </div>
         </nav>
+      }
       }
     </ion-app>
   `,
@@ -46,7 +50,7 @@ import { SchoolThemeService } from './school-theme.service';
   `,
 })
 export class App {
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly theme = inject(SchoolThemeService);
   private readonly url = toSignal(this.router.events.pipe(
@@ -73,7 +77,7 @@ export class App {
 
   constructor() {
     effect((onCleanup) => {
-      if (this.auth.user()) onCleanup(this.theme.watchForParent());
+      if (this.auth.user()?.id) onCleanup(this.theme.watchForParent());
       else if (this.auth.ready()) this.theme.reset();
     });
   }

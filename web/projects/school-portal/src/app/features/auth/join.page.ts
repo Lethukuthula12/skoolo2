@@ -118,6 +118,8 @@ export class JoinPage {
     event.preventDefault();
     await this.auth.signOut();
     this.staff.reset();
+    // Preserve the invitation URL, but discard every page belonging to the previous account.
+    if (!this.auth.signOutFailed()) window.location.reload();
   }
 
   private async run(action: () => Promise<void | false>): Promise<void> {

@@ -88,7 +88,8 @@ export class ResetPasswordPage {
       this.error.set(error.message);
       return;
     }
-    await this.auth.signOut();
+    this.form.reset();
+    await this.auth.signOut('password-changed');
     this.done.set(true);
   }
 }

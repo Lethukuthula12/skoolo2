@@ -1393,3 +1393,43 @@ remaining real-device/link checks still need owner verification. Stage 0 remains
 The first fixes are implemented; Stage 0 remains in progress. Session persistence is unchanged.
 Next work is logout/error handling, expiry and stale-session cleanup, followed by the planned
 server-managed HttpOnly session design and administrator MFA.
+
+## 2026-10-25 — Clear account state on logout, expiry and account changes
+
+- Added a shared session-ended screen to both app roots. Logout immediately hides/destroys the
+  routed content; session loss, a different account and an unrenewed access token's expiry do
+  the same. Continuing uses a full document navigation, so previous Angular/Ionic route state
+  is not reused. Ordinary same-account refresh keeps the workspace. Focus, visibility and
+  page-resume events reconcile storage and expiry after background suspension.
+- Kept the existing global sign-out scope. Returned errors and thrown requests are now handled:
+  the screen distinguishes local removal with unconfirmed remote revocation from credentials
+  still present, where retry is offered. It never displays tokens or raw provider failures.
+  SDK session restoration settles on failure and cannot overwrite a newer event with a late read.
+  Recovery state, subscriptions and expiry timers have explicit cleanup.
+- School memberships and selected school reset synchronously when the account context closes.
+  Membership queries remain explicitly filtered by the authenticated user's ID. Late or superseded
+  reads cannot repopulate old roles/schools; a removed membership cannot remain selected. Both
+  portal guards recheck sign-in after loading memberships. There are no schema/RLS/RPC changes.
+- Parent theme watching stops and both apps reset their theme when context closes. Reset-password
+  forms clear entered passwords and the shared screen preserves the password-changed message.
+  Invitation account-switching reloads its original URL after successful logout, preserving its
+  code while discarding the previous account's pages.
+- Added `npm run check:sessions` to CI. Real service/guard/controller checks with synthetic SDK
+  events cover successful logout, returned/ thrown failures, retry, account changes, recovery,
+  stale restoration, overlapping membership reads, logout during a guard, expiry timers and
+  resume, template outlet removal and document-link continuation. Existing auth-form checks and
+  the print/import/header security checks also pass. These are not real browser multi-tab tests.
+- The full tenant-isolation suite passed all 112 checks and its coverage guard. Both final
+  production builds passed: portal 553.23 kB initial, parent 1.35 MB. The portal's existing 500 kB
+  warning remains, with about 20 kB added to its initial bundle by the shared session screen.
+  Local Node 20 still emits the existing Supabase warning; CI/hosting use Node 22. Diff reviewed
+  and `git diff --check` passed.
+- Browser tooling remains restricted. Live status-screen layout/focus, two-tab logout, account
+  switching, Back, offline/retry, resumed expiry and installed-PWA checks are unverified. Stage 0
+  remains in progress. The same-origin SDK event mechanism is not an immediate cross-subdomain
+  broadcast; already-issued JWTs can remain valid until expiry after global sign-out.
+
+This completes the client lifecycle portion of security item 2, not the entire security plan.
+Hosted settings/abuse protection and the staff/parent timeout policies remain to verify/decide.
+No hosted auth/SMTP settings were changed. Browser token persistence remains unchanged; server
+revocation checks, HttpOnly sessions and MFA still require their planned implementation.
