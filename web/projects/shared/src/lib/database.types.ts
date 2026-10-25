@@ -427,6 +427,141 @@ export type Database = {
           },
         ]
       }
+      assessment_papers: {
+        Row: {
+          approved_at: string | null
+          assessed_on: string | null
+          assessment_id: string | null
+          author_id: string
+          class_id: string
+          created_at: string
+          display_context: Json
+          duration_minutes: number
+          footer: string
+          id: string
+          instructions: string
+          kind: string
+          questions: Json
+          reviewer_id: string
+          revises_id: string | null
+          revision: number
+          school_id: string
+          status: string
+          subject_id: string
+          term_number: number
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          assessed_on?: string | null
+          assessment_id?: string | null
+          author_id: string
+          class_id: string
+          created_at?: string
+          display_context?: Json
+          duration_minutes: number
+          footer?: string
+          id?: string
+          instructions?: string
+          kind?: string
+          questions?: Json
+          reviewer_id: string
+          revises_id?: string | null
+          revision?: number
+          school_id: string
+          status?: string
+          subject_id: string
+          term_number: number
+          title: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          assessed_on?: string | null
+          assessment_id?: string | null
+          author_id?: string
+          class_id?: string
+          created_at?: string
+          display_context?: Json
+          duration_minutes?: number
+          footer?: string
+          id?: string
+          instructions?: string
+          kind?: string
+          questions?: Json
+          reviewer_id?: string
+          revises_id?: string | null
+          revision?: number
+          school_id?: string
+          status?: string
+          subject_id?: string
+          term_number?: number
+          title?: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_papers_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_papers_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_papers_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_papers_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_papers_revises_id_fkey"
+            columns: ["revises_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_papers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_papers_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_papers_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_papers_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_scores: {
         Row: {
           assessment_id: string
@@ -1451,6 +1586,110 @@ export type Database = {
           },
           {
             foreignKeyName: "notices_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paper_events: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          note: string
+          paper_id: string
+          school_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          note?: string
+          paper_id: string
+          school_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          paper_id?: string
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paper_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paper_events_paper_id_fkey"
+            columns: ["paper_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_papers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paper_events_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paper_events_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paper_templates: {
+        Row: {
+          duration_minutes: number
+          footer: string
+          id: string
+          instructions: string
+          name: string
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          duration_minutes?: number
+          footer?: string
+          id?: string
+          instructions?: string
+          name: string
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          duration_minutes?: number
+          footer?: string
+          id?: string
+          instructions?: string
+          name?: string
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paper_templates_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "school_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paper_templates_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
@@ -2524,6 +2763,10 @@ export type Database = {
         Returns: string
       }
       can_access_learner: { Args: { p_learner_id: string }; Returns: boolean }
+      can_author_paper: {
+        Args: { p_class_id: string; p_subject_id: string }
+        Returns: boolean
+      }
       can_edit_class_reports: { Args: { p_class_id: string }; Returns: boolean }
       can_read_report: { Args: { p_report_card_id: string }; Returns: boolean }
       claim_school: {
@@ -2711,6 +2954,45 @@ export type Database = {
       }
       learner_parent_id: { Args: { p_learner_id: string }; Returns: string }
       learner_school_id: { Args: { p_learner_id: string }; Returns: string }
+      link_paper_assessment: {
+        Args: {
+          p_assessment_id: string
+          p_id: string
+          p_revision: number
+          p_weight?: number
+        }
+        Returns: {
+          approved_at: string | null
+          assessed_on: string | null
+          assessment_id: string | null
+          author_id: string
+          class_id: string
+          created_at: string
+          display_context: Json
+          duration_minutes: number
+          footer: string
+          id: string
+          instructions: string
+          kind: string
+          questions: Json
+          reviewer_id: string
+          revises_id: string | null
+          revision: number
+          school_id: string
+          status: string
+          subject_id: string
+          term_number: number
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assessment_papers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       mark_application_paid: {
         Args: { p_application_id: string }
         Returns: undefined
@@ -2767,6 +3049,28 @@ export type Database = {
       notify_thread_counterparts: {
         Args: { p_body: string; p_thread_id: string }
         Returns: undefined
+      }
+      paper_authoring_options: {
+        Args: { p_school_id: string }
+        Returns: {
+          academic_year: number
+          class_id: string
+          class_name: string
+          grade_code: string
+          subject_id: string
+          subject_name: string
+        }[]
+      }
+      paper_question_total: {
+        Args: { p_complete: boolean; p_questions: Json }
+        Returns: number
+      }
+      paper_reviewers: {
+        Args: { p_school_id: string }
+        Returns: {
+          full_name: string
+          user_id: string
+        }[]
       }
       parent_at_school: { Args: { p_school_id: string }; Returns: boolean }
       period_grade_taken: {
@@ -2840,6 +3144,40 @@ export type Database = {
         }
         Returns: string
       }
+      revise_assessment_paper: {
+        Args: { p_id: string }
+        Returns: {
+          approved_at: string | null
+          assessed_on: string | null
+          assessment_id: string | null
+          author_id: string
+          class_id: string
+          created_at: string
+          display_context: Json
+          duration_minutes: number
+          footer: string
+          id: string
+          instructions: string
+          kind: string
+          questions: Json
+          reviewer_id: string
+          revises_id: string | null
+          revision: number
+          school_id: string
+          status: string
+          subject_id: string
+          term_number: number
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assessment_papers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       save_assessment: {
         Args: {
           p_assessed_on: string
@@ -2853,6 +3191,45 @@ export type Database = {
           p_weight: number
         }
         Returns: string
+      }
+      save_assessment_paper: {
+        Args: {
+          p_content: Json
+          p_id: string
+          p_revision: number
+          p_school_id: string
+        }
+        Returns: {
+          approved_at: string | null
+          assessed_on: string | null
+          assessment_id: string | null
+          author_id: string
+          class_id: string
+          created_at: string
+          display_context: Json
+          duration_minutes: number
+          footer: string
+          id: string
+          instructions: string
+          kind: string
+          questions: Json
+          reviewer_id: string
+          revises_id: string | null
+          revision: number
+          school_id: string
+          status: string
+          subject_id: string
+          term_number: number
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assessment_papers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       save_assessment_score: {
         Args: {
@@ -2912,6 +3289,45 @@ export type Database = {
       }
       teaches_class: { Args: { p_class_id: string }; Returns: boolean }
       thread_learner: { Args: { p_thread_id: string }; Returns: string }
+      transition_assessment_paper: {
+        Args: {
+          p_action: string
+          p_id: string
+          p_note?: string
+          p_revision: number
+        }
+        Returns: {
+          approved_at: string | null
+          assessed_on: string | null
+          assessment_id: string | null
+          author_id: string
+          class_id: string
+          created_at: string
+          display_context: Json
+          duration_minutes: number
+          footer: string
+          id: string
+          instructions: string
+          kind: string
+          questions: Json
+          reviewer_id: string
+          revises_id: string | null
+          revision: number
+          school_id: string
+          status: string
+          subject_id: string
+          term_number: number
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assessment_papers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       withdraw_application: {
         Args: { p_application_id: string }
         Returns: undefined

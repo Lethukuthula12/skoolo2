@@ -525,6 +525,29 @@ use). For Netlify or Cloudflare Pages add a `_redirects` file containing `/* /in
 each app's `public/` folder; do not keep that file when deploying to Workers, which rejects it as
 a redirect loop because its own `single-page-application` handling already covers it.
 
+## Assessment paper acceptance (2026-10-25)
+
+The feature is available at `/documents` in the school portal. Automated checks cover permissions,
+review transitions, saved drafts, print escaping and memorandum separation. Managed browser policy
+denied the agent access to the local preview; the following checks still require a real browser.
+
+1. As admin, create a school template with instructions, duration and footer. As an assigned
+   teacher, create a paper using it. Check phone width (375px) and desktop, keyboard labels and focus.
+2. Add short/long answers, multiple choice, image, table, heading and page break blocks; reorder
+   and remove a block. Save, leave, reopen and confirm content and calculated marks persist.
+3. Check failed saves preserve edits and an unsaved navigation warns. In two windows, save in one
+   then attempt to save the older copy; reload after the conflict message rather than overwrite.
+4. Submit, return with feedback, correct and resubmit. Only the selected administrator approves.
+   Approved content cannot be edited; Create revised copy preserves the original.
+5. Preview and print both outputs. Use Save as PDF, verify A4 pagination, answer spaces, long
+   questions, images, table boundaries and school badge. Learner copies must contain no answers.
+6. Connect an approved paper to a new assessment, then follow Capture learner scores and verify
+   the selected class, subject, term and year. Also link to a compatible existing assessment and
+   confirm its scores stay unchanged. Linked totals and deletion are protected.
+7. Verify author, reviewer, unrelated teacher, parent and second-school behaviour in the UI.
+   Have a real teacher and office complete a real paper without Word or retyping before declaring
+   Stage 8 accepted. No online response collection, OCR, editable Word export or offline sync yet.
+
 ## Local production preview
 
 ```bash

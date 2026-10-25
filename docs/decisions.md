@@ -181,3 +181,13 @@ browser security policy blocks agent access. The public widget alone is not serv
 
 The server session proposal is documented in `docs/session-security-design.md`. It does not
 create infrastructure, change browser token storage or implement the agreed staff timeouts.
+
+## Amendment, 2026-10-25 — Assessment paper builder
+
+The owner confirmed the school retypes handwritten assessment questions into Word, then authorised
+building the proposed workflow. Add Forms & Documents with assessment papers first. Reuse existing
+classes, subjects and mark capture. Teachers own their drafts; a selected existing school admin
+reviews; admins manage reusable template defaults. Approved content is immutable and corrections
+are new drafts referencing the original. Learner papers and staff memoranda print separately.
+These permission choices were surfaced as first-version assumptions. School acceptance is pending.
+This request brings Stage 8 forward without declaring the remaining Stage 0 work complete.

@@ -5,6 +5,7 @@
       <p class="muted">Capture each assessment's scores; Skoolo calculates the term mark.</p>
     </div>
     <span class="spacer"></span>
+    <a class="btn btn-outline btn-sm" routerLink="/documents">Create / view assessment papers</a>
     <label class="row small">Year
       <input type="number" class="year" [ngModel]="year()" (ngModelChange)="year.set($event); reload()" [ngModelOptions]="{standalone: true}" min="2020" max="2100" />
     </label>

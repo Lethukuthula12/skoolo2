@@ -1564,3 +1564,41 @@ remain unchanged until the proposed server session work is implemented and verif
   numbers alone do not establish a cause or justify changing the web manifest's SDK fields.
 - Updated the roadmap and phone checklist. Documentation only; diff reviewed, no application or
   hosted setting changed. Staff session enforcement remains on the 2026-10-26 to-do list.
+
+## 2026-10-25 — Build assessment papers and the teacher-to-office review workflow
+
+- The owner confirmed handwritten assessment questions are retyped into Word and authorised the
+  proposed assessment-paper builder. Recorded Stage 8 and the explicit priority change; Stage 0's
+  existing installation/security acceptance work remains open.
+- Added Forms & Documents for teachers and admins. Typed reactive forms support headings,
+  short/long answers, multiple choice, raster images, simple tables, page breaks, answer lines,
+  marks, reordering, instructions and separate marking guidance. School admins manage reusable
+  template defaults; teachers use their authorised class/subject combinations across years.
+- Drafts save to the server and reopen with their full content. Unsaved navigation warns, failed
+  saves preserve edits, optimistic revisions prevent stale windows overwriting papers, and
+  account/school changes clear the editor and ignore stale asynchronous responses.
+- Authors submit to a selected existing school administrator. Reviewers return feedback or
+  approve; authors can withdraw pending review. Approved content is locked, revisions create
+  new drafts linked to the original, and review/link events record actor and time. Full-length
+  titles can be revised safely. No new authentication role or provider was introduced.
+- Separate escaped, script-free A4 learner and memorandum renderers support preview and browser
+  Print / Save as PDF. Learner HTML never includes answer fields. Draft printouts are labelled.
+  Images must be bounded PNG/JPEG/WebP content embedded in private paper JSON; no public question
+  uploads or expiring image URLs. Print waits for image decoding and reports failures.
+- Approved papers create a mark-capture assessment with the computed total or link to a matching
+  existing assessment without changing scores. Linked totals/context cannot change and deletion
+  is refused with a clear message. Capture links select the actual class, subject, year and term.
+- Applied `20261104000100_assessment_papers.sql` and `20261104000200_paper_revision_titles.sql`
+  to the linked database and regenerated shared types. The full RLS suite passed **170 checks**
+  plus the coverage guard, including school/role/anonymous isolation, reviewer selection,
+  complete/incomplete papers, concurrency, immutable approvals, revision and score-link behaviour.
+- `check:papers` passed real controller/form save/reopen/submit/withdraw tests, school-switch
+  cleanup, stale-response and failed-save tests, every print block, injected-content escaping,
+  learner/memo separation and image/popup failure handling. Added this check to CI. Existing
+  `check:security` passed. Both final production builds passed (portal 554.49 kB initial; parent
+  1.35 MB). The existing portal 500 kB warning and local Node 20 SDK warning remain. Initial
+  sandboxed font downloads failed; approved build execution with access to the existing Google
+  font stylesheet resolved that infrastructure issue.
+- Managed browser policy explicitly blocked `http://127.0.0.1:4300`; no alternate browser or
+  network route was used to bypass it. Visual, real-phone, actual printer/PDF and school acceptance
+  are pending. `docs/deploy.md` records the walkthrough. Stage 8 is **Built**, not accepted/Done.

@@ -20,6 +20,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run check:security
+      - run: npm run check:papers
       - run: npm run check:install
       - run: npm run check:sessions
       - run: npm audit --audit-level=high

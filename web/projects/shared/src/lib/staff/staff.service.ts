@@ -921,7 +921,8 @@ export class StaffService {
 
   async deleteAssessment(id: string): Promise<void> {
     const { error } = await this.client.rpc('delete_assessment', { p_id: id });
-    if (error) throw error;
+    if (error) throw new Error(error.code === '23503'
+      ? 'This assessment is linked to an approved paper and cannot be removed.' : error.message);
   }
 
   /** Scores for a set of assessments (row security keeps this to the caller's classes). */

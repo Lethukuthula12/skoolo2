@@ -28,7 +28,7 @@ export class ShellComponent {
   private readonly sections = [
     { label: 'Overview', links: ['/dashboard', '/home'] },
     { label: 'Enrolment', links: ['/applications', '/enrolment'] },
-    { label: 'Academics', links: ['/learners', '/classes', '/attendance', '/reports', '/assessments', '/timetable'] },
+    { label: 'Academics', links: ['/learners', '/classes', '/attendance', '/reports', '/assessments', '/documents', '/timetable'] },
     { label: 'Communication', links: ['/messages', '/notices', '/absences', '/calendar'] },
     { label: 'Finance', links: ['/fees'] },
     { label: 'Administration', links: ['/staff', '/school'] },
@@ -53,6 +53,7 @@ export class ShellComponent {
   }
 
   private readonly adminNav: NavItem[] = [
+    { label: 'Forms & Documents', link: '/documents', icon: 'clipboard' },
     { label: 'Dashboard', link: '/dashboard', icon: 'home' },
     { label: 'Applications', link: '/applications', icon: 'inbox' },
     { label: 'Enrolment settings', link: '/enrolment', icon: 'sliders' },
@@ -71,6 +72,7 @@ export class ShellComponent {
     { label: 'School profile', link: '/school', icon: 'building' },
   ];
   private readonly teacherNav: NavItem[] = [
+    { label: 'Forms & Documents', link: '/documents', icon: 'clipboard' },
     { label: 'Home', link: '/home', icon: 'home' },
     { label: 'Reports', link: '/reports', icon: 'clipboard' },
     { label: 'Assessments', link: '/assessments', icon: 'check' },

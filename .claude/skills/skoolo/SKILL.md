@@ -109,6 +109,16 @@ half of it.
 
 ## What exists (keep this list honest)
 
+- **Assessment papers (2026-10-25):** Forms & Documents in the portal supports typed question
+  blocks, raster images, tables, answer lines, school template defaults, saved drafts, a selected
+  admin reviewer, return/withdraw/approve, immutable approved papers and revised copies. Learner
+  and memorandum print outputs are separate, with browser Save as PDF. Approved papers create or
+  link matching assessments and open the correct class/subject/year/term in mark capture. Private
+  paper images are embedded in school-scoped JSON, never public storage. The expanded database
+  suite passes 170 checks; controller/print checks run in CI as `check:papers`. Browser access was
+  denied by managed policy; visual, real-phone and real-school acceptance remain pending. The owner
+  explicitly authorised bringing this feature forward while Stage 0 remains open.
+
 - **Parent app** (Ionic, PWA): directory and search, school panel, sign-up, three-step
   application with guardian details and live grade availability, documents, EFT payment screen
   with unique reference, mark paid, My applications, inbox.
@@ -131,7 +141,7 @@ half of it.
   See `docs/deploy.md`.
 - **Tests**: `npm run test:rls` runs two files against the linked project and rolls back.
   `tenant_isolation.sql` builds two schools and proves cross-school isolation and role enforcement
-  (112 checks). `rls_coverage.sql` fails if any public table loses RLS, any SECURITY DEFINER
+  (170 checks). `rls_coverage.sql` fails if any public table loses RLS, any SECURITY DEFINER
   function loses its pinned search_path, or any view stops being security_invoker. Extend the
   isolation test with every new school-owned table or RPC; the coverage guard catches the rest.
 - **Authentication email**: Resend has verified `auth.skoolo.co.za`; the owner configured custom

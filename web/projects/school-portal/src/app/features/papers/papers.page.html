@@ -1,0 +1,126 @@
+<div class="stack papers-page">
+  <div class="toolbar">
+    <div><h1>Forms &amp; Documents</h1><p class="muted">From your questions to a paper ready for the classroom.</p></div>
+    <span class="spacer"></span>
+    @if (!editing()) {
+      @if (staff.isAdmin()) { <button class="btn btn-outline" type="button" (click)="showTemplates.set(!showTemplates())" [disabled]="busy()">School templates</button> }
+      <button class="btn btn-primary" type="button" (click)="start()" [disabled]="loading() || busy() || options().length === 0 || reviewers().length === 0">Create assessment paper</button>
+    }
+  </div>
+  @if (error()) { <div class="error" role="alert">{{ error() }} <button type="button" class="btn btn-ghost btn-sm" (click)="reload()" [disabled]="busy()">Reload papers</button></div> }
+  @if (notice()) { <p class="ok" role="status">{{ notice() }}</p> }
+  @if (loading()) { <div class="card" role="status">Loading papers and school templates…</div> }
+  @else if (!editing()) {
+    @if (options().length === 0) { <div class="card"><h2>Set up teaching assignments first</h2><p class="muted">An administrator needs to set up classes, subjects and your teaching assignments before you can create a paper.</p></div> }
+    @if (showTemplates() && staff.isAdmin()) {
+      <section class="card stack">
+        <div><h2>School templates</h2><p class="muted">Reusable instructions, duration and footer. Each paper automatically uses your school badge. Questions and answers stay with the paper.</p></div>
+        <div class="template-list">
+          @for (template of templates(); track template.id) {
+            <div class="row"><strong>{{ template.name }}</strong><span class="spacer"></span><button type="button" class="btn btn-outline btn-sm" (click)="editTemplate(template)">Edit</button><button type="button" class="btn btn-ghost btn-sm" (click)="deleteTemplate(template)" [disabled]="busy()">Remove</button></div>
+          } @empty { <p class="muted">No school templates yet. Add your first below.</p> }
+        </div>
+        <form [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+          <fieldset [disabled]="busy()" class="stack compact">
+            <div class="fields"><label>Template name<input formControlName="name" maxlength="120" placeholder="e.g. Foundation phase test"></label><label>Duration (minutes)<input type="number" formControlName="duration_minutes" min="1" max="600"></label></div>
+            <label>Standard instructions<textarea formControlName="instructions" rows="3" maxlength="5000"></textarea></label>
+            <label>Footer<textarea formControlName="footer" rows="2" maxlength="500"></textarea></label>
+            <div class="row"><button type="submit" class="btn btn-primary">{{ templateId() ? 'Update template' : 'Save template' }}</button>@if (templateId()) { <button type="button" class="btn btn-ghost" (click)="editTemplate(null)">Cancel edit</button> }</div>
+          </fieldset>
+        </form>
+      </section>
+    }
+    <section class="card stack compact">
+      <div class="toolbar"><h2>Assessment papers</h2><span class="spacer"></span><label>Search<input type="search" [value]="search()" (input)="search.set($any($event.target).value)" placeholder="Find a paper"></label><label>Status<select [value]="filter()" (change)="filter.set($any($event.target).value)"><option value="all">All papers</option><option value="draft">Drafts</option><option value="in_review">Awaiting review</option><option value="approved">Approved</option>@if (staff.isAdmin()) { <option value="review">My review queue</option> }</select></label></div>
+      <div class="paper-list">
+        @for (item of filtered(); track item.id) {
+          <button type="button" class="paper-item" (click)="open(item.id)" [disabled]="busy()">
+            <div><span class="status" [class.approved]="item.status === 'approved'">{{ statusLabels[item.status] }}</span><h3>{{ item.title }}</h3><p>{{ context(item, 'subject_name') }} · {{ context(item, 'class_name') }} · {{ context(item, 'academic_year') }} · Term {{ item.term_number }}</p><span class="muted small">{{ context(item, 'author_name') }} · Updated {{ item.updated_at | date:'d MMM, HH:mm' }}</span></div>
+            <strong class="marks">{{ item.total_marks }}<small>marks</small></strong>
+          </button>
+        } @empty { <div class="empty"><h3>{{ papers().length ? 'No matching papers' : 'Your next assessment starts here' }}</h3><p>Create a paper, save your questions and send it for review. Approved papers are ready to print.</p></div> }
+      </div>
+    </section>
+  } @else {
+    <div class="toolbar editor-toolbar">
+      <button type="button" class="btn btn-ghost" (click)="back()" [disabled]="busy()">← All papers</button>
+      <span class="status" [class.approved]="paper()?.status === 'approved'">{{ statusLabels[paper()?.status || 'draft'] }}</span>
+      <span role="status" class="muted small">{{ busy() ? 'Working…' : form.dirty ? 'Unsaved changes' : paper() ? 'Saved' : 'New paper' }}</span>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-outline" (click)="showPreview.set(!showPreview())">{{ showPreview() ? 'Close preview' : 'Preview' }}</button>
+      @if (canEdit()) {
+        <button type="button" class="btn btn-outline" (click)="save()" [disabled]="busy()">Save draft</button>
+        <button type="button" class="btn btn-primary" (click)="transition('submit')" [disabled]="busy()">Submit for review</button>
+      }
+      @if (paper()?.status === 'in_review' && isAuthor()) { <button type="button" class="btn btn-outline" (click)="transition('withdraw')" [disabled]="busy()">Withdraw to edit</button> }
+      @if (paper()?.status === 'approved' && canLink()) { <button type="button" class="btn btn-outline" (click)="revise()" [disabled]="busy()">Create revised copy</button> }
+    </div>
+    @if (paper()?.revises_id) { <p class="muted small">This is a revised copy. The earlier approved paper remains available in the paper list.</p> }
+    @if (canReview()) {
+      <section class="card review-box"><h2>Review this assessment</h2><p>Check the learner paper and the separate memorandum before approving.</p><label>Feedback<textarea [formControl]="feedback" rows="3" maxlength="5000" placeholder="Explain any corrections needed"></textarea></label><div class="row"><button type="button" class="btn btn-outline" (click)="transition('return')" [disabled]="busy() || !feedback.value.trim()">Return for corrections</button><button type="button" class="btn btn-primary" (click)="transition('approve')" [disabled]="busy()">Approve paper</button></div></section>
+    }
+    @if (history().length) {
+      <details class="card history"><summary>Review history and feedback</summary>@for (entry of history(); track entry.id) { <div class="history-entry"><strong>{{ eventLabels[entry.action] || entry.action }}</strong><span class="muted small">{{ entry.created_at | date:'d MMM yyyy, HH:mm' }}</span>@if (entry.note) { <p>{{ entry.note }}</p> }</div> }</details>
+    }
+    @if (showPreview()) {
+      <section class="card preview-panel">
+        <div class="toolbar"><h2>A4 preview</h2><span class="spacer"></span><button type="button" class="btn btn-outline btn-sm" [attr.aria-pressed]="!memorandum()" (click)="memorandum.set(false)">Learner paper</button><button type="button" class="btn btn-outline btn-sm" [attr.aria-pressed]="memorandum()" (click)="memorandum.set(true)">Memorandum · staff only</button><button type="button" class="btn btn-primary btn-sm" [disabled]="busy()" (click)="print(memorandum())">{{ paper()?.status === 'approved' ? 'Print / Save PDF' : 'Print draft / Save PDF' }}</button></div>
+        <p class="muted small">{{ memorandum() ? 'Only this memorandum will print.' : 'The learner paper contains no marking answers.' }} Choose “Save as PDF” in the print dialog. The print dialog shows the final page breaks.</p>
+        <iframe title="Assessment A4 print preview" sandbox="" [srcdoc]="preview()"></iframe>
+      </section>
+    }
+    @if (paper()?.status === 'approved') {
+      <section class="card stack compact"><h2>Ready for mark capture</h2>
+        @if (paper()?.assessment_id) { <p>This paper is connected to an assessment.</p><a class="btn btn-primary" routerLink="/assessments" [queryParams]="{class: paper()?.class_id, subject: paper()?.subject_id, term: paper()?.term_number, year: context(paper(), 'academic_year')}">Capture learner scores</a> }
+        @else if (canLink()) {
+          <p class="muted">Create an assessment using this paper’s {{ total() }} marks, or choose an existing one with the same class, subject, term and total. Existing scores are kept.</p>
+          <div class="fields"><label>Assessment<select [formControl]="assessmentId"><option value="">Create a new assessment</option>@for (a of existingAssessments(); track a.id) { <option [value]="a.id">{{ a.title }} ({{ a.max_score }} marks)</option> }</select></label>@if (!assessmentId.value) { <label>Weight in term mark<input type="number" min="0.01" step="0.01" [formControl]="weight"></label> }</div><div><button type="button" class="btn btn-primary" (click)="linkAssessment()" [disabled]="busy()">Connect to mark capture</button></div>
+        } @else { <p class="muted">The author or an administrator can connect this paper to mark capture.</p> }
+      </section>
+    }
+    <form [formGroup]="form" (ngSubmit)="save()" class="stack">
+      <fieldset [disabled]="busy() || !canEdit()" class="stack">
+        <section class="card stack compact"><div class="toolbar"><h2>Paper details</h2><span class="spacer"></span><strong>{{ total() }} marks</strong></div>
+          @if (canEdit() && templates().length) { <label>Use a school template<select (change)="applyTemplate($any($event.target).value)"><option value="">Choose instructions and layout defaults…</option>@for (template of templates(); track template.id) { <option [value]="template.id">{{ template.name }}</option> }</select></label> }
+          <label>Assessment title<input formControlName="title" maxlength="200" placeholder="e.g. Mathematics — Term 1 Test"></label>
+          <div class="fields">
+            <label>Class<select formControlName="class_id" (change)="changeClass()"><option value="">Choose class</option>@for (c of classes(); track c.class_id) { <option [value]="c.class_id">{{ c.academic_year }} · {{ c.grade_code }} {{ c.class_name }}</option> }@if (paper() && !canEdit()) { <option [value]="paper()!.class_id">{{ context(paper(), 'class_name') }} · {{ context(paper(), 'academic_year') }}</option> }</select></label>
+            <label>Subject<select formControlName="subject_id"><option value="">Choose subject</option>@for (s of subjects(); track s.subject_id) { <option [value]="s.subject_id">{{ s.subject_name }}</option> }@if (paper() && !canEdit()) { <option [value]="paper()!.subject_id">{{ context(paper(), 'subject_name') }}</option> }</select></label>
+            <label>Term<select formControlName="term_number">@for (t of [1,2,3,4]; track t) { <option [ngValue]="t">Term {{ t }}</option> }</select></label>
+            <label>Kind<select formControlName="kind"><option value="test">Test</option><option value="assignment">Assignment</option><option value="project">Project</option><option value="exam">Examination</option><option value="other">Other</option></select></label>
+            <label>Date (optional)<input type="date" formControlName="assessed_on"></label>
+            <label>Duration (minutes)<input type="number" formControlName="duration_minutes" min="1" max="600"></label>
+          </div>
+          <label>Reviewer<select formControlName="reviewer_id"><option value="">Choose school administrator</option>@for (r of reviewers(); track r.user_id) { <option [value]="r.user_id">{{ r.full_name || 'School administrator' }}</option> }</select></label>
+          <label>Instructions for learners<textarea formControlName="instructions" rows="3" maxlength="5000" placeholder="Read all questions carefully. Show your working."></textarea></label>
+          <label>Footer (optional)<textarea formControlName="footer" rows="2" maxlength="500" placeholder="e.g. Check your answers before handing in."></textarea></label>
+        </section>
+        <div formArrayName="questions" class="stack compact">
+          @for (question of questions.controls; track question; let i = $index) {
+            <section class="card question" [formGroupName]="i">
+              <div class="toolbar"><span class="question-badge">{{ question.controls.type.value === 'section' || question.controls.type.value === 'page_break' ? '§' : questionNumber(i) }}</span><h2>{{ blockLabels[question.controls.type.value] }}</h2><span class="spacer"></span>@if (canEdit()) { <button type="button" class="btn btn-ghost btn-sm" (click)="moveBlock(i,-1)" [disabled]="i === 0" [attr.aria-label]="'Move block ' + (i+1) + ' up'">↑</button><button type="button" class="btn btn-ghost btn-sm" (click)="moveBlock(i,1)" [disabled]="i === questions.length - 1" [attr.aria-label]="'Move block ' + (i+1) + ' down'">↓</button><button type="button" class="btn btn-ghost btn-sm" (click)="removeBlock(i)" [attr.aria-label]="'Remove block ' + (i+1)">Remove</button> }</div>
+              @if (question.controls.type.value === 'page_break') { <p class="muted">The next block starts on a new printed page.</p> }
+              @else {
+                <label>{{ question.controls.type.value === 'section' ? 'Heading or instructions' : 'Question' }}<textarea formControlName="text" rows="3" maxlength="10000"></textarea></label>
+                @if (question.controls.type.value === 'choice') { <label>Choices — one per line<textarea formControlName="options" rows="4" maxlength="5000" placeholder="First choice&#10;Second choice&#10;Third choice"></textarea></label> }
+                @if (question.controls.type.value === 'table') { <label>Table — one row per line, separate columns with |<textarea formControlName="cells" rows="4" maxlength="10000" placeholder="Item | Quantity | Total&#10;Apples | 3 | "></textarea></label> }
+                @if (question.controls.type.value === 'image') {
+                  <label>Question image (PNG, JPEG or WebP, up to 1 MB)<input type="file" accept="image/png,image/jpeg,image/webp" (change)="uploadImage(i,$event)"></label>
+                  @if (question.controls.image.value) { <img class="editor-image" [src]="question.controls.image.value" alt="Question illustration"><button type="button" class="btn btn-ghost btn-sm" (click)="question.controls.image.setValue(''); form.markAsDirty()">Remove image</button> }
+                }
+                @if (question.controls.type.value !== 'section') {
+                  <div class="fields"><label>Marks<input type="number" formControlName="marks" min="0" max="999" step="0.5"></label><label>Answer lines<input type="number" formControlName="lines" min="0" max="30" step="1"></label></div>
+                  <details class="memo-editor"><summary>Marking memorandum · staff only</summary><label>Answer and mark allocation<textarea formControlName="answer" rows="3" maxlength="10000" placeholder="Expected answer and how marks are awarded"></textarea></label><p class="muted small">This field appears only on the separate memorandum.</p></details>
+                }
+              }
+            </section>
+          }
+        </div>
+        @if (canEdit()) {
+          <section class="card add-block"><h2>Add a block</h2><div class="row">@for (type of blockTypes; track type) { <button type="button" class="btn btn-outline btn-sm" (click)="addBlock(type)" [disabled]="questions.length >= 100">+ {{ blockLabels[type] }}</button> }</div></section>
+          <div class="toolbar"><strong>Total: {{ total() }} marks</strong><span class="spacer"></span><button type="submit" class="btn btn-primary">Save draft</button></div>
+        }
+      </fieldset>
+    </form>
+  }
+</div>

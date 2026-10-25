@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import * as XLSX from 'xlsx';
 import {
   ASSESSMENT_KIND_LABELS, Grade, Learner, SchoolDirectoryService, StaffService, achievementLevel,
@@ -14,13 +15,14 @@ interface EditForm { id: string | null; title: string; kind: string; max_score: 
 
 @Component({
   selector: 'app-assessments-page',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './assessments.page.html',
   styleUrl: './assessments.page.scss',
 })
 export class AssessmentsPage {
   protected readonly staff = inject(StaffService);
   private readonly directory = inject(SchoolDirectoryService);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly kindLabels = ASSESSMENT_KIND_LABELS;
   protected readonly loading = signal(true);
@@ -51,6 +53,10 @@ export class AssessmentsPage {
   protected readonly totalWeight = computed(() => this.assessments().reduce((sum, a) => sum + Number(a.weight), 0));
 
   constructor() {
+    const year = Number(this.route.snapshot.queryParamMap.get('year'));
+    const term = Number(this.route.snapshot.queryParamMap.get('term'));
+    if (Number.isInteger(year) && year >= 2020 && year <= 2100) this.year.set(year);
+    if (Number.isInteger(term) && term >= 1 && term <= 4) this.term.set(term);
     void this.load();
   }
 
@@ -161,9 +167,11 @@ export class AssessmentsPage {
           .map((c) => ({ id: c.id, grade_code: c.grade_code, name: c.name, academic_year: c.academic_year }));
       }
       this.classOptions.set(options);
-      if (options.length > 0) this.selectedClassId.set(options[0].id);
+      const requestedClass = this.route.snapshot.queryParamMap.get('class');
+      this.selectedClassId.set(options.find(c => c.id === requestedClass)?.id ?? options[0]?.id ?? '');
       const subs = this.subjectsForClass();
-      if (subs.length > 0) this.selectedSubjectId.set(subs[0].id);
+      const requestedSubject = this.route.snapshot.queryParamMap.get('subject');
+      this.selectedSubjectId.set(subs.find(s => s.id === requestedSubject)?.id ?? subs[0]?.id ?? '');
       await this.loadGrid();
     } catch (err) {
       console.error(err);

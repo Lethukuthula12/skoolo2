@@ -56,6 +56,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/assessments/assessments.page').then((m) => m.AssessmentsPage),
       },
       {
+        path: 'documents',
+        canDeactivate: [(component: { canLeave(): boolean }) => component.canLeave()],
+        loadComponent: () => import('./features/papers/papers.page').then((m) => m.PapersPage),
+      },
+      {
         path: 'messages',
         loadComponent: () => import('./features/messages/messages.page').then((m) => m.MessagesPage),
       },

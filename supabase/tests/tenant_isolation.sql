@@ -34,6 +34,8 @@ declare
   v_slotA uuid; v_breakA uuid; v_lessonA uuid; v_calItemA uuid; v_calStaffOnly uuid; v_attendA uuid;
   v_noticeAll uuid; v_noticeStaff uuid;
   v_assess1 uuid; v_assess2 uuid; v_report2 uuid; v_tmark numeric;
+  v_paper public.assessment_papers; v_paper_copy public.assessment_papers;
+  v_paper_content jsonb; v_template uuid; v_actor uuid; v_cmd text; v_saved_revision int;
   v_checks int := 0; v_fail text[] := '{}'; n int; v_hint text;
 begin
   -- 1) Seed auth users (as the privileged connecting role). The trigger creates profiles.
@@ -778,6 +780,202 @@ begin
   v_checks := v_checks + 1;
   select count(*) into n from public.notices where id in (v_noticeAll, v_noticeStaff);
   if n <> 0 then v_fail := v_fail || 'an unrelated parent sees school A''s notices'::text; end if;
+
+  -- ===================== ASSESSMENT PAPER AUTHORING =====================
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated')::text, true);
+  insert into public.paper_templates(school_id,name,instructions) values(v_schoolA,'Test template','Read carefully') returning id into v_template;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.paper_reviewers(v_schoolA) where user_id = v_aA;
+  if n <> 1 then v_fail := v_fail || 'paper reviewer directory missing admin'::text; end if;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated')::text, true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.paper_authoring_options(v_schoolA) where class_id = v_classA and subject_id = v_subjectA;
+  if n <> 1 then v_fail := v_fail || 'assigned author missing paper options'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.paper_templates where id = v_template;
+  if n <> 1 then v_fail := v_fail || 'teacher cannot use school template'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    insert into public.paper_templates(school_id,name) values(v_schoolA,'Teacher-created template');
+    v_fail := v_fail || 'teacher can manage shared templates'::text;
+  exception when others then null; end;
+  v_paper_content := jsonb_build_object('class_id',v_classA,'subject_id',v_subjectA,'reviewer_id',v_aA,
+    'title',repeat('T',200),'term_number',1,'kind','test','assessed_on','','duration_minutes',60,'instructions','Read carefully','footer','End',
+    'questions',jsonb_build_array(jsonb_build_object('type','short','text','What is 2 + 2?','marks',5,'lines',2,'options','','cells','','image','','answer','4; award 5 marks')));
+  v_paper := public.save_assessment_paper(null,0,v_schoolA,v_paper_content);
+  v_checks := v_checks + 1;
+  if v_paper.total_marks <> 5 or v_paper.author_id <> v_tA or v_paper.status <> 'draft' then v_fail := v_fail || 'paper draft defaults/total wrong'::text; end if;
+  v_saved_revision := v_paper.revision;
+  v_paper := public.save_assessment_paper(v_paper.id,v_paper.revision,v_schoolA,v_paper_content);
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_paper(v_paper.id,v_saved_revision,v_schoolA,v_paper_content);
+    v_fail := v_fail || 'stale paper edit overwrote newer content'::text;
+  exception when others then null; end;
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_paper(v_paper.id,v_paper.revision,v_schoolA,jsonb_set(v_paper_content,'{reviewer_id}',to_jsonb(v_aB)));
+    v_fail := v_fail || 'cross-school reviewer accepted'::text;
+  exception when others then null; end;
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_paper(v_paper.id,v_paper.revision,v_schoolA,jsonb_set(v_paper_content,'{questions,0,image}','"data:image/svg+xml;base64,AAAA"'));
+    v_fail := v_fail || 'active-content image accepted'::text;
+  exception when others then null; end;
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_paper(v_paper.id,v_paper.revision,v_schoolA,jsonb_set(v_paper_content,'{questions,0,marks}','-1'));
+    v_fail := v_fail || 'negative paper marks accepted'::text;
+  exception when others then null; end;
+  v_checks := v_checks + 1;
+  update public.assessment_papers set status = 'approved' where id = v_paper.id;
+  get diagnostics n = row_count;
+  if n <> 0 then v_fail := v_fail || 'direct paper update bypassed workflow'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    insert into public.paper_events(school_id,paper_id,actor_id,action) values(v_schoolA,v_paper.id,v_tA,'approve');
+    v_fail := v_fail || 'author forged paper audit event'::text;
+  exception when others then null; end;
+  v_paper := public.transition_assessment_paper(v_paper.id,v_paper.revision,'submit');
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_paper(v_paper.id,v_paper.revision,v_schoolA,v_paper_content);
+    v_fail := v_fail || 'paper changed during review'::text;
+  exception when others then null; end;
+  v_checks := v_checks + 1;
+  begin
+    perform public.transition_assessment_paper(v_paper.id,v_paper.revision,'approve');
+    v_fail := v_fail || 'teacher approved own paper'::text;
+  exception when others then null; end;
+  v_paper := public.transition_assessment_paper(v_paper.id,v_paper.revision,'withdraw');
+  v_paper := public.transition_assessment_paper(v_paper.id,v_paper.revision,'submit');
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated')::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.transition_assessment_paper(v_paper.id,v_paper.revision,'return','');
+    v_fail := v_fail || 'returned paper without correction feedback'::text;
+  exception when others then null; end;
+  v_paper := public.transition_assessment_paper(v_paper.id,v_paper.revision,'return','Please clarify question 1.');
+  v_checks := v_checks + 1;
+  select count(*) into n from public.paper_events where paper_id = v_paper.id and note = 'Please clarify question 1.';
+  if n <> 1 or v_paper.status <> 'draft' then v_fail := v_fail || 'returned paper lost feedback'::text; end if;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated')::text, true);
+  v_paper := public.transition_assessment_paper(v_paper.id,v_paper.revision,'submit');
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated')::text, true);
+  v_paper := public.transition_assessment_paper(v_paper.id,v_paper.revision,'approve');
+  v_checks := v_checks + 1;
+  if v_paper.status <> 'approved' or v_paper.approved_at is null then v_fail := v_fail || 'reviewer approval failed'::text; end if;
+
+  -- Every exposed paper RPC and both private tables reject unrelated actors.
+  foreach v_actor in array array[v_aB,v_tA2,v_pA] loop
+    perform set_config('request.jwt.claims', json_build_object('sub', v_actor, 'role','authenticated')::text, true);
+    v_checks := v_checks + 1;
+    select count(*) into n from public.assessment_papers where id = v_paper.id;
+    if n <> 0 then v_fail := v_fail || 'unrelated actor sees paper or memorandum'::text; end if;
+    v_checks := v_checks + 1;
+    select count(*) into n from public.paper_events where paper_id = v_paper.id;
+    if n <> 0 then v_fail := v_fail || 'unrelated actor sees paper history'::text; end if;
+    v_checks := v_checks + 1;
+    select count(*) into n from public.paper_authoring_options(v_schoolA);
+    if n <> 0 then v_fail := v_fail || 'unassigned actor has authoring options'::text; end if;
+    foreach v_cmd in array array[
+      format('select public.save_assessment_paper(null,0,%L,%L::jsonb)',v_schoolA,v_paper_content),
+      format('select public.save_assessment_paper(%L,%s,%L,%L::jsonb)',v_paper.id,v_paper.revision,v_schoolA,v_paper_content),
+      format('select public.transition_assessment_paper(%L,%s,''withdraw'')',v_paper.id,v_paper.revision),
+      format('select public.revise_assessment_paper(%L)',v_paper.id),
+      format('select public.link_paper_assessment(%L,%s,null,1)',v_paper.id,v_paper.revision)
+    ] loop
+      v_checks := v_checks + 1;
+      begin execute v_cmd; v_fail := v_fail || 'unrelated actor changed a paper through RPC'::text;
+      exception when others then null; end;
+    end loop;
+    if v_actor <> v_tA2 then
+      v_checks := v_checks + 1;
+      select count(*) into n from public.paper_templates where id = v_template;
+      if n <> 0 then v_fail := v_fail || 'outsider sees paper templates'::text; end if;
+      v_checks := v_checks + 1;
+      select count(*) into n from public.paper_reviewers(v_schoolA);
+      if n <> 0 then v_fail := v_fail || 'outsider sees paper reviewers'::text; end if;
+    end if;
+  end loop;
+
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA, 'role','authenticated')::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment_paper(v_paper.id,v_paper.revision,v_schoolA,v_paper_content);
+    v_fail := v_fail || 'approved paper content changed'::text;
+  exception when others then null; end;
+  v_paper_copy := public.revise_assessment_paper(v_paper.id);
+  v_checks := v_checks + 1;
+  if v_paper_copy.revises_id <> v_paper.id or v_paper_copy.status <> 'draft' or v_paper_copy.assessment_id is not null
+    or v_paper_copy.questions <> v_paper.questions then v_fail := v_fail || 'revision failed to preserve original content'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.link_paper_assessment(v_paper.id,v_paper.revision,v_assess1,1);
+    v_fail := v_fail || 'incompatible marks linked to paper'::text;
+  exception when others then null; end;
+  v_paper := public.link_paper_assessment(v_paper.id,v_paper.revision,null,2);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessments where id = v_paper.assessment_id and max_score = 5 and weight = 2;
+  if n <> 1 then v_fail := v_fail || 'paper did not create assessment correctly'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.save_assessment(v_paper.assessment_id,v_classA,v_subjectA,1,'Changed total','test',10,2,null);
+    v_fail := v_fail || 'linked assessment total changed'::text;
+  exception when others then null; end;
+  v_checks := v_checks + 1;
+  begin
+    perform public.delete_assessment(v_paper.assessment_id);
+    v_fail := v_fail || 'linked assessment deleted'::text;
+  exception when others then null; end;
+  perform public.save_assessment_score(v_paper.assessment_id,v_rollLearnerA,4,false);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessment_scores where assessment_id = v_paper.assessment_id and score = 4;
+  if n <> 1 then v_fail := v_fail || 'linked paper prevents normal score capture'::text; end if;
+
+  -- Empty drafts can be saved, but cannot be submitted. Only the selected admin can approve.
+  v_paper_copy := public.save_assessment_paper(v_paper_copy.id,v_paper_copy.revision,v_schoolA,jsonb_set(v_paper_content,'{questions}','[]'));
+  v_checks := v_checks + 1;
+  begin
+    perform public.transition_assessment_paper(v_paper_copy.id,v_paper_copy.revision,'submit');
+    v_fail := v_fail || 'empty paper submitted'::text;
+  exception when others then null; end;
+  v_paper_copy := public.save_assessment_paper(v_paper_copy.id,v_paper_copy.revision,v_schoolA,v_paper_content);
+  v_paper_copy := public.transition_assessment_paper(v_paper_copy.id,v_paper_copy.revision,'submit');
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated')::text, true);
+  update public.school_staff set role = 'admin' where school_id = v_schoolA and user_id = v_tA2;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tA2, 'role','authenticated')::text, true);
+  v_checks := v_checks + 1;
+  begin
+    perform public.transition_assessment_paper(v_paper_copy.id,v_paper_copy.revision,'approve');
+    v_fail := v_fail || 'unselected admin approved paper'::text;
+  exception when others then null; end;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_aA, 'role','authenticated')::text, true);
+  update public.school_staff set role = 'staff' where school_id = v_schoolA and user_id = v_tA2;
+  v_paper_copy := public.transition_assessment_paper(v_paper_copy.id,v_paper_copy.revision,'approve');
+  v_paper_copy := public.link_paper_assessment(v_paper_copy.id,v_paper_copy.revision,v_paper.assessment_id,1);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessment_scores where assessment_id = v_paper_copy.assessment_id and score = 4;
+  if n <> 1 then v_fail := v_fail || 'linking existing assessment changed scores'::text; end if;
+
+  -- Anonymous readers see no private papers, memoranda, events or school templates.
+  set local role anon;
+  perform set_config('request.jwt.claims','{}',true);
+  v_checks := v_checks + 1;
+  select count(*) into n from public.assessment_papers where id = v_paper.id;
+  if n <> 0 then v_fail := v_fail || 'anonymous reader sees test paper'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.paper_events where paper_id = v_paper.id;
+  if n <> 0 then v_fail := v_fail || 'anonymous reader sees paper audit'::text; end if;
+  v_checks := v_checks + 1;
+  select count(*) into n from public.paper_templates where id = v_template;
+  if n <> 0 then v_fail := v_fail || 'anonymous reader sees paper template'::text; end if;
+  v_checks := v_checks + 1;
+  begin
+    perform public.revise_assessment_paper(v_paper.id);
+    v_fail := v_fail || 'anonymous caller executed paper RPC'::text;
+  exception when others then null; end;
+  set local role authenticated;
 
   -- ===================== BUSINESS RULES (as admin / parent A) =====================
   -- Full grade: Grade R capacity is 1 and already taken.

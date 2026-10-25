@@ -21,6 +21,28 @@ school. Nothing in the next stage starts while the current one has open bugs.
 | 5 | School fees | 7 | **Built** (fee structures, accounts, record/confirm payments, balances, arrears export, parent statement; verified end to end) |
 | 6 | Teacher timetables and calendars | 8 | **Built** (day structure, teacher weekly grid with place/remove and .ics export, calendar, admin per-class and per-teacher views; verified end to end) |
 | 7 | Assessment detail | rest of 5 | **Built** (capture grid with live calculated term marks, roll-up into Stage 3 draft reports, per-assessment and per-subject analysis export; verified end to end) |
+| 8 | Assessment paper builder | Teacher-to-office paper preparation | **Built** (editor, templates, review, separate learner/memorandum printing and mark-capture links; automated checks pass; browser and school acceptance pending) |
+
+## Stage 8 — Assessment papers (authorised 2026-10-25)
+
+The owner confirmed teachers handwrite questions which the office retypes in Word, and asked to
+build the proposed paper builder. This explicitly brings this feature forward while Stage 0's
+remaining installation and session checks remain open.
+
+Teachers create papers for assigned classes/subjects, add questions, marks, images and answer
+space, save drafts, and choose a school administrator to review. Administrators manage reusable
+school templates. Reviewers return feedback or approve a fixed paper. Corrections create a new
+draft linked to the original. Learner paper and memorandum have separate A4 print/PDF outputs.
+An approved paper can create or link a compatible assessment for existing mark capture.
+
+First-version assumptions: reviewers are existing administrators; teachers edit only their own
+drafts; administrators can read school papers and print approved copies. Templates hold reusable
+instructions/layout defaults, not confidential question answers. Online responses, OCR, Word
+export and offline synchronisation are later work.
+
+Done when a real teacher creates an assessment, the selected reviewer approves it and the office
+prints it without Word or retyping. Verify tenant/role isolation, saved drafts and conflicts,
+returned corrections, separate memorandum output, pagination and phone/desktop operation.
 
 The school's requests, in their words:
 
