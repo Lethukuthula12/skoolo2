@@ -193,6 +193,8 @@ process. Copy any uncommitted manual evidence you want to keep; generated test d
 ## Verification at handover
 
 The catalogue and TypeScript/setup checks are recorded in docs/build-log.md.
+GitHub validated commit ce6bc4d: catalogue and application checks passed, and both Cloudflare
+deployments succeeded. The optional browser job was skipped, not passed.
 This laptop has no Docker command available, so a full fresh-database bootstrap and Cypress browser
 run have not been verified here. Managed browser policy also restricted UI testing in this session.
 The guide and failure checks support a repeatable setup; they do not guarantee an untested machine

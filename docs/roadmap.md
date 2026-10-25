@@ -70,6 +70,12 @@ The school's requests, in their words:
   eight-hour maximum limits, warning before expiry, and the server-side protections in
   `docs/session-security-design.md`. Parent session limits still need a separate decision.
   Deferred at the owner's request on 2026-10-25; these limits are not active.
+  **Client-side interim piece built (2026-10-25):** the portal shell now runs a per-tab idle
+  (30 min) and absolute (8 h) clock for signed-in staff with a two-minute warning and sign-out.
+  This is a browser timer only — not the server registry below — so a stolen or directly-replayed
+  token is unaffected, and it does not apply to the parent app. The server-side registry gate
+  (new Cloudflare Worker/Durable Objects infrastructure) remains undelivered and unapproved; it
+  is a separate decision before this item can be called done.
 - [x] **Parent-app installation on Android and iOS.** Entry point, manual help and both platform
   install paths implemented. The owner confirmed iOS installation succeeded (explicit HTTPS
   resolved Safari's connection warning) and separately confirmed the Android installation issue

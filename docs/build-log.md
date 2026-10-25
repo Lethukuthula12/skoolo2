@@ -1670,3 +1670,25 @@ remain unchanged until the proposed server session work is implemented and verif
   is the narrower phone-testing layout check (no sideways scrolling on each live site), which
   this confirmation does not cover.
 - Documentation-only change: diff reviewed, no application, schema or hosted setting changed.
+
+## 2026-10-25 — Client-side staff idle/absolute session timeout
+
+- Added the first, reversible piece of the 2026-10-26 staff session item: a per-tab 30-minute
+  idle and 8-hour absolute timer for signed-in staff, with a two-minute warning offering "Stay
+  signed in" or "Sign out now". New shared `StaffSessionTimeoutService` and
+  `StaffSessionWarningComponent`, exported from `public-api.ts`, injected and rendered only in
+  the school-portal's staff-only `ShellComponent`. The parent app does not import either symbol
+  (confirmed by search), so this does not apply staff limits to parents, consistent with the
+  owner's 2026-10-25 instruction.
+- This is explicitly the browser-timer layer, not the server-side session registry proposed in
+  `docs/session-security-design.md`. That registry needs new Cloudflare Worker/Durable Objects
+  infrastructure which remains unapproved; a directly replayed or stolen Supabase token is
+  unaffected by this change. Documented this distinction in `docs/roadmap.md` so the item is not
+  mistaken for full enforcement.
+- Known simplification: idle tracking is per-browser-tab (not synchronised across tabs on the
+  same device); the absolute 8-hour clock is anchored in `localStorage` per user id, so it holds
+  across reloads and tabs. Both clocks and the stored anchor clear on sign-out or account change.
+- Verified `ng build school-portal` compiles and bundles the new code with zero errors (full
+  `npm ci` plus production build). No schema, RLS, RPC or role-check changed, so the full
+  `npm run test:rls` suite was not re-run for this change per CLAUDE.md's scoping rule; the
+  parent-app production build was also run to confirm it is unaffected.

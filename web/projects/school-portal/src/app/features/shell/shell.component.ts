@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { AuthService, StaffService, ThemeService } from '@skoolo/shared';
+import { AuthService, StaffService, StaffSessionTimeoutService, StaffSessionWarningComponent, ThemeService } from '@skoolo/shared';
 import { ThemeCustomizerComponent } from './theme-customizer.component';
 import { PortalDrawerComponent } from '../../ui/portal-drawer.component';
 import { PortalNavigationComponent } from './portal-navigation.component';
@@ -12,13 +12,15 @@ interface NavItem { label: string; link: string; icon: string; }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, PortalNavigationComponent, ThemeCustomizerComponent, PortalDrawerComponent],
+  imports: [RouterOutlet, RouterLink, PortalNavigationComponent, ThemeCustomizerComponent, PortalDrawerComponent, StaffSessionWarningComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
 export class ShellComponent {
   protected readonly staff = inject(StaffService);
   protected readonly auth = inject(AuthService);
+  // Instantiates the idle/absolute staff session clock; only the shell (staff-only) renders its warning.
+  private readonly sessionTimeout = inject(StaffSessionTimeoutService);
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly theme = inject(ThemeService);

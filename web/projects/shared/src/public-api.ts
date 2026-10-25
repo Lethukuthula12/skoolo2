@@ -7,6 +7,8 @@ export * from './lib/auth/auth-challenge.component';
 export * from './lib/auth/auth-layout.component';
 export * from './lib/auth/session-ended.component';
 export * from './lib/auth/signed-in.guard';
+export * from './lib/auth/staff-session-timeout.service';
+export * from './lib/auth/staff-session-warning.component';
 export * from './lib/directory/school-directory.service';
 export * from './lib/applications/application.service';
 export * from './lib/identity/sa-identity-number';

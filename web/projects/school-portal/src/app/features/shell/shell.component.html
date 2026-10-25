@@ -32,3 +32,5 @@
 <app-portal-drawer title="School navigation" [open]="mobileOpen()" [navigation]="true" (closed)="mobileOpen.set(false)">
   <app-portal-navigation [groups]="groups()" [schoolName]="staff.currentSchool()?.name ?? ''" [activeGroup]="activeGroup()" (navigated)="mobileOpen.set(false)" />
 </app-portal-drawer>
+
+<skoolo-staff-session-warning />
