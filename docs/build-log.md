@@ -1713,3 +1713,45 @@ remain unchanged until the proposed server session work is implemented and verif
 - Without Docker, the local Supabase bootstrap, local RLS run and real Cypress browser scenarios
   remain unverified on this machine, consistent with prior entries. No schema, access rules or
   application code changed in this session; this is a verification/tooling-only update.
+
+## 2026-10-25 — Owner installed Docker; full local bootstrap and browser suite now verified
+
+- The owner installed Docker Desktop (per-user install, `%LOCALAPPDATA%\Programs\DockerDesktop`).
+  Its engine needed its own first-run startup (WSL2 `docker-desktop` distro, confirmed `Running`);
+  no application or security setting was changed to bring it up.
+- `npm run local:setup` completed: pulled all 8 Supabase service images, applied all 28 local
+  migrations, and seeded two fictional schools, eight accounts, classes, subjects, terms, learners
+  and enrolment settings. `npm run local:start` compiled and served both apps
+  (`localhost:4400` / `127.0.0.1:4400` via the local proxy); both were reachable.
+- `npm run test:rls:local` passed 170/170 tenant isolation checks and the coverage guard against
+  the local database, matching the earlier linked-project result exactly.
+- First `npm run test:e2e` attempt crashed mid-run (Electron tab closed unexpectedly). Diagnosed as
+  memory pressure, not an app or test defect: Docker's WSL2 VM, two Angular dev servers and a cold
+  Cypress/Electron launch left only ~1.4 GB free out of 31.5 GB. With the owner's approval, closed
+  Chrome, Firefox, the ChatGPT desktop app and Podman Desktop (freed to ~5.5 GB); VS Code and
+  Docker were left running. The retry ran cleanly with no further crashes, confirming the cause.
+- That retry found a genuine result: both scenarios in `family-access.feature` failed with
+  "Expected to find content: 'Learner A' but never did."
+- Root cause, confirmed by reading the source: every year-scoped portal module (classes,
+  assessments, fees, reports, timetable) defaults its year filter to next year and exposes a
+  number input so staff can switch back; **the Learners page had the same next-year default but no
+  such input**, so once the default rolled to next year an admin had no way to view the current
+  year's roster from that screen at all. The fictional seed data (like the real pilot school) is
+  current-year, so the page showed "No classes yet" with no recovery path. This is a real Stage 0
+  gap, not a seed or test-authoring mismatch.
+- Fix: added the same year `<input type="number">` control to the Learners page (empty and
+  populated states), with a `changeYear` method mirroring the existing Classes page pattern.
+  Updated the one affected Cypress step to set that input to the current year before asserting,
+  using a single `trigger('input')` (chaining a second `trigger('change')` on the same located
+  element raced the reload's loading-skeleton re-render and detached the element mid-command).
+- Verified: re-ran `npm run test:e2e` twice after the fix — all **10/10 automated scenarios pass**
+  across all three spec files. A `node_modules` corruption from an interrupted `npm ci` (triggered
+  by attempting a production build while the dev server still held a file lock on `esbuild.exe`)
+  was repaired with a clean reinstall. Both `ng build school-portal` and `ng build parent-app`
+  pass with zero errors afterward; the portal's existing ~65 kB initial-bundle budget warning is
+  unchanged and already recorded. No schema, RLS, RPC, role check or tenant-scoping changed, so
+  per CLAUDE.md's scoping rule a fresh full `npm run test:rls` was not required for this
+  client-side fix; the local and linked-project RLS runs already completed this session stand.
+- This closes a real pilot-affecting gap (administrators in Q4 could not see the current year's
+  learner register) found entirely through this regression-testing pass, not reported separately
+  by the school.

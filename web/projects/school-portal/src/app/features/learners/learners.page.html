@@ -15,6 +15,9 @@
   } @else if (classes().length === 0) {
     <div class="card empty">
       <p>No classes yet for {{ year() }}. Create a class to start your learner register.</p><a class="btn btn-primary" routerLink="/classes">Create a class</a>
+      <label class="row small">Year
+        <input type="number" class="year" [ngModel]="year()" (ngModelChange)="changeYear($event)" min="2020" max="2100" />
+      </label>
     </div>
   } @else {
     <div class="card stack">
@@ -24,6 +27,9 @@
             @for (c of classes(); track c.id) { <option [value]="c.id">{{ gradeLabelOf(c) }} {{ c.name }}</option> }
             <option value="">Not in a class</option>
           </select>
+        </label>
+        <label class="row small">Year
+          <input type="number" class="year" [ngModel]="year()" (ngModelChange)="changeYear($event)" min="2020" max="2100" />
         </label>
         <span class="spacer"></span>
         <button class="btn btn-primary" type="button" (click)="startNew()">Add learner</button>

@@ -437,6 +437,12 @@ export class LearnersPage {
     }
   }
 
+  protected async changeYear(year: number): Promise<void> {
+    this.year.set(year);
+    this.selectedClassId.set('');
+    await this.load();
+  }
+
   private async loadLearners(): Promise<void> {
     const [learners, counts] = await Promise.all([this.staff.schoolLearners(), this.staff.guardianLinkCounts()]);
     this.allLearners.set(learners);

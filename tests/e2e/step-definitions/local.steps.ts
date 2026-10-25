@@ -74,7 +74,11 @@ When('the parent signs in and reads their linked children', () => {
   });
 });
 Then('the administrator still sees only School A learners', () => {
-  cy.visit('/learners'); cy.contains('Learner A').should('be.visible'); cy.contains('Learner B').should('not.exist');
+  cy.visit('/learners');
+  // The Learners page defaults to next year; fictional classes are seeded for the current year.
+  // A single trigger avoids racing the reload's loading-skeleton re-render.
+  cy.get('input.year').invoke('val', String(new Date().getFullYear())).trigger('input');
+  cy.contains('Learner A').should('be.visible'); cy.contains('Learner B').should('not.exist');
 });
 
 When('a parent connects Learner A using the family code', () => {
