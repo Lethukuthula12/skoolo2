@@ -16,3 +16,6 @@ export * from './lib/staff/admin.guard';
 export * from './lib/messaging/messaging.service';
 export * from './lib/theme/theme.service';
 export * from './lib/theme/theme-colors';
+export * from './lib/feedback/action-feedback.service';
+export * from './lib/feedback/action-feedback.component';
+export * from './lib/feedback/feedback-outlet.component';

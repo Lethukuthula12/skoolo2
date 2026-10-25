@@ -1,9 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  MyClass, MyTimetableRow, SchoolDirectoryService, SchoolTimetableRow, StaffService, WEEKDAYS,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, MyClass, MyTimetableRow, SchoolDirectoryService, SchoolTimetableRow, StaffService, WEEKDAYS, } from '@skoolo/shared';
 import type { Tables } from '@skoolo/shared';
 
 type Period = Tables<'school_periods'>;
@@ -15,7 +13,7 @@ interface NewPeriod { name: string; starts_at: string; ends_at: string; is_break
 
 @Component({
   selector: 'app-timetable-page',
-  imports: [FormsModule, NgTemplateOutlet],
+  imports: [ActionFeedbackComponent, FormsModule, NgTemplateOutlet],
   templateUrl: './timetable.page.html',
   styleUrl: './timetable.page.scss',
 })
@@ -157,6 +155,7 @@ export class TimetablePage {
     await this.run(async () => {
       await this.staff.removeLesson(lesson.id);
       this.myLessons.set(await this.staff.myTimetable(this.year()));
+      this.notice.set('Lesson removed.');
     });
   }
 
@@ -179,6 +178,7 @@ export class TimetablePage {
     await this.run(async () => {
       await this.staff.deletePeriod(id);
       this.periods.set(await this.staff.schoolPeriods());
+      this.notice.set('Period removed.');
     }, null);
   }
 

@@ -1,3 +1,4 @@
+<skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy() || savingScores() > 0" [pendingText]="savingScores() > 0 ? 'Saving scores…' : 'Working…'" />
 <div class="stack">
   <div class="toolbar">
     <div>

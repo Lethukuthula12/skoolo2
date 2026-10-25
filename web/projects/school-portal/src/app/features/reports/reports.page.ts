@@ -2,16 +2,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { escapePrintText as text, openPrintDocument, printImageUrl, PRINT_DOCUMENT_POLICY } from '../../ui/print-document';
-import {
-  ACHIEVEMENT_LEVELS, AcademicTerm, Grade, ReportCardFull, ReportMarkFull, SchoolDirectoryService,
-  StaffService, achievementLevel,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, ACHIEVEMENT_LEVELS, AcademicTerm, Grade, ReportCardFull, ReportMarkFull, SchoolDirectoryService,
+  StaffService, achievementLevel, } from '@skoolo/shared';
 
 interface ClassOption { id: string; grade_code: string; name: string; academic_year: number; }
 
 @Component({
   selector: 'app-reports-page',
-  imports: [FormsModule],
+  imports: [ActionFeedbackComponent, FormsModule],
   templateUrl: './reports.page.html',
   styleUrl: './reports.page.scss',
 })
@@ -22,6 +20,7 @@ export class ReportsPage {
   protected readonly levels = ACHIEVEMENT_LEVELS;
   protected readonly loading = signal(true);
   protected readonly busy = signal(false);
+  protected readonly savingChanges = signal(0);
   protected readonly notice = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
 
@@ -207,8 +206,13 @@ export class ReportsPage {
   }
 
   private async quietRun(action: () => Promise<void>): Promise<void> {
-    this.error.set(null);
+    if (this.savingChanges() === 0) { this.error.set(null); this.notice.set(null); }
+    this.savingChanges.update(count => count + 1);
     try { await action(); } catch (err) { console.error(err); this.error.set('Could not save. The report may have been approved.'); }
+    finally {
+      this.savingChanges.update(count => count - 1);
+      if (this.savingChanges() === 0 && !this.error()) this.notice.set('Report changes saved.');
+    }
   }
 
   // ----- export and print -----

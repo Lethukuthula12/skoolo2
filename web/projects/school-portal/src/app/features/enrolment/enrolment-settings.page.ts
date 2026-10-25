@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { EnrolmentPeriod, Grade, GradeAvailabilityRow, SchoolDirectoryService, StaffService } from '@skoolo/shared';
+import { ActionFeedbackComponent, EnrolmentPeriod, Grade, GradeAvailabilityRow, SchoolDirectoryService, StaffService } from '@skoolo/shared';
 
 interface GradeRow {
   code: string;
@@ -15,8 +15,9 @@ interface GradeRow {
 
 @Component({
   selector: 'app-enrolment-settings-page',
-  imports: [CurrencyPipe, DatePipe, FormsModule],
+  imports: [ActionFeedbackComponent, CurrencyPipe, DatePipe, FormsModule],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div class="toolbar">
         <div>

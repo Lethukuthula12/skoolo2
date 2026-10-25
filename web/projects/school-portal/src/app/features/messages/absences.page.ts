@@ -1,11 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { AbsenceRow, MessagingService } from '@skoolo/shared';
+import { ActionFeedbackComponent, AbsenceRow, MessagingService } from '@skoolo/shared';
 
 @Component({
   selector: 'app-absences-page',
-  imports: [DatePipe],
+  imports: [ActionFeedbackComponent, DatePipe],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div>
         <h1>Absences</h1>

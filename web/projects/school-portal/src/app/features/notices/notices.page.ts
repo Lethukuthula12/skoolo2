@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { StaffService } from '@skoolo/shared';
+import { ActionFeedbackComponent, StaffService } from '@skoolo/shared';
 import type { Tables } from '@skoolo/shared';
 
 type Notice = Tables<'notices'>;
@@ -11,8 +11,9 @@ const AUDIENCE_LABELS: Record<string, string> = { all: 'Everyone', staff: 'Staff
 
 @Component({
   selector: 'app-notices-page',
-  imports: [FormsModule, DatePipe],
+  imports: [ActionFeedbackComponent, FormsModule, DatePipe],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div class="toolbar">
         <div>
@@ -130,6 +131,7 @@ export class NoticesPage {
     await this.run(async () => {
       await this.staff.saveNotice({ id: n.id, title: n.title, body: n.body, audience: n.audience, pinned: !n.pinned });
       await this.reload();
+      this.notice.set(n.pinned ? 'Notice unpinned.' : 'Notice pinned.');
     });
   }
 
@@ -137,6 +139,7 @@ export class NoticesPage {
     if (!confirm(`Delete "${n.title}"?`)) return;
     await this.run(async () => {
       await this.staff.deleteNotice(n.id);
+      this.notice.set('Notice removed.');
       if (this.form.id === n.id) this.resetForm();
       await this.reload();
     });

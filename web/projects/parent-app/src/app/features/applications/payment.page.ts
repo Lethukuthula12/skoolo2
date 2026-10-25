@@ -5,15 +5,16 @@ import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar,
   ToastController,
 } from '@ionic/angular/standalone';
-import { ApplicationService, PaymentInstructions } from '@skoolo/shared';
+import { ActionFeedbackComponent, ApplicationService, PaymentInstructions } from '@skoolo/shared';
 
 @Component({
   selector: 'app-payment-page',
-  imports: [
+  imports: [ActionFeedbackComponent,
     CurrencyPipe, RouterLink,
     IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/applications" text="" /></ion-buttons>
@@ -136,6 +137,7 @@ export class PaymentPage {
   protected readonly loading = signal(true);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -155,10 +157,12 @@ export class PaymentPage {
 
   protected async markPaid(): Promise<void> {
     this.busy.set(true);
+    this.notice.set(null);
     this.error.set(null);
     try {
       await this.applications.markPaid(this.id());
       await this.load(this.id());
+      this.notice.set('Payment recorded for the school to verify.');
     } catch (err) {
       console.error(err);
       this.error.set('Could not record your payment. Please try again.');

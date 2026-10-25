@@ -1,7 +1,9 @@
 import { Component, ElementRef, afterRenderEffect, input, output, viewChild } from '@angular/core';
+import { FeedbackOutletComponent } from '@skoolo/shared';
 
 @Component({
   selector: 'app-portal-drawer',
+  imports: [FeedbackOutletComponent],
   template: `
     <dialog #dialog class="drawer" [class.navigation]="navigation()" [attr.aria-label]="title()"
       (cancel)="cancel($event)" (click)="backdrop($event)">
@@ -9,6 +11,7 @@ import { Component, ElementRef, afterRenderEffect, input, output, viewChild } fr
         [disabled]="!dismissible()" (click)="requestClose()">×</button></header>
       <div class="drawer-body"><ng-content /></div>
       <ng-content select="[drawer-footer]" />
+      <skoolo-feedback-outlet [active]="open()" [priority]="1" />
     </dialog>
   `,
   styleUrl: './portal-drawer.component.scss',

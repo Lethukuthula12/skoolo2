@@ -5,16 +5,17 @@ import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTextarea,
   IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
-import { AuthService, MessageThread, MessagingService, ThreadMessage } from '@skoolo/shared';
+import { ActionFeedbackComponent, AuthService, MessageThread, MessagingService, ThreadMessage } from '@skoolo/shared';
 
 @Component({
   selector: 'app-child-messages-page',
-  imports: [
+  imports: [ActionFeedbackComponent,
     DatePipe, FormsModule,
     IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSpinner, IonTextarea,
     IonTitle, IonToolbar,
   ],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>
@@ -89,6 +90,7 @@ export class ChildMessagesPage {
   protected readonly loading = signal(true);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
   protected readonly threads = signal<MessageThread[]>([]);
   protected readonly openThread = signal<MessageThread | null>(null);
   protected readonly messages = signal<ThreadMessage[]>([]);
@@ -116,10 +118,16 @@ export class ChildMessagesPage {
     const t = this.openThread();
     if (!t || !this.reply.trim()) return;
     this.busy.set(true);
+    this.error.set(null); this.notice.set(null);
+    let sent = false;
     try {
       await this.messaging.postMessage(t.id, this.reply.trim());
+      sent = true;
       this.reply = '';
       this.messages.set(await this.messaging.threadMessages(t.id));
+      this.notice.set('Message sent.');
+    } catch {
+      this.error.set(sent ? 'Your message was sent, but the conversation could not refresh. Reopen it to see the reply.' : 'Could not send your message. Please try again.');
     } finally {
       this.busy.set(false);
     }
@@ -128,6 +136,7 @@ export class ChildMessagesPage {
   protected async startNew(): Promise<void> {
     this.busy.set(true);
     this.error.set(null);
+    this.notice.set(null);
     try {
       const id = await this.messaging.startThread(this.learnerId(), this.newSubject.trim(), this.newBody.trim());
       this.newSubject = '';
@@ -135,6 +144,7 @@ export class ChildMessagesPage {
       await this.load(this.learnerId());
       const thread = this.threads().find((t) => t.id === id);
       if (thread) await this.open(thread);
+      this.notice.set('Message sent to the school.');
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Could not send.');
     } finally {

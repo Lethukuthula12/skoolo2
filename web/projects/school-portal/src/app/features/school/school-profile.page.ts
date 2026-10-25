@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Grade, PROVINCES, Province, SchoolDirectoryService, StaffService } from '@skoolo/shared';
+import { ActionFeedbackComponent, Grade, PROVINCES, Province, SchoolDirectoryService, StaffService } from '@skoolo/shared';
 
 interface SchoolForm {
   name: string; tagline: string; description: string; lowest_grade: string; highest_grade: string;
@@ -14,13 +14,14 @@ interface BankForm {
 
 @Component({
   selector: 'app-school-profile-page',
-  imports: [FormsModule],
+  imports: [ActionFeedbackComponent, FormsModule],
   styles: `
     .badge-card { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
     .badge-preview img, .badge-empty { width: 96px; height: 96px; border-radius: 20px; object-fit: cover; background: var(--bg); }
     .badge-empty { display: grid; place-items: center; color: var(--muted); font-size: 0.8rem; text-align: center; border: 1px dashed var(--line); }
   `,
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div>
         <h1>School profile</h1>

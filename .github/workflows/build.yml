@@ -21,6 +21,7 @@ jobs:
       - run: npm ci
       - run: npm run check:security
       - run: npm run check:papers
+      - run: npm run check:feedback
       - run: npm run check:install
       - run: npm run check:sessions
       - run: npm audit --audit-level=high

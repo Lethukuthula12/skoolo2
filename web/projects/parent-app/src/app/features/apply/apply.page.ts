@@ -7,11 +7,9 @@ import {
   IonItem, IonLabel, IonList, IonNote, IonProgressBar, IonRadio, IonRadioGroup, IonSelect,
   IonSelectOption, IonSpinner, IonTextarea, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
-import {
-  ApplicationError, ApplicationService, AuthService, GUARDIAN_RELATIONSHIPS, GradeAvailability, PROVINCES, Province,
+import { ActionFeedbackComponent, ApplicationError, ApplicationService, AuthService, GUARDIAN_RELATIONSHIPS, GradeAvailability, PROVINCES, Province,
   SchoolDirectoryEntry, SchoolDirectoryService, dateOfBirthFromIdentityNumber, genderFromIdentityNumber,
-  isValidSaIdentityNumber, saIdentityNumberValidator,
-} from '@skoolo/shared';
+  isValidSaIdentityNumber, saIdentityNumberValidator, } from '@skoolo/shared';
 import type { AbstractControl, ValidationErrors } from '@angular/forms';
 
 /** The guardian may hold an SA ID (13 digits, Luhn-checked) or a passport (anything else, 5+ chars). */
@@ -27,7 +25,7 @@ const STEPS: Step[] = ['learner', 'address', 'review'];
 
 @Component({
   selector: 'app-apply-page',
-  imports: [
+  imports: [ActionFeedbackComponent,
     CurrencyPipe, ReactiveFormsModule,
     IonBackButton, IonButton, IonButtons, IonCheckbox, IonContent, IonHeader, IonIcon, IonInput,
     IonItem, IonLabel, IonList, IonNote, IonProgressBar, IonRadio, IonRadioGroup, IonSelect,

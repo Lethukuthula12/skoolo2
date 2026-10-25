@@ -1,14 +1,15 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthService, MessagingService, StaffService, ThreadMessage, ThreadRow } from '@skoolo/shared';
+import { ActionFeedbackComponent, AuthService, MessagingService, StaffService, ThreadMessage, ThreadRow } from '@skoolo/shared';
 
 interface ClassOption { id: string; grade_code: string; name: string; }
 
 @Component({
   selector: 'app-messages-page',
-  imports: [DatePipe, FormsModule],
+  imports: [ActionFeedbackComponent, DatePipe, FormsModule],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div class="toolbar">
         <div>
@@ -130,10 +131,16 @@ export class MessagesPage {
     const t = this.open();
     if (!t || !this.reply.trim()) return;
     this.busy.set(true);
+    this.error.set(null); this.notice.set(null);
+    let sent = false;
     try {
       await this.messaging.postMessage(t.id, this.reply.trim());
+      sent = true;
       this.reply = '';
       this.messages.set(await this.messaging.threadMessages(t.id));
+      this.notice.set('Message sent.');
+    } catch {
+      this.error.set(sent ? 'Your message was sent, but the conversation could not refresh. Reopen it to see the reply.' : 'Could not send your message. Please try again.');
     } finally {
       this.busy.set(false);
     }

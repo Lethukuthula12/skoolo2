@@ -1,13 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  ClassRow, ClassSubjectTeacherRow, Grade, LANGUAGE_LEVEL_LABELS, SchoolDirectoryService, StaffMember,
-  StaffService, Subject,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, ClassRow, ClassSubjectTeacherRow, Grade, LANGUAGE_LEVEL_LABELS, SchoolDirectoryService, StaffMember,
+  StaffService, Subject, } from '@skoolo/shared';
 
 @Component({
   selector: 'app-classes-page',
-  imports: [FormsModule],
+  imports: [ActionFeedbackComponent, FormsModule],
   templateUrl: './classes.page.html',
   styleUrl: './classes.page.scss',
 })
@@ -97,6 +95,7 @@ export class ClassesPage {
     await this.run(async () => {
       await this.staff.saveClass({ id: cls.id, academic_year: cls.academic_year, grade_code: cls.grade_code, name: cls.name, class_teacher_id: teacherId || null });
       await this.loadClasses();
+      this.notice.set('Class teacher saved.');
     });
   }
 

@@ -548,6 +548,22 @@ denied the agent access to the local preview; the following checks still require
    Have a real teacher and office complete a real paper without Word or retyping before declaring
    Stage 8 accepted. No online response collection, OCR, editable Word export or offline sync yet.
 
+## Action notification acceptance (2026-10-25)
+
+1. On desktop and a 375px phone, scroll to the bottom of a long assessment paper or school profile,
+   save, and check the floating spinner changes to a checkmark without scrolling to the page top.
+2. Save the same content twice. Each completed save should show feedback. A reload without a
+   write must not report that something was saved. Simulate a failed save and check the error
+   persists, the form remains editable and a later successful retry shows the correct result.
+3. Save inside a learner or appearance drawer. The notification must appear above its contents,
+   with an operable close button. Close the drawer and verify there is only one visible copy.
+4. Hover or focus the notification; verify its timer pauses. Switch tabs and return; the success
+   should still be readable. Enable reduced motion and test keyboard/screen-reader announcements.
+5. In the parent app, upload a document and report an absence. Check the bottom navigation remains
+   usable, including device safe areas and an open software keyboard.
+6. Navigate away or sign out during an action. Old feedback must not appear over the next page or
+   account. In the marks grid, complete two concurrent saves with one failing; no all-saved message.
+
 ## Local production preview
 
 ```bash

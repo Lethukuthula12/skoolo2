@@ -1,15 +1,16 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
-import { Learner, MyClass, StaffService } from '@skoolo/shared';
+import { ActionFeedbackComponent, Learner, MyClass, StaffService } from '@skoolo/shared';
 
 type AttStatus = 'present' | 'absent' | 'late';
 interface ClassOption { id: string; label: string; }
 
 @Component({
   selector: 'app-attendance-page',
-  imports: [FormsModule],
+  imports: [ActionFeedbackComponent, FormsModule],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div class="toolbar">
         <div>

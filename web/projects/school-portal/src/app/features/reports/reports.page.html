@@ -1,3 +1,4 @@
+<skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy() || savingChanges() > 0" [pendingText]="savingChanges() > 0 ? 'Saving report changes…' : 'Working…'" />
 <div class="stack">
   <div class="toolbar">
     <div>

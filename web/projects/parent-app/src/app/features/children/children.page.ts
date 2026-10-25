@@ -6,13 +6,13 @@ import {
   IonButton, IonContent, IonHeader, IonIcon, IonInput, IonRefresher, IonRefresherContent,
   IonSpinner, IonToolbar, RefresherCustomEvent,
 } from '@ionic/angular/standalone';
-import { ApplicationService, AuthService, ChildSummary, MyChild, ParentNotice, SchoolEvent } from '@skoolo/shared';
+import { ActionFeedbackComponent, ApplicationService, AuthService, ChildSummary, MyChild, ParentNotice, SchoolEvent } from '@skoolo/shared';
 import { ChildCardComponent } from './child-card.component';
 import { SchoolThemeService } from '../../school-theme.service';
 
 @Component({
   selector: 'app-children-page',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, IonButton, IonContent, IonHeader, IonIcon,
+  imports: [ActionFeedbackComponent, DatePipe, ReactiveFormsModule, RouterLink, IonButton, IonContent, IonHeader, IonIcon,
     IonInput, IonRefresher, IonRefresherContent, IonSpinner, IonToolbar, ChildCardComponent],
   templateUrl: './children.page.html',
   styleUrl: './children.page.scss',

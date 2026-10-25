@@ -6,18 +6,19 @@ import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSelect, IonSelectOption,
   IonSpinner, IonTextarea, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
-import { AbsenceReport, ApplicationService, MessagingService } from '@skoolo/shared';
+import { ActionFeedbackComponent, AbsenceReport, ApplicationService, MessagingService } from '@skoolo/shared';
 
 const REASONS = ['Illness', 'Medical appointment', 'Family responsibility', 'Religious observance', 'Other'];
 
 @Component({
   selector: 'app-absence-page',
-  imports: [
+  imports: [ActionFeedbackComponent,
     DatePipe, ReactiveFormsModule, RouterLink,
     IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonSelect, IonSelectOption,
     IonSpinner, IonTextarea, IonTitle, IonToolbar,
   ],
   template: `
+    <skoolo-action-feedback [success]="sent() ? 'Absence report sent to the school.' : null" [error]="error()" [pending]="busy()" />
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/children" text="" /></ion-buttons>

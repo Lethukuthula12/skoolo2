@@ -191,3 +191,13 @@ reviews; admins manage reusable template defaults. Approved content is immutable
 are new drafts referencing the original. Learner papers and staff memoranda print separately.
 These permission choices were surfaced as first-version assumptions. School acceptance is pending.
 This request brings Stage 8 forward without declaring the remaining Stage 0 work complete.
+
+## Amendment, 2026-10-25 — Visible action confirmations
+
+The owner reported that save confirmations at the top of long pages are missed. Use shared,
+animated viewport notifications for action feedback in both apps: pending work, confirmed success
+and errors. Success dismisses after six seconds; hover, keyboard focus and hidden tabs pause the
+timer. Errors remain until dismissed, another action or navigation. Existing inline context stays
+available. Native modal drawers own their notification display while open. Respect reduced motion,
+announce messages to assistive technology and keep parent navigation clear. Loading completion
+alone must never imply a successful write. Navigation and account/school changes clear feedback.

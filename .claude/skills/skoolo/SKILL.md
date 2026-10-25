@@ -109,6 +109,14 @@ half of it.
 
 ## What exists (keep this list honest)
 
+- **Action feedback (2026-10-25):** shared animated viewport notifications cover 24 portal/parent
+  action surfaces. Pending work, confirmed success and errors stay visible while scrolling, with
+  priority outlets inside modal drawers, reduced motion, accessible status/alert text and parent
+  navigation spacing. Success expires after six seconds with hover/focus/hidden-tab pauses; errors
+  persist. Route/account/school context clears stale feedback. `check:feedback` runs in CI alongside
+  the existing checks. Both production builds pass; browser and real-phone visual acceptance remain
+  pending because managed browser policy blocks access. See the checklist in `docs/deploy.md`.
+
 - **Assessment papers (2026-10-25):** Forms & Documents in the portal supports typed question
   blocks, raster images, tables, answer lines, school template defaults, saved drafts, a selected
   admin reviewer, return/withdraw/approve, immutable approved papers and revised copies. Learner

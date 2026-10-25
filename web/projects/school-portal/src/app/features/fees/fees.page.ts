@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { TablePagination } from '../../ui/table-pagination';
 import { TablePaginationComponent } from '../../ui/table-pagination.component';
 import * as XLSX from 'xlsx';
-import { FEE_PLAN_LABELS, FeeAccountRow, FeePayment, Grade, SchoolDirectoryService, StaffService } from '@skoolo/shared';
+import { ActionFeedbackComponent, FEE_PLAN_LABELS, FeeAccountRow, FeePayment, Grade, SchoolDirectoryService, StaffService } from '@skoolo/shared';
 
 interface ClassOption { id: string; grade_code: string; name: string; }
 interface PaymentForm { amount: number | null; method: string; reference: string; paid_on: string; note: string; }
 
 @Component({
   selector: 'app-fees-page',
-  imports: [DatePipe, FormsModule, TablePaginationComponent],
+  imports: [ActionFeedbackComponent, DatePipe, FormsModule, TablePaginationComponent],
   templateUrl: './fees.page.html',
   styleUrl: './fees.page.scss',
 })

@@ -5,21 +5,20 @@ import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList,
   IonNote, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
-import {
-  ApplicationDocument, ApplicationService, ApplicationSummary, DOCUMENT_TYPE_LABELS, DocumentType,
-  REQUIRED_DOCUMENT_TYPES,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, ApplicationDocument, ApplicationService, ApplicationSummary, DOCUMENT_TYPE_LABELS, DocumentType,
+  REQUIRED_DOCUMENT_TYPES, } from '@skoolo/shared';
 
 const OPTIONAL_DOCUMENT_TYPES: readonly DocumentType[] = ['latest_report', 'immunisation_card'];
 
 @Component({
   selector: 'app-documents-page',
-  imports: [
+  imports: [ActionFeedbackComponent,
     NgTemplateOutlet, RouterLink,
     IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList,
     IonNote, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busyType() !== null" pendingText="Uploading document…" />
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/applications" text="" /></ion-buttons>
@@ -110,6 +109,7 @@ export class DocumentsPage {
   protected readonly loading = signal(true);
   protected readonly busyType = signal<DocumentType | null>(null);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
   private pendingType: DocumentType | null = null;
   private readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
 
@@ -148,9 +148,11 @@ export class DocumentsPage {
       return;
     }
     this.busyType.set(type);
+    this.notice.set(null); this.error.set(null);
     try {
       await this.applications.uploadDocument(this.id(), type, file);
       this.documents.set(await this.applications.documents(this.id()));
+      this.notice.set('Document uploaded.');
     } catch (err) {
       console.error(err);
       this.error.set('Upload failed. Check your connection and try again.');

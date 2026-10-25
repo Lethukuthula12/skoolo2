@@ -2,9 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import * as XLSX from 'xlsx';
-import {
-  ASSESSMENT_KIND_LABELS, Grade, Learner, SchoolDirectoryService, StaffService, achievementLevel,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, ASSESSMENT_KIND_LABELS, Grade, Learner, SchoolDirectoryService, StaffService, achievementLevel, } from '@skoolo/shared';
 import type { Tables } from '@skoolo/shared';
 
 type Assessment = Tables<'assessments'>;
@@ -15,7 +13,7 @@ interface EditForm { id: string | null; title: string; kind: string; max_score: 
 
 @Component({
   selector: 'app-assessments-page',
-  imports: [FormsModule, RouterLink],
+  imports: [ActionFeedbackComponent, FormsModule, RouterLink],
   templateUrl: './assessments.page.html',
   styleUrl: './assessments.page.scss',
 })
@@ -27,6 +25,7 @@ export class AssessmentsPage {
   protected readonly kindLabels = ASSESSMENT_KIND_LABELS;
   protected readonly loading = signal(true);
   protected readonly busy = signal(false);
+  protected readonly savingScores = signal(0);
   protected readonly notice = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
 
@@ -104,12 +103,16 @@ export class AssessmentsPage {
       return;
     }
     const key = this.scoreKey(assessment.id, learner.id);
-    this.error.set(null);
+    if (this.savingScores() === 0) { this.error.set(null); this.notice.set(null); }
+    this.savingScores.update(count => count + 1);
     try {
       await this.staff.saveAssessmentScore(assessment.id, learner.id, score, false);
       this.scores.set({ ...this.scores(), [key]: { score, is_absent: false } });
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Could not save the score.');
+    } finally {
+      this.savingScores.update(count => count - 1);
+      if (this.savingScores() === 0 && !this.error()) this.notice.set('Scores saved.');
     }
   }
 

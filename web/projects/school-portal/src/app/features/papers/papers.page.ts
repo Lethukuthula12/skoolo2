@@ -3,7 +3,7 @@ import { Component, DestroyRef, HostListener, computed, effect, inject, signal }
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { AuthService, StaffService } from '@skoolo/shared';
+import { ActionFeedbackComponent, AuthService, StaffService } from '@skoolo/shared';
 import type { Json, Tables } from '@skoolo/shared';
 import { BLOCK_LABELS, BlockType, Paper, PaperContent, PaperEvent, PaperQuestion, PaperTemplate, blankQuestion, paperQuestions, questionTotal } from './paper.model';
 import { PaperOption, PaperService, PaperSummary, Reviewer } from './paper.service';
@@ -11,7 +11,7 @@ import { paperPrintHtml, printPaper } from './paper-print';
 
 @Component({
   selector: 'app-papers-page',
-  imports: [ReactiveFormsModule, DatePipe, RouterLink],
+  imports: [ActionFeedbackComponent, ReactiveFormsModule, DatePipe, RouterLink],
   templateUrl: './papers.page.html',
   styleUrl: './papers.page.scss',
 })
@@ -262,6 +262,7 @@ export class PapersPage {
       await this.service.deleteTemplate(template.id);
       if (epoch !== this.epoch) return;
       this.templates.update(list => list.filter(t => t.id !== template.id)); this.editTemplate(null);
+      this.notice.set('School template removed.');
     });
   }
   private validDraft(): boolean {

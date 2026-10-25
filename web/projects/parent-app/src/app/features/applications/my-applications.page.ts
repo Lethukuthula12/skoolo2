@@ -6,18 +6,17 @@ import {
   IonRefresherContent, IonSpinner, IonTitle, IonToolbar,
 } from '@ionic/angular/standalone';
 import type { RefresherCustomEvent } from '@ionic/angular/standalone';
-import {
-  APPLICATION_STATUS_LABELS, ApplicationService, ApplicationStatus, ApplicationSummary, PAYMENT_STATUS_LABELS,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, APPLICATION_STATUS_LABELS, ApplicationService, ApplicationStatus, ApplicationSummary, PAYMENT_STATUS_LABELS, } from '@skoolo/shared';
 
 @Component({
   selector: 'app-my-applications-page',
-  imports: [
+  imports: [ActionFeedbackComponent,
     DatePipe, RouterLink,
     IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonRefresher,
     IonRefresherContent, IonSpinner, IonTitle, IonToolbar,
   ],
   template: `
+    <skoolo-action-feedback [error]="error()" />
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>

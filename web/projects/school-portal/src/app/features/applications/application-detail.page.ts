@@ -2,16 +2,15 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import {
-  APPLICATION_STATUS_LABELS, ApplicationDocument, ApplicationStatus, DOCUMENT_TYPE_LABELS, PAYMENT_STATUS_LABELS,
-  StaffApplication, StaffService, StatusHistoryEntry,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, APPLICATION_STATUS_LABELS, ApplicationDocument, ApplicationStatus, DOCUMENT_TYPE_LABELS, PAYMENT_STATUS_LABELS,
+  StaffApplication, StaffService, StatusHistoryEntry, } from '@skoolo/shared';
 import { allowedNextStatuses, paymentBadgeClass, statusBadgeClass } from './badges';
 
 @Component({
   selector: 'app-application-detail-page',
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [ActionFeedbackComponent, DatePipe, FormsModule, RouterLink],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     @if (loading()) {
       <div class="loading-state" role="status"><span class="sr-only">Loading school information…</span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
     } @else if (!app()) {

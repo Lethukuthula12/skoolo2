@@ -3,12 +3,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { IonApp, IonIcon, IonRouterOutlet } from '@ionic/angular/standalone';
 import { filter, map, startWith } from 'rxjs';
-import { AuthService, SessionEndedComponent } from '@skoolo/shared';
+import { AuthService, FeedbackOutletComponent, SessionEndedComponent } from '@skoolo/shared';
 import { SchoolThemeService } from './school-theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [IonApp, IonIcon, IonRouterOutlet, RouterLink, SessionEndedComponent],
+  imports: [IonApp, IonIcon, IonRouterOutlet, RouterLink, SessionEndedComponent, FeedbackOutletComponent],
   template: `
     <ion-app>
       @if (auth.boundary()) {
@@ -29,6 +29,7 @@ import { SchoolThemeService } from './school-theme.service';
           </div>
         </nav>
       }
+      <skoolo-feedback-outlet [style.--feedback-bottom-offset]="showNavigation() ? 'var(--parent-nav-height)' : '0px'" />
       }
     </ion-app>
   `,

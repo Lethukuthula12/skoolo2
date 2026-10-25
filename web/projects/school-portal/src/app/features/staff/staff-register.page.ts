@@ -3,10 +3,8 @@ import { Component, ElementRef, computed, inject, signal, viewChild } from '@ang
 import { FormsModule } from '@angular/forms';
 import { TablePagination } from '../../ui/table-pagination';
 import { TablePaginationComponent } from '../../ui/table-pagination.component';
-import {
-  STAFF_DOCUMENT_TYPES, STAFF_POSITIONS, SchoolStaffRow, StaffDocument, StaffInvite, StaffMember, StaffRole,
-  StaffService, isValidSaIdentityNumber,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, STAFF_DOCUMENT_TYPES, STAFF_POSITIONS, SchoolStaffRow, StaffDocument, StaffInvite, StaffMember, StaffRole,
+  StaffService, isValidSaIdentityNumber, } from '@skoolo/shared';
 
 interface StaffForm {
   id: string | null;
@@ -28,8 +26,9 @@ const EMPTY_FORM: StaffForm = {
 
 @Component({
   selector: 'app-staff-register-page',
-  imports: [DatePipe, FormsModule, TablePaginationComponent],
+  imports: [ActionFeedbackComponent, DatePipe, FormsModule, TablePaginationComponent],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div class="toolbar">
         <div>

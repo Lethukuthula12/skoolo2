@@ -6,10 +6,8 @@ import { TablePaginationComponent } from '../../ui/table-pagination.component';
 import { TablePagination } from '../../ui/table-pagination';
 import * as XLSX from 'xlsx';
 import { escapePrintText as text, openPrintDocument, PRINT_DOCUMENT_POLICY } from '../../ui/print-document';
-import {
-  ClassRow, Learner, LearnerGuardian, LearnerInsert, RegisterLearnerRow, SchoolDirectoryService,
-  StaffService, isValidSaIdentityNumber,
-} from '@skoolo/shared';
+import { ActionFeedbackComponent, ClassRow, Learner, LearnerGuardian, LearnerInsert, RegisterLearnerRow, SchoolDirectoryService,
+  StaffService, isValidSaIdentityNumber, } from '@skoolo/shared';
 
 interface LearnerForm {
   id: string | null;
@@ -41,7 +39,7 @@ const EMPTY: LearnerForm = {
 
 @Component({
   selector: 'app-learners-page',
-  imports: [FormsModule, RouterLink, PortalDrawerComponent, TablePaginationComponent],
+  imports: [ActionFeedbackComponent, FormsModule, RouterLink, PortalDrawerComponent, TablePaginationComponent],
   templateUrl: './learners.page.html',
   styleUrl: './learners.page.scss',
 })

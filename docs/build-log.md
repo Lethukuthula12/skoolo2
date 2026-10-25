@@ -1602,3 +1602,32 @@ remain unchanged until the proposed server session work is implemented and verif
 - Managed browser policy explicitly blocked `http://127.0.0.1:4300`; no alternate browser or
   network route was used to bypass it. Visual, real-phone, actual printer/PDF and school acceptance
   are pending. `docs/deploy.md` records the walkthrough. Stage 8 is **Built**, not accepted/Done.
+
+## 2026-10-25 — Animated action feedback visible while scrolling
+
+- Added a shared notification service, page-state binding and root outlet. Cards slide into the
+  viewport with a spinner while work runs, an animated checkmark for confirmed success and a
+  persistent error state. Text is interpolated, never rendered as HTML. Up to three cards can show;
+  original inline details remain available. This changes presentation, not save or approval rules.
+- Success stays for six seconds, pausing on hover, keyboard focus and hidden tabs. Dismissal has a
+  short exit transition; replacement outcomes cancel old timers. Reduced motion removes animation.
+  Status/alert semantics, labelled dismissal, mobile touch targets and safe-area spacing are included.
+- Outlets sit outside scrolling pages. Parent feedback clears the bottom navigation. Native modal
+  drawers have priority outlets so feedback is visible and interactive inside their top layer;
+  only one outlet renders notices. Account/school changes and navigation clear messages; stale
+  outcomes from another account, school or route are ignored. Ordinary token refresh preserves them.
+- Connected 24 portal and parent surfaces, including papers, attendance, reports, assessments,
+  school appearance/profile, fees, staff, learners, classes, enrolment, messages, calendars, parent
+  family linking, absence reports, document uploads and payment declarations. Added missing outcome
+  messages for score/report edits, teacher assignment, removals, uploads, payment declarations and
+  replies. Concurrent mark edits wait for all requests and do not claim success if any failed.
+- `check:feedback` passed real service/binding tests for timing, pause/resume, repeated saves,
+  no false success from reloads, error persistence, stale timers, modal ownership, route/account/
+  school cleanup, concurrent save failures and accessibility contracts. Added it to GitHub CI.
+  Existing `check:papers`, `check:security` and all `check:sessions` checks passed.
+- Both production builds passed: portal 564.61 kB initial, parent 1.38 MB. The existing portal
+  500 kB warning and local Node 20 SDK warning remain. No dependencies, schemas, queries or access
+  rules changed; a fresh database isolation run is not required for this presentation change.
+- Browser access is still blocked by the managed policy encountered earlier in this session; no
+  bypass was attempted. Actual animation, screen-reader announcements, drawer layering, long-page
+  scrolling and real-phone/keyboard behaviour remain visual acceptance checks in `docs/deploy.md`.

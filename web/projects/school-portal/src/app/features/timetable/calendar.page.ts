@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthService, CALENDAR_KIND_LABELS, CalendarItemRow, CalendarKind, MyClass, StaffService } from '@skoolo/shared';
+import { ActionFeedbackComponent, AuthService, CALENDAR_KIND_LABELS, CalendarItemRow, CalendarKind, MyClass, StaffService } from '@skoolo/shared';
 
 interface DayCell { iso: string; day: number; inMonth: boolean; isToday: boolean; }
 interface ClassOption { id: string; label: string; }
@@ -9,8 +9,9 @@ interface EventForm { id: string | null; title: string; kind: CalendarKind; star
 
 @Component({
   selector: 'app-calendar-page',
-  imports: [FormsModule, DatePipe],
+  imports: [ActionFeedbackComponent, FormsModule, DatePipe],
   template: `
+    <skoolo-action-feedback [success]="notice()" [error]="error()" [pending]="busy()" />
     <div class="stack">
       <div class="toolbar">
         <div>
@@ -293,10 +294,11 @@ export class CalendarPage {
 
   protected async removeEvent(e: CalendarItemRow): Promise<void> {
     if (!confirm(`Remove "${e.title}"?`)) return;
-    this.busy.set(true); this.error.set(null);
+    this.busy.set(true); this.error.set(null); this.notice.set(null);
     try {
       await this.staff.deleteCalendarItem(e.id);
       await this.reload();
+      this.notice.set('Event removed.');
     } catch {
       this.error.set('Could not remove the event.');
     } finally {
