@@ -1692,3 +1692,24 @@ remain unchanged until the proposed server session work is implemented and verif
   `npm ci` plus production build). No schema, RLS, RPC or role-check changed, so the full
   `npm run test:rls` suite was not re-run for this change per CLAUDE.md's scoping rule; the
   parent-app production build was also run to confirm it is unaffected.
+
+## 2026-10-25 — Regression-test this laptop's environment
+
+- Ran `npm run test:rls` against the linked live project: 170/170 tenant isolation checks and the
+  RLS coverage guard both passed (builds two throwaway schools, rolls back, no data changed).
+- Ran the e2e project's static checks (`npm run e2e:check`): TypeScript compiles, the Gherkin
+  catalogue validates (123 scenarios across 22 features, 10 with automation definitions), and the
+  local-safety guard tests pass (dedicated local API/database only; reset refuses any project
+  other than the generated test one).
+- This laptop had Node 20.19.2 and no Cypress binary cached, so the browser suite could not run.
+  Downloaded the official portable Node 22.23.4 Windows zip (no installer, no admin rights, no
+  system PATH change) to `%LOCALAPPDATA%\skoolo-node22`, used it only to reinstall
+  `tests/e2e`'s dependencies (`npm ci`, 306 packages, 0 vulnerabilities) and the matching Cypress
+  binary. `cypress verify` now passes and `npm run local:doctor` confirms Node 22.23.4 and Git are
+  fine; Docker is the only remaining gap (`ENOENT`, not installed at all).
+- Did not attempt to install Docker Desktop. It requires enabling Windows features (WSL2/Hyper-V),
+  installs a system service, and typically needs a restart — all needing an interactive admin
+  elevation prompt that cannot be completed from this session. This is an owner action.
+- Without Docker, the local Supabase bootstrap, local RLS run and real Cypress browser scenarios
+  remain unverified on this machine, consistent with prior entries. No schema, access rules or
+  application code changed in this session; this is a verification/tooling-only update.
