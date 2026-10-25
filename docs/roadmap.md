@@ -77,14 +77,23 @@ remain open. Persistent browser token storage is unchanged.
 reauthentication challenge, send a code on request and submit the nonce with the new password.
 They handle invalid/expired codes, resend cooldowns, rate-limit responses and connection failures;
 completed/destroyed forms clear secrets and Ionic's cached parent screen clears them on leaving.
-This is app support for Supabase's **Secure password change** option, not confirmation that the
-hosted option is enabled. Dashboard access was denied by browser security policy; the owner must
-enable/check the option after deployment using `docs/deploy.md`. No hosted settings were changed.
+The owner confirmed enabling Supabase's **Secure password change** option on 2026-10-25. Live
+older-session challenge/email-code checks remain open. Dashboard access was denied by browser
+security policy; this is owner-reported activation, not an agent inspection.
 
 **Timeout decision, 2026-10-25:** the owner confirmed Supabase Free and approved staff limits of
 30 minutes idle/eight hours maximum. Parent limits remain undecided. Hosted lifetime controls
 require Pro or above; design server enforcement with item 3 rather than presenting a browser
 timer as enforcement. These limits are not active yet.
+
+**CAPTCHA implementation, 2026-10-25:** the owner supplied a public Turnstile Site Key. All seven
+public authentication forms now render a challenge and pass its single-use token through the
+shared service. Expiry/retry, failed reset requests and duplicate submissions are handled.
+Supabase CAPTCHA activation and live validation remain pending the owner steps in `docs/deploy.md`;
+the frontend check alone does not enforce bot protection on direct Auth API requests.
+
+The proposed server boundary, registry gate, storage and rollout are now described in
+`docs/session-security-design.md`. It changes no infrastructure or current session guarantees.
 
 #### What the review establishes
 

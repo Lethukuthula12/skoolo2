@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService, StaffService } from '@skoolo/shared';
+import { AuthService, StaffService, AuthChallengeComponent } from '@skoolo/shared';
 
 /**
  * A staff member redeems the invite code their school gave them. New people create their login
@@ -9,7 +9,7 @@ import { AuthService, StaffService } from '@skoolo/shared';
  */
 @Component({
   selector: 'app-join-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AuthChallengeComponent],
   template: `
     <div class="wrap">
       <div class="card stack">
@@ -39,7 +39,8 @@ import { AuthService, StaffService } from '@skoolo/shared';
             <div class="field"><label for="email">Email (the one the invite was made for)</label><input id="email" type="email" formControlName="email" autocomplete="email" /></div>
             <div class="field"><label for="password">Choose a password</label><input id="password" type="password" formControlName="password" autocomplete="new-password" /></div>
             @if (error()) { <p class="error">{{ error() }}</p> }
-            <button class="btn btn-primary" type="submit" [disabled]="signUpForm.invalid || busy()">{{ busy() ? 'Creating your login…' : 'Create login and join' }}</button>
+            <skoolo-auth-challenge />
+            <button class="btn btn-primary" type="submit" [disabled]="signUpForm.invalid || busy() || !challenge()?.verified()">{{ busy() ? 'Creating your login…' : 'Create login and join' }}</button>
             <p class="small muted">Already have a Skoolo login? <a routerLink="/sign-in" [queryParams]="{ returnUrl: '/join?code=' + (signUpForm.value.code || '') }">Sign in first</a>, then enter the code.</p>
           </form>
         }
@@ -60,6 +61,7 @@ export class JoinPage {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
+  protected readonly challenge = viewChild(AuthChallengeComponent);
 
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -92,6 +94,9 @@ export class JoinPage {
 
   protected async signUpAndRedeem(): Promise<void> {
     if (this.signUpForm.invalid || this.busy()) return;
+    const challenge = this.challenge();
+    const captchaToken = challenge?.takeToken();
+    if (!captchaToken) { this.error.set('Please complete the security check.'); return; }
     const v = this.signUpForm.getRawValue();
     this.codeForm.patchValue({ code: v.code });
     this.notice.set(null);
@@ -102,7 +107,8 @@ export class JoinPage {
         fullName: v.fullName.trim(),
         phone: v.phone.trim(),
         emailRedirectTo: window.location.origin + '/join',
-      });
+        captchaToken,
+      }).finally(() => challenge?.reset());
       if (error) throw error;
       if (needsEmailConfirmation) {
         this.notice.set('Check your email for a confirmation link. Open it, then enter your school’s invite code to finish joining. Your invitation has not been used yet.');
@@ -129,7 +135,6 @@ export class JoinPage {
       if (await action() === false) return;
       await this.router.navigateByUrl('/applications');
     } catch (err) {
-      console.error(err);
       this.error.set(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
       this.busy.set(false);

@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
-import type { AuthChangeEvent, AuthError, Session, User } from '@supabase/supabase-js';
+import { AuthError, type AuthChangeEvent, type Session, type User } from '@supabase/supabase-js';
 import { Subject } from 'rxjs';
 import { injectSupabase } from '../supabase-client';
 
@@ -10,6 +10,7 @@ export interface SignUpDetails {
   phone: string;
   /** Same-app confirmation destination; must be in the Supabase redirect allowlist. */
   emailRedirectTo: string;
+  captchaToken: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -113,19 +114,22 @@ export class AuthService {
     return this.readyPromise;
   }
 
-  async signIn(email: string, password: string): Promise<AuthError | null> {
-    const { error } = await this.client.auth.signInWithPassword({ email, password });
+  async signIn(email: string, password: string, captchaToken: string): Promise<AuthError | null> {
+    if (!captchaToken?.trim()) return new AuthError('Please complete the security check.', 400, 'captcha_failed');
+    const { error } = await this.client.auth.signInWithPassword({ email, password, options: { captchaToken } });
     if (!error) this.isPasswordRecovery.set(false);
     return error;
   }
 
   /** Returns the error, or null. `needsEmailConfirmation` is true when no session was created. */
   async signUp(details: SignUpDetails): Promise<{ error: AuthError | null; needsEmailConfirmation: boolean }> {
+    if (!details.captchaToken?.trim()) return { error: new AuthError('Please complete the security check.', 400, 'captcha_failed'), needsEmailConfirmation: false };
     const { data, error } = await this.client.auth.signUp({
       email: details.email,
       password: details.password,
       options: {
         emailRedirectTo: details.emailRedirectTo,
+        captchaToken: details.captchaToken,
         data: { full_name: details.fullName, phone: details.phone },
       },
     });
@@ -133,8 +137,9 @@ export class AuthService {
   }
 
   /** Sends a password-reset email with a link back to `redirectTo` (must be an allowed URL). */
-  async requestPasswordReset(email: string, redirectTo: string): Promise<AuthError | null> {
-    const { error } = await this.client.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+  async requestPasswordReset(email: string, redirectTo: string, captchaToken: string): Promise<AuthError | null> {
+    if (!captchaToken?.trim()) return new AuthError('Please complete the security check.', 400, 'captcha_failed');
+    const { error } = await this.client.auth.resetPasswordForEmail(email.trim(), { redirectTo, captchaToken });
     return error;
   }
 

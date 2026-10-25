@@ -169,3 +169,15 @@ require Pro or above and its inactivity timeout measures refresh activity, not u
 Those project-wide settings alone also do not separate the two apps. Design staff enforcement in
 the planned server session layer, including idle activity, absolute expiry and direct API bypass,
 before claiming the policy is enforced. No paid upgrade or new infrastructure has been approved.
+
+## Amendment, 2026-10-25 — Secure password change and authentication CAPTCHA
+
+The owner confirmed that hosted **Secure password change** is enabled and supplied the public
+Site Key for the requested Cloudflare Managed Turnstile widget. Integrate that key into both
+apps' public authentication forms, including school registration and invitation signup. The
+private key stays in Supabase's hosted CAPTCHA settings. Keep hosted CAPTCHA disabled until
+both updated apps are deployed; activation and live provider checks remain owner steps because
+browser security policy blocks agent access. The public widget alone is not server enforcement.
+
+The server session proposal is documented in `docs/session-security-design.md`. It does not
+create infrastructure, change browser token storage or implement the agreed staff timeouts.

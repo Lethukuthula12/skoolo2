@@ -136,7 +136,8 @@ for (const app of ['school-portal', 'parent-app']) {
   assert.match(enforced, /frame-ancestors 'none'/);
   assert.match(enforced, /object-src 'none'/);
   const proposed = globalRules.match(/Content-Security-Policy-Report-Only: (.*)/)[1];
-  assert.match(proposed, /script-src 'self';/);
+  assert.match(proposed, /script-src 'self' https:\/\/challenges.cloudflare.com;/);
+  assert.match(proposed, /frame-src https:\/\/challenges.cloudflare.com;/);
   assert.doesNotMatch(proposed, /unsafe-eval/);
   assert.match(proposed, /connect-src 'self' https:\/\/chfebhulyqawuhjbmlhw.supabase.co wss:\/\/chfebhulyqawuhjbmlhw.supabase.co;/);
   assert.match(headers, /\/index.html\s+Cache-Control: no-cache/);

@@ -1,11 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '@skoolo/shared';
+import { AuthService, AuthChallengeComponent } from '@skoolo/shared';
 
 @Component({
   selector: 'app-forgot-password-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AuthChallengeComponent],
   template: `
     <div class="wrap">
       <div class="card stack">
@@ -25,8 +25,9 @@ import { AuthService } from '@skoolo/shared';
               <label for="email">Email</label>
               <input id="email" type="email" formControlName="email" autocomplete="email" />
             </div>
+            <skoolo-auth-challenge />
             @if (error()) { <p class="error">{{ error() }}</p> }
-            <button class="btn btn-primary" type="submit" [disabled]="form.invalid || busy()">
+            <button class="btn btn-primary" type="submit" [disabled]="form.invalid || busy() || !challenge()?.verified()">
               {{ busy() ? 'Sending…' : 'Send reset link' }}
             </button>
             <a routerLink="/sign-in" class="small muted">Back to sign in</a>
@@ -45,6 +46,7 @@ import { AuthService } from '@skoolo/shared';
 export class ForgotPasswordPage {
   private readonly auth = inject(AuthService);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
+  protected readonly challenge = viewChild(AuthChallengeComponent);
 
   protected readonly busy = signal(false);
   protected readonly sent = signal(false);
@@ -54,17 +56,30 @@ export class ForgotPasswordPage {
   });
 
   protected async submit(): Promise<void> {
+    if (this.form.invalid || this.busy() || this.sent()) return;
+    const challenge = this.challenge();
+    const captchaToken = challenge?.takeToken();
+    if (!captchaToken) { this.error.set('Please complete the security check.'); return; }
     this.busy.set(true);
     this.error.set(null);
     const redirectTo = `${location.origin}/reset-password`;
-    const error = await this.auth.requestPasswordReset(this.form.getRawValue().email, redirectTo);
-    this.busy.set(false);
-    // Do not reveal whether the address exists; always show the same confirmation unless the
-    // request itself failed to send (network, rate limit).
-    if (error && /rate|network|fetch/i.test(error.message)) {
-      this.error.set('Too many attempts or no connection. Please try again in a few minutes.');
-      return;
+    try {
+      const error = await this.auth.requestPasswordReset(this.form.getRawValue().email, redirectTo, captchaToken);
+      // Keep account-specific responses indistinguishable, but do not claim delivery after a
+      // failed security check, provider outage or rejected request.
+      if (error && !['user_not_found', 'user_banned', 'email_not_confirmed'].includes(error.code ?? '')) {
+        const rateLimited = error.status === 429 || error.code === 'over_email_send_rate_limit' || error.code === 'over_request_rate_limit';
+        this.error.set(rateLimited
+          ? 'Too many attempts. Please wait a few minutes before trying again.'
+          : 'We could not request a reset link. Please try again.');
+        return;
+      }
+      this.sent.set(true);
+    } catch {
+      this.error.set('We could not request a reset link. Check your connection and try again.');
+    } finally {
+      challenge?.reset();
+      this.busy.set(false);
     }
-    this.sent.set(true);
   }
 }

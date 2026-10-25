@@ -1467,3 +1467,43 @@ revocation checks, HttpOnly sessions and MFA still require their planned impleme
 This batch prepares password-change verification; hosted activation and live checks are pending.
 Stage 0 remains in progress, including abuse controls, staff timeout enforcement, HttpOnly sessions
 and MFA. Browser token storage remains unchanged.
+
+## 2026-10-25 — Add Turnstile to public authentication flows
+
+- The owner confirmed hosted Secure password change is enabled. Its older-session verification
+  code flow still needs live acceptance checks; this is owner confirmation, not dashboard inspection.
+- Added a shared explicit Turnstile loader and compact challenge component using the owner's
+  public Site Key. All seven public forms now require and pass the token to Supabase: parent
+  sign-in/signup/reset request and school sign-in/reset request/invitation signup/registration.
+  No private key is stored in code. Hosted CAPTCHA remains pending activation after deployment.
+- Tokens are consumed once, checked against their age before submission, reset after requests
+  and cleared on widget destruction. Expiry, unsupported browsers, loading failures and timeouts
+  have visible retry paths. Generation checks ignore old callbacks. Parent cached Ionic pages
+  remove the challenge on leaving. Signal queries keep submit readiness reactive in both apps.
+- Auth requests now release loading state after thrown failures and guard duplicate submission.
+  Successful login/signup clears the password. Reset-email screens no longer show a sent message
+  when a CAPTCHA/provider request fails; account-specific responses stay neutral. Removed raw
+  error logging from invitation signup. Existing auth/session and tenant access rules are retained.
+- Report-only CSP now allows Cloudflare's exact challenge origin for its script and iframe.
+  The baseline enforced policy is unchanged. No dependency, schema, RLS, RPC, role, SMTP or hosted
+  authentication setting was changed by the agent.
+- `npm run check:sessions` passed lifecycle, actual form/controller/SDK forwarding and new
+  component/loader checks. Coverage includes missing/consumed/expired tokens, retries, stale
+  callbacks, single script loading, timeouts and cleanup. `npm run check:security` also passed.
+  These use synthetic provider responses, not live Cloudflare or Supabase CAPTCHA validation.
+- The full RLS suite passed all 112 checks plus its coverage guard. Both production builds passed:
+  school portal 553.79 kB initial and parent 1.35 MB. The existing portal 500 kB budget and local
+  Node 20/Supabase warnings remain; CI and hosting use Node 22.
+- Browser security policy blocks the dashboards and relevant app origins. No alternative path
+  was used. Widget layout/focus/mobile/PWA behavior, real provider acceptance, hosted activation
+  and missing/invalid-token server rejection remain unverified. `docs/deploy.md` gives the ordered
+  owner rollout: both deployments, visible working widgets, then enable Turnstile in Supabase
+  with its private Secret Key and test both apps. Hosted rate limits still require review.
+- Added `docs/session-security-design.md`: a proposed Worker/HttpOnly-cookie session boundary,
+  session storage, CSRF protections, callback migration, RLS-preserving database session gate and
+  rollout/acceptance checks. It creates no infrastructure and does not yet enforce the agreed
+  staff 30-minute idle/eight-hour maximum policy. Parent limits remain undecided.
+
+Stage 0 remains in progress. The app-side CAPTCHA integration is complete; direct API abuse
+protection requires the hosted activation above. Browser token storage and staff session limits
+remain unchanged until the proposed server session work is implemented and verified.

@@ -1,7 +1,7 @@
-import { Component, ElementRef, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService, StaffService } from '@skoolo/shared';
+import { AuthService, AuthChallengeComponent, Grade, PROVINCES, Province, School, SchoolDirectoryService, StaffService } from '@skoolo/shared';
 
 /**
  * A principal or admin puts their school on Skoolo. Either they claim a school already in the
@@ -10,7 +10,7 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
  */
 @Component({
   selector: 'app-register-school-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AuthChallengeComponent],
   template: `
     <div class="wrap">
       <div class="card stack">
@@ -54,7 +54,8 @@ import { AuthService, Grade, PROVINCES, Province, School, SchoolDirectoryService
               </div>
             </div>
             @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
-            <button class="btn btn-primary" type="submit" [disabled]="accountForm.invalid || busy()">{{ busy() ? 'Creating your login…' : 'Create login and continue' }}</button>
+            <skoolo-auth-challenge />
+            <button class="btn btn-primary" type="submit" [disabled]="accountForm.invalid || busy() || !challenge()?.verified()">{{ busy() ? 'Creating your login…' : 'Create login and continue' }}</button>
             <p class="small muted">Already have a login? <a routerLink="/sign-in" [queryParams]="{ returnUrl: '/register-school' }">Sign in first</a>.</p>
           </form>
           }
@@ -162,6 +163,7 @@ export class RegisterSchoolPage {
   private readonly directory = inject(SchoolDirectoryService);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder).nonNullable;
+  protected readonly challenge = viewChild(AuthChallengeComponent);
 
   protected readonly provinces = PROVINCES;
   protected readonly grades = signal<Grade[]>([]);
@@ -243,6 +245,9 @@ export class RegisterSchoolPage {
 
   protected async createAccount(): Promise<void> {
     if (this.auth.isSignedIn() || this.confirmationEmail() || this.accountForm.invalid || this.busy()) return;
+    const challenge = this.challenge();
+    const captchaToken = challenge?.takeToken();
+    if (!captchaToken) { this.error.set('Please complete the security check.'); return; }
     this.busy.set(true);
     this.error.set(null);
     const a = this.accountForm.getRawValue();
@@ -253,6 +258,7 @@ export class RegisterSchoolPage {
         fullName: a.fullName.trim(),
         phone: a.phone.trim(),
         emailRedirectTo: window.location.origin + '/register-school',
+        captchaToken,
       });
       if (error) throw error;
       this.accountForm.controls.password.reset();
@@ -263,6 +269,7 @@ export class RegisterSchoolPage {
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Could not create your login. Please try again.');
     } finally {
+      challenge?.reset();
       this.busy.set(false);
     }
   }

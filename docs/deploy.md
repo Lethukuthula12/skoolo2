@@ -93,7 +93,8 @@ the screen offers **Send verification code**, accepts the code and includes it a
 `auth.updateUser`. `auth.reauthenticate` sends the code to the account's confirmed contact; current
 Skoolo accounts use confirmed email. This flow does not use `verifyOtp` to start a different session.
 
-**Owner activation after both Cloudflare deployments complete:**
+**Owner confirmed Secure password change enabled on 2026-10-25.** The following live checks
+remain open; this confirmation was supplied by the owner, not inspected through the dashboard.
 
 1. Open the Skoolo Supabase project, **Authentication → Sign In / Providers → Email** (the email
    provider settings), enable **Secure password change**, then save. Keep SMTP credentials,
@@ -107,9 +108,9 @@ Skoolo accounts use confirmed email. This flow does not use `verifyOtp` to start
    code and verify sign-in with the new password. Do not edit token timestamps to manufacture
    an older session. Confirm the reauthentication email template includes the one-time code.
 
-Browser security policy denied the agent access to the Supabase dashboard. The hosted option's
-current state and live delivery of these challenge emails remain unverified; no provider setting
-was changed. Repository `supabase/config.toml` still has its local default of
+Browser security policy denied the agent access to the Supabase dashboard. The agent did not
+change provider settings or independently verify live challenge email delivery. Repository
+`supabase/config.toml` still has its local default of
 `secure_password_change = false` and is not a hosted-settings snapshot. Do not use a broad
 `supabase config push` to activate this change: it could overwrite working SMTP and other settings.
 
@@ -119,6 +120,54 @@ guard only; Supabase must enforce the actual limits. Codes/passwords are not add
 logs; they clear on success/destruction and when leaving an Ionic cached page. Browser layout,
 focus, mobile keyboard and live provider enforcement still need the checks above.
 See [Supabase reauthentication](https://supabase.com/docs/reference/javascript/auth-reauthenticate).
+
+## Turnstile authentication rollout
+
+Both apps now pass a fresh Cloudflare Turnstile token to Supabase for sign-in, account creation
+and password-reset email requests. This includes school registration and invitation signup.
+The owner supplied the public Site Key used in `web/projects/shared/src/lib/environment.ts`.
+The private Secret Key belongs only in Supabase's hosted CAPTCHA settings, never in the app,
+repository, logs or chat. The requested Managed widget hostname allowlist is:
+
+- `app.skoolo.co.za`
+- `schools.skoolo.co.za`
+- `skoolo-app.lethufzikhali.workers.dev`
+- `skoolo-schools.lethufzikhali.workers.dev`
+
+**Server enforcement is pending owner activation after both deployments finish:**
+
+1. Wait for the parent and school Cloudflare production deployments containing this change to
+   succeed. Reload both apps, including installed PWAs, and confirm the security check loads
+   and completes on their sign-in screens. Older cached clients lack the required token.
+2. Open Supabase **Authentication → Bot and Abuse Protection → Enable CAPTCHA protection**
+   (under project Authentication settings), select **Turnstile**, enter this widget's private
+   Secret Key and save. Do not send the secret to the agent. Do not push the entire local
+   `supabase/config.toml`, which is not a snapshot of the working hosted SMTP/auth settings.
+3. With controlled test accounts, verify sign-in, signup/confirmation and reset emails in both
+   apps, plus school registration and invitation signup. Check a wrong-password retry, expiry,
+   widget retry, narrow-screen layout and an installed PWA. Verify missing/invalid tokens are
+   rejected server-side without creating accounts or sending unintended emails.
+
+Supabase validates these tokens server-side; the app must not consume them with a separate
+Siteverify request. The component removes used tokens, handles expiry/network failures and
+offers a fresh challenge on retry. Authenticated password updates and reauthentication codes
+retain their existing flow. The report-only CSP allows only Cloudflare's challenge origin for
+the provider script and iframe; the baseline enforced policy remains unchanged.
+
+Synthetic tests cover all seven forms, SDK token forwarding, consumed/expired tokens, stale
+callbacks, widget cleanup and failures. They do not establish real Cloudflare/Supabase acceptance.
+Browser security policy prevents the agent from inspecting the private dashboards and relevant
+app origins; no alternate access path was used. Hosted CAPTCHA activation, rate-limit review
+and the live checks above remain open. No hosted provider setting changed in this release.
+
+Local synthetic tests stub the provider and make no network calls. For interactive local work,
+use a separate development Supabase project and a separate test widget/key pair as described by
+Cloudflare; never put a test Site Key into the production bundle or add localhost to this
+production widget as a shortcut.
+
+References: [Supabase CAPTCHA](https://supabase.com/docs/guides/auth/auth-captcha),
+[Turnstile testing](https://developers.cloudflare.com/turnstile/troubleshooting/testing/),
+[Turnstile CSP](https://developers.cloudflare.com/turnstile/reference/content-security-policy/).
 
 ## Part 1: create the account and connect GitHub (once)
 

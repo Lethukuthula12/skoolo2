@@ -3,6 +3,7 @@ export * from './lib/environment';
 export * from './lib/supabase-client';
 export * from './lib/models';
 export * from './lib/auth/auth.service';
+export * from './lib/auth/auth-challenge.component';
 export * from './lib/auth/auth-layout.component';
 export * from './lib/auth/session-ended.component';
 export * from './lib/auth/signed-in.guard';

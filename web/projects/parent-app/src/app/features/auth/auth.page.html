@@ -55,8 +55,9 @@
               </div>
               <small id="password-hint">Use at least 8 characters.</small>
             </div>
+            @if (challengeActive()) { <skoolo-auth-challenge /> }
             @if (error()) { <p class="auth-error" role="alert">{{ error() }}</p> }
-            <button class="auth-submit" type="submit" [disabled]="signUpForm.invalid || busy()">
+            <button class="auth-submit" type="submit" [disabled]="signUpForm.invalid || busy() || !challenge()?.verified()">
               @if (busy()) { <span class="busy-mark" aria-hidden="true"></span> Creating account… }
               @else { Create account <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12H19M13 6L19 12L13 18" stroke-linecap="round" stroke-linejoin="round"/></svg> }
             </button>
@@ -74,8 +75,9 @@
                 <button class="password-toggle" type="button" (click)="passwordVisible.set(!passwordVisible())" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" aria-controls="parent-password">{{ passwordVisible() ? 'Hide' : 'Show' }}</button>
               </div>
             </div>
+            @if (challengeActive()) { <skoolo-auth-challenge /> }
             @if (error()) { <p class="auth-error" role="alert">{{ error() }}</p> }
-            <button class="auth-submit" type="submit" [disabled]="signInForm.invalid || busy()">
+            <button class="auth-submit" type="submit" [disabled]="signInForm.invalid || busy() || !challenge()?.verified()">
               @if (busy()) { <span class="busy-mark" aria-hidden="true"></span> Signing in… }
               @else { Sign in <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12H19M13 6L19 12L13 18" stroke-linecap="round" stroke-linejoin="round"/></svg> }
             </button>

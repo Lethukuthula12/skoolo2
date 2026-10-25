@@ -7,3 +7,6 @@ export const supabaseEnvironment = {
   anonKey:
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoZmViaHVseXFhd3VoamJtbGh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MDI3MDUsImV4cCI6MjEwODE3ODcwNX0.XZN1BYV--hwX2QNfarneoVcg4wPnjZK7L4GZeJKSi50',
 } as const;
+
+/** Public widget key; its secret is configured only in Supabase's CAPTCHA settings. */
+export const turnstileSiteKey = '0x4AAAAAAFkocbVeilMu8IeC';

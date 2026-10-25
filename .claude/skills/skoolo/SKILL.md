@@ -152,10 +152,18 @@ half of it.
   device and offline checks remain open; this is not server-enforced idle expiry or HttpOnly storage.
 - **Password-change verification**: both reset screens handle server-requested email codes,
   nonce submission, invalid/expired codes, rate limits, retries and cleanup. Hosted **Secure
-  password change** activation and live challenge checks are pending owner action in `docs/deploy.md`;
-  agent dashboard access was denied by browser security policy. No provider settings changed.
+  password change** was confirmed enabled by the owner on 2026-10-25; live challenge checks remain
+  open in `docs/deploy.md`. Agent dashboard access was denied by browser security policy.
   The owner confirmed Supabase Free and approved staff sessions of 30 minutes idle/eight hours
   maximum. These limits still need server enforcement; the parent policy remains undecided.
+- **Login abuse protection**: all seven public authentication forms pass a fresh Turnstile token
+  to Supabase, using the owner's public Site Key. Secrets stay in hosted provider settings.
+  Expiry, retry, single-use tokens and cleanup have synthetic checks in `check:sessions`.
+  Hosted CAPTCHA activation and live checks are pending owner action after both deployments;
+  follow `docs/deploy.md`. The client alone does not prevent direct API abuse.
+- **Server session design**: `docs/session-security-design.md` proposes host-only HttpOnly cookies,
+  a Worker session layer and a database session gate that preserves RLS and prevents direct API
+  bypass. It is a design, not implemented infrastructure or active staff timeout enforcement.
 
 ## Routine operations
 
