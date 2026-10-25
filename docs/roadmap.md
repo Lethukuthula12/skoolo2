@@ -70,13 +70,12 @@ The school's requests, in their words:
   eight-hour maximum limits, warning before expiry, and the server-side protections in
   `docs/session-security-design.md`. Parent session limits still need a separate decision.
   Deferred at the owner's request on 2026-10-25; these limits are not active.
-- [ ] **Current priority: parent-app installation on Android and iOS.** Fix the missing Android
-  install entry point and verify the real-phone installation path. **Entry point and manual help
-  implemented; Android acceptance blocked.** The owner confirms iOS installation succeeded and
-  explicitly using HTTPS resolved Safari's connection warning. Android installation directly from
-  Chrome remains blocked by the older-Android compatibility warning on a Galaxy A05, Android 14,
-  Chrome 155.0.8059.39. Its cause is not yet confirmed; the complete warning is needed. This takes priority over
-  staff-session implementation for this work session. See the phone checklist in `docs/deploy.md`.
+- [x] **Parent-app installation on Android and iOS.** Entry point, manual help and both platform
+  install paths implemented. The owner confirmed iOS installation succeeded (explicit HTTPS
+  resolved Safari's connection warning) and separately confirmed the Android installation issue
+  (Galaxy A05, older-Android Chrome warning) is resolved. Remaining phone-testing acceptance
+  (both live sites checked for layout/no sideways scrolling) is tracked in the item below.
+  See the phone checklist in `docs/deploy.md`.
 
 Why first: the enrolment flow, portal and self-service onboarding were built in five days and
 checked by hand. Before more people depend on them, the rules that protect each school's data need
@@ -84,7 +83,7 @@ automated proof, and a forgotten password must not lock anyone out.
 
 | Item | Done when |
 |---|---|
-| Phone testing | Both live sites checked on an iPhone and an Android phone; no sideways scrolling, install path works. |
+| Phone testing | Both live sites checked on an iPhone and an Android phone; no sideways scrolling, install path works. **Install path confirmed working on both platforms by the owner.** Layout/no-sideways-scrolling check on each live site remains open. |
 | School-registration password visibility | **Implemented; live visual check pending.** `/register-school` has a labelled Show/Hide button, masks the password initially and preserves the entered value while toggling. The confirmation step replaces the login form with a prominent email panel and sign-in action. Production build and controller/template checks passed; live focus, mobile layout and toggle interaction remain to be checked by the owner. |
 | Automated database tests | **Done.** `npm run test:rls` runs `supabase/tests/tenant_isolation.sql`: it builds two schools (each with an admin, a teacher and a parent with a learner and an application) as the `authenticated` role with per-user JWT claims, asserts 112 isolation and role checks, and rolls everything back. Proven to bite: weakening one policy flips the matching check to failure. Re-run before database or access-control releases, as specified in CLAUDE.md. CI wiring is a follow-up (needs Supabase secrets in GitHub Actions). |
 | Password reset | **Both custom-domain reset flows verified by the owner:** fresh email delivery, return to the requesting app, password change and subsequent sign-in passed on `app.skoolo.co.za` and `schools.skoolo.co.za`. Email confirmation is enabled; parent signup/confirmation passed, and portal registration reached school details and saved the school/admin membership. Workspace navigation then failed on a lazy module; the owner confirmed the workspace opens in a new tab. **Still needed:** live check of the new registration recovery panel, staff-invite signup, reused/expired reset links and mobile/cross-browser behaviour. Both apps handle confirmation before protected onboarding writes. The owner performs dashboard steps because agent browser access is blocked. See `docs/deploy.md`. |

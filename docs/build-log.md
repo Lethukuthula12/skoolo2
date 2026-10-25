@@ -1650,3 +1650,23 @@ remain unchanged until the proposed server session work is implemented and verif
   browser scenarios remain unverified; managed browser restrictions also remain. Scenario
   definitions are not passing execution evidence. No schema or access rules changed.
 - Owner requested committing the current work immediately due to remaining usage limits.
+
+### Handover publication verification
+
+- Commit ce6bc4d was pushed to origin/main. GitHub catalogue and web checks passed.
+- Both Cloudflare builds, skoolo-app and skoolo-schools, completed successfully.
+- The optional browser job was skipped as configured, not passed. Full local Docker bootstrap,
+  local RLS and Cypress browser execution remain pending on a Docker-capable machine.
+- The owner requested finishing the interrupted verification and pushing the recorded outcome.
+
+## 2026-10-25 — Android installation issue resolved
+
+- The owner confirmed the previously blocked Android installation (Galaxy A05, older-Android
+  Chrome privacy-protection warning, Chrome 155.0.8059.39) is now resolved. No diagnostic step
+  or cause was reported, so none is recorded; no application code, manifest or provider setting
+  was changed by the agent for this fix.
+- Updated `docs/roadmap.md` and `docs/deploy.md` to drop the Android blocker: parent-app
+  installation on both Android and iOS is now owner-confirmed working. The remaining open item
+  is the narrower phone-testing layout check (no sideways scrolling on each live site), which
+  this confirmation does not cover.
+- Documentation-only change: diff reviewed, no application, schema or hosted setting changed.

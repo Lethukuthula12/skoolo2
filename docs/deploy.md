@@ -274,21 +274,19 @@ The app does not have a reliable cross-browser inventory of installations; stand
 5. Go to the Home Screen and open the new Skoolo icon. Expect an app window without Safari's
    ordinary address bar. iOS uses this manual flow; do not wait for Chrome's install dialog.
 
-### Real-phone acceptance checks (still pending)
+### Real-phone acceptance checks
 
 **Owner correction, 2026-10-25:** iOS installation succeeded and explicitly using
 `https://app.skoolo.co.za` removed Safari's connection warning. The earlier report that HTTPS
-still warned was withdrawn. Android installation directly from Chrome/Install Skoolo remains
-blocked with the older-Android privacy-protection warning: Galaxy A05, Android 14,
-Chrome 155.0.8059.39. Collect the complete Android warning, including the package's displayed
-app name; its cause is still unconfirmed. Keep Play Protect enabled.
+still warned was withdrawn.
 
-Google documents the older-Android warning as an APK target API compatibility issue. This repo
-ships static PWA assets, with no native Android project or `targetSdkVersion` setting. Chrome
-generates the WebAPK wrapper through its installation service, so adding a target SDK field to
-the web manifest would not repair it. Check for an official Chrome update, then retest; this is
-a diagnostic step, not a confirmed fix. If it persists, inspect the actual generated package or
-browser diagnostics before changing application code. See
+**Owner confirmation, 2026-10-25:** the Android installation issue (Galaxy A05, older-Android
+privacy-protection warning on Chrome 155.0.8059.39) is resolved. The owner did not report which
+diagnostic step fixed it (for example a Chrome update), so the cause remains unrecorded; no
+application, manifest or provider setting was changed by the agent for this fix. Keep Play
+Protect enabled and retest after future Chrome updates if the warning reappears. Background on
+the original warning (Google ties it to APK target API compatibility, and Chrome itself
+generates the WebAPK wrapper) is preserved here in case it recurs:
 [Google's warning guidance](https://developers.google.com/android/play-protect/warning-dev-guidance)
 and [Chromium's WebAPK architecture](https://chromium.googlesource.com/chromium/src/+/HEAD/components/webapps/docs/android_architecture.md).
 
