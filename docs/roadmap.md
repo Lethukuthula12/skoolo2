@@ -44,10 +44,10 @@ The school's requests, in their words:
   Deferred at the owner's request on 2026-10-25; these limits are not active.
 - [ ] **Current priority: parent-app installation on Android and iOS.** Fix the missing Android
   install entry point and verify the real-phone installation path. **Entry point and manual help
-  implemented; real-phone acceptance blocked.** On 2026-10-25 the owner reported installation
-  succeeds on iOS but Safari shows a connection warning, while installation directly from Chrome
-  is blocked by Play Protect's older-Android compatibility warning. HTTPS result and Android/Chrome
-  versions are being collected; neither cause is yet confirmed. This takes priority over
+  implemented; Android acceptance blocked.** The owner confirms iOS installation succeeded and
+  explicitly using HTTPS resolved Safari's connection warning. Android installation directly from
+  Chrome remains blocked by the older-Android compatibility warning on a Galaxy A05, Android 14,
+  Chrome 155.0.8059.39. Its cause is not yet confirmed; the complete warning is needed. This takes priority over
   staff-session implementation for this work session. See the phone checklist in `docs/deploy.md`.
 
 Why first: the enrolment flow, portal and self-service onboarding were built in five days and

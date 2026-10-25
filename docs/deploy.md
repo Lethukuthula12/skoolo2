@@ -276,11 +276,12 @@ The app does not have a reliable cross-browser inventory of installations; stand
 
 ### Real-phone acceptance checks (still pending)
 
-**Owner report, 2026-10-25:** iOS installation succeeded, but Safari's address bar reported an
-insecure connection. Android installation directly from Chrome/Install Skoolo was blocked with
-the older-Android privacy-protection warning. These are open failures, not passed acceptance.
-Collect the exact HTTPS result, warning details, phone model, Android version and Chrome version.
-Keep Play Protect enabled and do not submit credentials while Safari reports an insecure connection.
+**Owner correction, 2026-10-25:** iOS installation succeeded and explicitly using
+`https://app.skoolo.co.za` removed Safari's connection warning. The earlier report that HTTPS
+still warned was withdrawn. Android installation directly from Chrome/Install Skoolo remains
+blocked with the older-Android privacy-protection warning: Galaxy A05, Android 14,
+Chrome 155.0.8059.39. Collect the complete Android warning, including the package's displayed
+app name; its cause is still unconfirmed. Keep Play Protect enabled.
 
 Google documents the older-Android warning as an APK target API compatibility issue. This repo
 ships static PWA assets, with no native Android project or `targetSdkVersion` setting. Chrome
@@ -291,11 +292,11 @@ browser diagnostics before changing application code. See
 [Google's warning guidance](https://developers.google.com/android/play-protect/warning-dev-guidance)
 and [Chromium's WebAPK architecture](https://chromium.googlesource.com/chromium/src/+/HEAD/components/webapps/docs/android_architecture.md).
 
-For Safari, first open the explicit HTTPS URL above. If that removes the warning, check the
-previously used HTTP address/shortcut and Cloudflare's HTTPS redirect setting. If the warning
-persists on HTTPS, inspect its certificate/error details before changing TLS settings. The
-agent has not inspected the live certificate or Cloudflare settings because origin access is
-blocked. Do not infer certificate failure or an active HTTP redirect from the local files.
+For Safari, use the explicit HTTPS URL above and check that the installed home-screen entry
+opens without a warning too. Review Cloudflare's HTTPS redirect setting so bare/HTTP links
+upgrade to HTTPS. The successful owner check does not prove that redirect is already enabled.
+The agent has not inspected the live certificate or Cloudflare settings because origin access
+is blocked. No certificate replacement is indicated by the corrected result.
 See [Apple's connection-warning guidance](https://support.apple.com/en-au/102279).
 
 - Search for a school before sign-in; check the installation guidance and narrow-screen layout.

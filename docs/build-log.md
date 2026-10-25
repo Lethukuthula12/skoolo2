@@ -1552,3 +1552,15 @@ remain unchanged until the proposed server session work is implemented and verif
   resolved platform warnings. No application, provider, certificate or security setting changed.
   Browser-policy restrictions were respected. Documentation-only update; diff review required,
   no new build or database run. Staff-session work remains deferred as requested.
+
+### Owner follow-up: iOS HTTPS resolved; Android details supplied
+
+- The owner corrected the iPhone result: explicitly using `https://app.skoolo.co.za` fixes the
+  Safari warning, and installation succeeded. Withdraw the earlier HTTPS-failure report; no
+  certificate change is indicated. Redirect enforcement and launching the existing home-screen
+  entry over HTTPS remain checks, not agent-verified settings.
+- Android details are Galaxy A05, Android 14, Chrome 155.0.8059.39. The direct Chrome installation
+  warning remains open; request its complete screenshot and displayed app name. These version
+  numbers alone do not establish a cause or justify changing the web manifest's SDK fields.
+- Updated the roadmap and phone checklist. Documentation only; diff reviewed, no application or
+  hosted setting changed. Staff session enforcement remains on the 2026-10-26 to-do list.
