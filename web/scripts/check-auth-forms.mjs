@@ -40,9 +40,15 @@ let reloads = 0;
 globalThis.window = { location: { origin: 'https://app.skoolo.co.za', reload: () => { ++reloads; } }, addEventListener() {}, removeEventListener() {} };
 globalThis.document = { addEventListener() {}, removeEventListener() {} };
 const fixtures = [];
+const originalSetInterval = globalThis.setInterval, originalClearInterval = globalThis.clearInterval;
+const intervals = new Map();
+let intervalId = 0;
+globalThis.setInterval = callback => { const id = ++intervalId; intervals.set(id, callback); return id; };
+globalThis.clearInterval = id => intervals.delete(id);
+const pending = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
 function fixture(Page, params = {}) {
   const calls = [], navigation = [];
-  const result = { signIn: null, signUp: { error: null, needsEmailConfirmation: true }, updatePassword: null, schools: [{ id: 'school' }], navigation: true, navigationError: null, schoolError: null };
+  const result = { signIn: null, signUp: { error: null, needsEmailConfirmation: true }, updatePassword: null, passwordChangeCode: null, schools: [{ id: 'school' }], navigation: true, navigationError: null, schoolError: null };
   const signedIn = signal(false), recovery = signal(false);
   const injector = Injector.create({ providers: [
     { provide: FormBuilder, useValue: new FormBuilder() },
@@ -52,7 +58,8 @@ function fixture(Page, params = {}) {
       signOut: async () => { calls.push(['signOut']); signedIn.set(false); recovery.set(false); },
       signOutFailed: () => false,
       isSignedIn: signedIn, isPasswordRecovery: recovery, whenReady: async () => {},
-      updatePassword: async value => { calls.push(['updatePassword', value]); return result.updatePassword; },
+      updatePassword: async (...args) => { calls.push(['updatePassword', ...args]); return result.updatePassword; },
+      requestPasswordChangeCode: async () => { calls.push(['requestPasswordChangeCode']); return result.passwordChangeCode; },
     }},
     { provide: StaffService, useValue: {
       reset: () => calls.push(['staff.reset']), loadSchools: async () => result.schools,
@@ -376,24 +383,153 @@ for (const [Page, app] of [[ParentReset, 'parent-app'], [PortalReset, 'school-po
   const visible = branches.find(branch => !branch.expression || state[branch.expression.source]);
   assert.equal(visible.expression.source, 'done()', 'Signed-out success shows Password changed, not Link expired');
   if (app === 'parent-app') assert.match(source, /imports:\s*\[\s*ReactiveFormsModule, RouterLink/, 'Reset navigation has its router directive');
+
+  const challenge = fixture(Page);
+  challenge.page.ready.set(true);
+  challenge.signedIn.set(true);
+  challenge.page.form.setValue({ password: 'example-password', confirm: 'example-password' });
+  challenge.result.updatePassword = { code: 'reauthentication_needed', message: 'Reauthentication required' };
+  await challenge.page.sendCode();
+  assert.equal(challenge.calls.length, 0, 'Code sending requires a server challenge');
+  await challenge.page.submit();
+  assert.equal(challenge.page.needsVerification(), true);
+  assert.equal(challenge.page.done(), false);
+  assert.equal(challenge.calls.length, 1, 'A challenge does not automatically send an email or log out');
+  challenge.page.verificationCode.setValue('   ');
+  await challenge.page.submit();
+  assert.equal(challenge.calls.length, 1, 'An empty verification code cannot resubmit');
+  const delivery = pending();
+  challenge.result.passwordChangeCode = delivery.promise;
+  const sending = challenge.page.sendCode();
+  await challenge.page.sendCode();
+  await challenge.page.submit();
+  assert.equal(challenge.calls.length, 2, 'Concurrent resend/save is blocked while sending');
+  delivery.reject(new Error('Synthetic offline'));
+  await sending;
+  assert.equal(challenge.page.sendingCode(), false);
+  assert.equal(challenge.page.codeSent(), false);
+  assert.match(challenge.page.error(), /connection/);
+  challenge.result.passwordChangeCode = { code: 'unexpected_failure', message: 'Synthetic provider detail' };
+  await challenge.page.sendCode();
+  assert.equal(challenge.page.error(), 'We could not send a code. Please try again.');
+  challenge.result.passwordChangeCode = { code: 'over_email_send_rate_limit' };
+  await challenge.page.sendCode();
+  assert.equal(challenge.page.resendSeconds(), 60);
+  assert.match(challenge.page.error(), /wait/);
+  const rateLimitedCount = challenge.calls.length;
+  await challenge.page.sendCode();
+  assert.equal(challenge.calls.length, rateLimitedCount, 'Rate-limited requests cannot be retried immediately');
+  for (let i = 0; i < 60; i++) for (const callback of [...intervals.values()]) callback();
+  assert.equal(challenge.page.resendSeconds(), 0);
+  challenge.result.passwordChangeCode = null;
+  await challenge.page.sendCode();
+  assert.equal(challenge.page.codeSent(), true);
+  const sentCount = challenge.calls.length;
+  await challenge.page.sendCode();
+  assert.equal(challenge.calls.length, sentCount, 'Successful delivery has a resend cooldown');
+  challenge.page.verificationCode.setValue('123456');
+  challenge.result.updatePassword = { code: 'reauthentication_not_valid' };
+  await challenge.page.submit();
+  assert.match(challenge.page.error(), /invalid or has expired/);
+  assert.equal(challenge.page.verificationCode.value, '');
+  assert.equal(challenge.page.form.controls.password.value, 'example-password', 'Invalid code keeps the unsaved password');
+  assert.equal(challenge.page.done(), false);
+  const save = pending();
+  challenge.result.updatePassword = save.promise;
+  challenge.page.verificationCode.setValue(' 654321 ');
+  const saving = challenge.page.submit();
+  const saveCount = challenge.calls.length;
+  await challenge.page.submit();
+  await challenge.page.sendCode();
+  assert.equal(challenge.calls.length, saveCount, 'Concurrent save/resend is blocked while saving');
+  save.reject(new Error('Synthetic offline'));
+  await saving;
+  assert.match(challenge.page.error(), /connection/);
+  assert.equal(challenge.page.busy(), false);
+  challenge.result.updatePassword = null;
+  await challenge.page.submit();
+  assert.deepEqual(challenge.calls.at(-2), ['updatePassword', 'example-password', '654321'], 'Code is submitted to the server with the password');
+  assert.equal(challenge.calls.at(-1)[0], 'signOut');
+  assert.equal(challenge.page.form.controls.password.value, '');
+  assert.equal(challenge.page.verificationCode.value, '');
+  assert.equal(challenge.page.done(), true);
+
+  const late = fixture(Page);
+  late.page.ready.set(true);
+  late.signedIn.set(true);
+  late.page.form.setValue({ password: 'example-password', confirm: 'example-password' });
+  const lateSave = pending();
+  late.result.updatePassword = lateSave.promise;
+  const lateSaving = late.page.submit();
+  late.signedIn.set(false);
+  lateSave.resolve(null);
+  await lateSaving;
+  assert.equal(late.page.done(), false, 'A response after session loss cannot change completion state');
+  assert.equal(late.calls.some(call => call[0] === 'signOut'), false, 'A stale save cannot log out another account');
+
+  const nodes = descendants(parsed.nodes);
+  const codeField = nodes.find(node => node.inputs?.some(input => input.name === 'formControl' && input.value.source === 'verificationCode'));
+  assert.ok(codeField, 'Challenge input is wired to its control');
+  assert.equal(codeField.attributes.find(attr => attr.name === 'autocomplete')?.value, 'one-time-code');
+  const sendButton = nodes.find(node => node.outputs?.some(output => output.name === 'click' && output.handler.source === 'sendCode()'));
+  assert.equal(sendButton.attributes.find(attr => attr.name === 'type')?.value, 'button', 'Sending a code never submits the password form');
+  if (app === 'parent-app') {
+    const cached = fixture(Page);
+    cached.page.ready.set(true);
+    cached.signedIn.set(true);
+    cached.page.needsVerification.set(true);
+    await cached.page.sendCode();
+    cached.page.form.setValue({ password: 'example-password', confirm: 'example-password' });
+    cached.page.verificationCode.setValue('123456');
+    const cacheSave = pending();
+    cached.result.updatePassword = cacheSave.promise;
+    const cacheSaving = cached.page.submit();
+    cached.page.ionViewWillLeave();
+    assert.equal(cached.page.form.controls.password.value, '', 'Ionic cached pages discard passwords on leaving');
+    assert.equal(cached.page.verificationCode.value, '');
+    assert.equal(cached.page.resendSeconds(), 0);
+    cached.page.ionViewWillEnter();
+    cacheSave.resolve(null);
+    await cacheSaving;
+    assert.equal(cached.page.done(), false, 'Returning to a cached page does not accept its old response');
+    assert.equal(cached.calls.some(call => call[0] === 'signOut'), false);
+  }
 }
 
 // Exercise the real shared service to prove the app-specific URL reaches the Supabase client.
 const forgotSource = await readFile(path.join(root, 'projects/parent-app/src/app/features/auth/forgot-password.page.ts'), 'utf8');
 assert.match(forgotSource, /imports:\s*\[\s*ReactiveFormsModule, RouterLink/, 'Forgot-password Back button has its router directive');
-let signupRequest;
+let signupRequest, passwordRequest, reauthenticationCalls = 0;
+let passwordError = null, reauthenticationError = null;
 const serviceInjector = Injector.create({ providers: [{ provide: SUPABASE_CLIENT, useValue: { auth: {
   getSession: async () => ({ data: { session: null } }),
   onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
   signUp: async request => { signupRequest = request; return { data: { session: null }, error: null }; },
+  updateUser: async request => { passwordRequest = request; return { error: passwordError }; },
+  reauthenticate: async () => { ++reauthenticationCalls; return { error: reauthenticationError }; },
 } } }] });
 const service = runInInjectionContext(serviceInjector, () => new AuthService());
 await service.whenReady();
 const confirmation = await service.signUp({ ...account, emailRedirectTo: 'https://schools.skoolo.co.za/join' });
 assert.equal(signupRequest.options.emailRedirectTo, 'https://schools.skoolo.co.za/join');
 assert.equal(confirmation.needsEmailConfirmation, true);
+await service.updatePassword('synthetic-password');
+assert.deepEqual(passwordRequest, { password: 'synthetic-password' }, 'Recent recovery sessions do not send an empty nonce');
+passwordError = { code: 'reauthentication_not_valid' };
+assert.equal(await service.updatePassword('synthetic-password', '123456'), passwordError);
+assert.deepEqual(passwordRequest, { password: 'synthetic-password', nonce: '123456' });
+reauthenticationError = { code: 'over_email_send_rate_limit' };
+assert.equal(await service.requestPasswordChangeCode(), reauthenticationError);
+assert.equal(reauthenticationCalls, 1);
 serviceInjector.destroy();
 for (const item of fixtures) item.injector.destroy();
+assert.equal(intervals.size, 0, 'Leaving password pages cleans up resend timers');
+for (const item of fixtures.filter(item => item.page.verificationCode)) {
+  assert.equal(item.page.verificationCode.value, '', 'Leaving password pages clears codes');
+  assert.equal(item.page.form.controls.password.value, '', 'Leaving password pages clears passwords');
+}
+globalThis.setInterval = originalSetInterval;
+globalThis.clearInterval = originalClearInterval;
 delete globalThis.window;
 delete globalThis.document;
-console.log('Auth checks passed: form contracts, login failures, app-specific confirmation URLs, verified onboarding, saved-school navigation recovery, membership-scoped school selection, immediate-session compatibility, no-school routing and password-reset success/expiry/failure.');
+console.log('Auth checks passed: form contracts, login failures, confirmation URLs, onboarding, school selection, reset success/expiry/failure, server-requested password verification, nonce forwarding, resend limits, network failures, duplicate prevention and cleanup.');

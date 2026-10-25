@@ -150,6 +150,12 @@ half of it.
   Logout failures are surfaced, recovery state is reset and stale membership/storage responses
   are ignored. `npm run check:sessions` runs synthetic lifecycle/form checks in CI. Live multi-tab,
   device and offline checks remain open; this is not server-enforced idle expiry or HttpOnly storage.
+- **Password-change verification**: both reset screens handle server-requested email codes,
+  nonce submission, invalid/expired codes, rate limits, retries and cleanup. Hosted **Secure
+  password change** activation and live challenge checks are pending owner action in `docs/deploy.md`;
+  agent dashboard access was denied by browser security policy. No provider settings changed.
+  The owner confirmed Supabase Free and approved staff sessions of 30 minutes idle/eight hours
+  maximum. These limits still need server enforcement; the parent policy remains undecided.
 
 ## Routine operations
 

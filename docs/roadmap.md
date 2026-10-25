@@ -70,8 +70,21 @@ logout failures and continues through a full document load. School memberships a
 cleared synchronously, and obsolete membership/storage responses cannot restore a previous account.
 Recovery state and timers/listeners are cleaned up. Synthetic lifecycle/form checks and the full
 112-check RLS suite plus coverage guard pass. Live cross-tab/device checks remain unverified.
-This implements the client lifecycle portion of item 2; hosted controls, abuse protection and a
-confirmed timeout policy remain open. Persistent browser token storage is unchanged.
+This implements the client lifecycle portion of item 2; hosted controls and abuse protection
+remain open. Persistent browser token storage is unchanged.
+
+**Password verification update, 2026-10-25:** both reset-password screens now respond to a server
+reauthentication challenge, send a code on request and submit the nonce with the new password.
+They handle invalid/expired codes, resend cooldowns, rate-limit responses and connection failures;
+completed/destroyed forms clear secrets and Ionic's cached parent screen clears them on leaving.
+This is app support for Supabase's **Secure password change** option, not confirmation that the
+hosted option is enabled. Dashboard access was denied by browser security policy; the owner must
+enable/check the option after deployment using `docs/deploy.md`. No hosted settings were changed.
+
+**Timeout decision, 2026-10-25:** the owner confirmed Supabase Free and approved staff limits of
+30 minutes idle/eight hours maximum. Parent limits remain undecided. Hosted lifetime controls
+require Pro or above; design server enforcement with item 3 rather than presenting a browser
+timer as enforcement. These limits are not active yet.
 
 #### What the review establishes
 
@@ -110,8 +123,9 @@ permission rules; they cannot protect an account whose valid session has been st
    overwriting working SMTP configuration. Remove unused production redirect wildcards and
    development callbacks after separate development access is established. Add server-validated
    abuse protection for signup/reset/sign-in, preserving generic account-existence responses.
-   Proposed portal policy: 30 minutes idle and an eight-hour maximum session, with a warning
-   before expiry; confirm this and a separate parent-device policy before implementation.
+   Agreed portal policy: 30 minutes idle and an eight-hour maximum session, with a warning
+   before expiry. Confirm a separate parent-device policy. The current Supabase Free plan does
+   not supply hosted lifetime limits; design enforcement through the server layer in item 3.
    **Acceptance:** logout/expiry/account switching behave correctly across tabs and both apps;
    server enforcement matches the chosen policy. A browser timer alone is not enforcement.
    Document the residual lifetime of already-issued JWTs and how revocation is enforced.
@@ -150,9 +164,10 @@ expansion can wait; authentication changes still require affected production bui
 security regressions and the full RLS suite. Keep findings, hosted-setting evidence and unresolved
 risks explicit. The initial review changed no application code, provider configuration or live data;
 the implementation update above records subsequent fixes.
-Continue with item 2's hosted-setting review, abuse protection and timeout-policy decisions,
+Continue with item 2's owner-assisted hosted-setting review and abuse protection,
 alongside live verification of the new session boundary and item 1's headers/print previews.
-Then design item 3's server-managed sessions. Promote the full CSP only after compatibility is
+Then design item 3's server-managed sessions with the agreed staff limits and a separate parent
+policy. Promote the full CSP only after compatibility is
 checked. HSTS scope and Trusted Types enforcement also remain future work.
 
 #### Reference guidance

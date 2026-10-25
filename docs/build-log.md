@@ -1433,3 +1433,37 @@ This completes the client lifecycle portion of security item 2, not the entire s
 Hosted settings/abuse protection and the staff/parent timeout policies remain to verify/decide.
 No hosted auth/SMTP settings were changed. Browser token persistence remains unchanged; server
 revocation checks, HttpOnly sessions and MFA still require their planned implementation.
+
+## 2026-10-25 — Handle secure password-change verification in both apps
+
+- Both reset-password screens now handle Supabase's recent-authentication challenge. A user can
+  request a code, enter it and retry the password update with its nonce. Fresh reset sessions
+  keep the existing flow. Invalid/expired codes, returned rate limits, delivery failures and
+  thrown network failures have visible recovery paths. Sending and saving block duplicate
+  actions; the 60-second resend cooldown is a convenience, not server abuse protection.
+- Passwords and codes clear after success and when the page is destroyed. Ionic can cache hidden
+  pages, so the parent screen also clears them and its timer on leaving. Late replies after
+  session loss/destruction, or a previous visit to the cached parent page, cannot show a stale
+  success or sign out a subsequent account. No credentials are persisted or logged by this flow.
+- Extended the real-controller/template checks for server challenges, empty/invalid/expired
+  codes, nonce forwarding, resend success/rate limits/failure, overlapping requests, offline
+  retry, cleared fields and timers, session loss and Ionic page retention. All auth/session
+  checks passed. Print/import/header security checks also passed.
+- The full tenant-isolation suite passed 112 checks plus its coverage guard. Both production
+  builds passed: portal 553.35 kB initial (existing 500 kB budget warning), parent 1.35 MB. The
+  existing local Node 20/Supabase SDK warning remains; CI and hosting use Node 22. No schema,
+  role, tenant-access, SMTP or hosted-auth configuration changes were made.
+- Browser security policy denied access to the Supabase dashboard. No alternate browser/API/CLI
+  path was used to inspect or change those settings. The deployed verification panel's layout,
+  focus and mobile input, live email-code delivery and server enforcement remain unverified.
+  `docs/deploy.md` records the owner step to enable **Secure password change** after deployment,
+  the recent-session exception and the normal/older-session verification checks. The local
+  config is not a hosted-settings snapshot and must not be pushed wholesale.
+- The owner confirmed **Supabase Free** and approved **30 minutes idle/eight hours maximum**
+  for staff. Recorded this in decisions/roadmap; it is not yet enforced. Hosted lifetime controls
+  require Pro or above and would not by themselves separate staff and parent sessions. A server
+  session design is still needed, with the parent policy undecided. No paid upgrade authorised.
+
+This batch prepares password-change verification; hosted activation and live checks are pending.
+Stage 0 remains in progress, including abuse controls, staff timeout enforcement, HttpOnly sessions
+and MFA. Browser token storage remains unchanged.

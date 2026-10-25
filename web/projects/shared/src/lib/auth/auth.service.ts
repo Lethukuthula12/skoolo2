@@ -138,9 +138,15 @@ export class AuthService {
     return error;
   }
 
-  /** Sets a new password for the user in the current (recovery or signed-in) session. */
-  async updatePassword(password: string): Promise<AuthError | null> {
-    const { error } = await this.client.auth.updateUser({ password });
+  /** Sends a verification code when the server requires recent authentication. */
+  async requestPasswordChangeCode(): Promise<AuthError | null> {
+    const { error } = await this.client.auth.reauthenticate();
+    return error;
+  }
+
+  /** Supabase validates the nonce when its secure-password-change policy requires one. */
+  async updatePassword(password: string, nonce?: string): Promise<AuthError | null> {
+    const { error } = await this.client.auth.updateUser({ password, ...(nonce ? { nonce } : {}) });
     return error;
   }
 

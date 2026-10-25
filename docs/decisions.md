@@ -157,3 +157,15 @@ confirmed findings, hosted settings still to verify, delivery order and acceptan
 Server-managed HttpOnly sessions and administrator MFA are recommendations, not implemented or
 approved infrastructure changes. Security regression and isolation checks remain part of each
 security fix; the request does not remove the existing release requirements.
+
+## Amendment, 2026-10-25 — Staff session policy and current hosting plan
+
+The owner confirmed that Supabase is on the **Free** plan and approved **30 minutes of inactivity
+and an eight-hour maximum session for school staff**. Provide a warning before expiry. The parent
+device policy remains undecided; do not silently apply staff limits to parents.
+
+These are agreed requirements, not active controls. Supabase's hosted session lifetime controls
+require Pro or above and its inactivity timeout measures refresh activity, not user interaction.
+Those project-wide settings alone also do not separate the two apps. Design staff enforcement in
+the planned server session layer, including idle activity, absolute expiry and direct API bypass,
+before claiming the policy is enforced. No paid upgrade or new infrastructure has been approved.

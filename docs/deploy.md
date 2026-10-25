@@ -76,13 +76,49 @@ installed parent PWA too. Browser access remains restricted, so these live check
 
 Hosted session/JWT settings, refresh rotation, password-change controls, CAPTCHA/rate limits and
 redirect allowlists still need verification. Do not change working SMTP configuration as part of
-that review. The proposed 30-minute staff idle/eight-hour maximum policy and a separate parent
-policy are not enabled. Supabase's hosted lifetime controls require Pro or above and measure
-inactivity using session refresh, which is not the same as keyboard/mouse inactivity; verify the
-project plan before choosing an implementation. See
+that review. The owner confirmed **Supabase Free** and approved **30 minutes idle/eight hours
+maximum for staff** on 2026-10-25. These limits are not enabled; the parent policy is undecided.
+Supabase's hosted lifetime controls require Pro or above and measure inactivity using session
+refresh, which is not the same as keyboard/mouse inactivity. They are project-wide rather than
+separate policies for each app. Plan enforcement in the proposed server layer. See
 [Supabase session limits](https://supabase.com/docs/guides/auth/sessions#limiting-session-lifetime-and-number-of-allowed-sessions-per-user).
 HttpOnly server-managed sessions and MFA remain future work; tokens still use the existing SDK
 browser storage in this release.
+
+## Secure password change rollout
+
+Both password-reset screens support Supabase's recent-authentication challenge. A fresh recovery
+session continues through the existing password form. If the server requests reauthentication,
+the screen offers **Send verification code**, accepts the code and includes it as `nonce` in
+`auth.updateUser`. `auth.reauthenticate` sends the code to the account's confirmed contact; current
+Skoolo accounts use confirmed email. This flow does not use `verifyOtp` to start a different session.
+
+**Owner activation after both Cloudflare deployments complete:**
+
+1. Open the Skoolo Supabase project, **Authentication → Sign In / Providers → Email** (the email
+   provider settings), enable **Secure password change**, then save. Keep SMTP credentials,
+   redirect URLs and existing email confirmation settings as configured.
+2. Check a fresh reset-email flow in each app: return, save, sign out and sign in with the new
+   password. Recent sessions need not display the code step. The installed Supabase SDK documents
+   a recent session as one created within the preceding 24 hours, so enabling this option does
+   not require a code on every password change.
+3. Check an older signed-in session on `/reset-password`: it should display the verification step
+   when the server requires it. Send a code, try an invalid one, then complete with the valid
+   code and verify sign-in with the new password. Do not edit token timestamps to manufacture
+   an older session. Confirm the reauthentication email template includes the one-time code.
+
+Browser security policy denied the agent access to the Supabase dashboard. The hosted option's
+current state and live delivery of these challenge emails remain unverified; no provider setting
+was changed. Repository `supabase/config.toml` still has its local default of
+`secure_password_change = false` and is not a hosted-settings snapshot. Do not use a broad
+`supabase config push` to activate this change: it could overwrite working SMTP and other settings.
+
+`npm run check:sessions` covers synthetic challenges, nonce forwarding, invalid/expired codes,
+rate limits, retries, duplicate requests and stale results. The 60-second resend cooldown is a UI
+guard only; Supabase must enforce the actual limits. Codes/passwords are not added to storage or
+logs; they clear on success/destruction and when leaving an Ionic cached page. Browser layout,
+focus, mobile keyboard and live provider enforcement still need the checks above.
+See [Supabase reauthentication](https://supabase.com/docs/reference/javascript/auth-reauthenticate).
 
 ## Part 1: create the account and connect GitHub (once)
 
