@@ -17,7 +17,16 @@ confirm payments and manage intake per grade from a web portal.
 
 Read `docs/decisions.md` before changing anything. It records what was agreed and why.
 
-## Local development
+## New laptop and local testing
+
+Follow [the new laptop guide](docs/testing/new-laptop.md) for Node 22, Docker, fictional schools,
+Cypress/Cucumber, manual cases and repeatable startup. Start here before returning the old laptop.
+See [test coverage](docs/testing/coverage-matrix.md) for automated versus manual scenarios.
+
+## Existing hosted development commands
+
+These older commands use the hosted public Supabase configuration. For isolated testing use
+`npm run local:setup` and `npm run local:start` from the guide.
 
 ```bash
 cd web && npm install

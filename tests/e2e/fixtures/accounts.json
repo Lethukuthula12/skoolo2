@@ -1,0 +1,11 @@
+{
+  "password": "Skoolo-Local-Only-2026!",
+  "adminA": "admin.a@example.test",
+  "teacherA": "teacher.a@example.test",
+  "unassignedA": "unassigned.a@example.test",
+  "parentA": "parent.a@example.test",
+  "newParent": "new.parent@example.test",
+  "adminB": "admin.b@example.test",
+  "teacherB": "teacher.b@example.test",
+  "parentB": "parent.b@example.test"
+}

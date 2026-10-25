@@ -10,7 +10,19 @@
     "build:portal": "npm --prefix web ci --no-audit --no-fund && npm --prefix web run build:portal",
     "db:push": "supabase db push",
     "gen:types": "npm --prefix web run gen:types",
-    "test:rls": "node scripts/test-rls.mjs"
+    "test:rls": "node scripts/test-rls.mjs",
+    "setup:tools": "npm --prefix web ci && npm --prefix tests/e2e ci",
+    "local:doctor": "npm --prefix tests/e2e run doctor",
+    "local:setup": "npm --prefix tests/e2e run setup",
+    "local:reset": "npm --prefix tests/e2e run reset",
+    "local:start": "npm --prefix tests/e2e run start",
+    "local:stop": "npm --prefix tests/e2e run stop",
+    "test:rls:local": "npm --prefix tests/e2e run test:rls",
+    "test:e2e": "npm --prefix tests/e2e test",
+    "test:e2e:mobile": "npm --prefix tests/e2e run test:mobile",
+    "e2e:open": "npm --prefix tests/e2e run open",
+    "e2e:check": "npm --prefix tests/e2e run check",
+    "e2e:catalogue": "npm --prefix tests/e2e run catalogue"
   },
   "engines": {
     "node": ">=20.19 <25"

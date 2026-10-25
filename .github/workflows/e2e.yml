@@ -1,0 +1,69 @@
+name: E2E catalogue and local setup
+on:
+  push:
+    branches: [main]
+    paths: ['tests/e2e/**', 'docs/testing/**', '.github/workflows/e2e.yml', 'web/angular.json', 'package.json']
+  pull_request:
+    paths: ['tests/e2e/**', 'docs/testing/**', '.github/workflows/e2e.yml', 'web/angular.json', 'package.json']
+  workflow_dispatch:
+    inputs:
+      run_browser:
+        description: 'Provision fictional local Supabase and execute browser smoke tests'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  catalogue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: npm
+          cache-dependency-path: tests/e2e/package-lock.json
+      - run: npm ci
+        working-directory: tests/e2e
+        env:
+          CYPRESS_INSTALL_BINARY: '0'
+      - run: npm run e2e:check
+  browser:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_browser
+    needs: catalogue
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+      - run: npm run setup:tools
+      - run: npm run local:setup
+      - run: npm run test:rls:local
+      - name: Run both apps and browser scenarios
+        shell: bash
+        run: |
+          mkdir -p tests/e2e/reports
+          npm run local:start > tests/e2e/reports/apps.log 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" || true' EXIT
+          ready=false
+          for attempt in $(seq 1 120); do
+            if curl --fail --silent http://127.0.0.1:4400/sign-in >/dev/null && curl --fail --silent http://localhost:4400/auth >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != true ]; then cat tests/e2e/reports/apps.log; exit 1; fi
+          npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-e2e-results
+          path: tests/e2e/reports/
+          if-no-files-found: ignore
+          retention-days: 14
+      - run: npm run local:stop
+        if: always()

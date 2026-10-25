@@ -201,3 +201,11 @@ timer. Errors remain until dismissed, another action or navigation. Existing inl
 available. Native modal drawers own their notification display while open. Respect reduced motion,
 announce messages to assistive technology and keep parent navigation clear. Loading completion
 alone must never imply a successful write. Navigation and account/school changes clear feedback.
+
+## Amendment, 2026-10-25 — Portable Cypress and BDD test project
+
+The owner prioritised preserving the test project, whole-system Gherkin scenarios and new-laptop
+setup in GitHub before handing over this laptop. Use local Supabase with fictional schools.
+Maintain one scenario source for manual testing and automation; record their execution states
+separately. The initial automated smoke suite does not imply whole-system browser coverage.
+Dedicated local build configurations and reset guards must keep test data away from production.

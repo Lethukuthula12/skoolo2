@@ -7,7 +7,7 @@ import { TablePagination } from '../../ui/table-pagination';
 import * as XLSX from 'xlsx';
 import { escapePrintText as text, openPrintDocument, PRINT_DOCUMENT_POLICY } from '../../ui/print-document';
 import { ActionFeedbackComponent, ClassRow, Learner, LearnerGuardian, LearnerInsert, RegisterLearnerRow, SchoolDirectoryService,
-  StaffService, isValidSaIdentityNumber, } from '@skoolo/shared';
+  StaffService, isValidSaIdentityNumber, parentAppUrl, } from '@skoolo/shared';
 
 interface LearnerForm {
   id: string | null;
@@ -69,7 +69,7 @@ export class LearnersPage {
   protected readonly showImport = signal(false);
   protected readonly linkCounts = signal<Record<string, number>>({});
 
-  private readonly parentAppUrl = 'https://skoolo-app.lethufzikhali.workers.dev';
+  private readonly parentAppUrl = parentAppUrl;
 
   protected readonly roster = computed(() => {
     const classId = this.selectedClassId();

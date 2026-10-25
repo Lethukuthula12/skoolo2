@@ -64,6 +64,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "projects/shared/src/lib/environment.ts",
+                  "with": "projects/shared/src/lib/environment.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -76,6 +87,9 @@
             },
             "development": {
               "buildTarget": "parent-app:build:development"
+            },
+            "local": {
+              "buildTarget": "parent-app:build:local"
             }
           },
           "defaultConfiguration": "development"
@@ -135,6 +149,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "projects/shared/src/lib/environment.ts",
+                  "with": "projects/shared/src/lib/environment.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -147,6 +172,9 @@
             },
             "development": {
               "buildTarget": "school-portal:build:development"
+            },
+            "local": {
+              "buildTarget": "school-portal:build:local"
             }
           },
           "defaultConfiguration": "development"

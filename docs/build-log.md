@@ -1631,3 +1631,22 @@ remain unchanged until the proposed server session work is implemented and verif
 - Browser access is still blocked by the managed policy encountered earlier in this session; no
   bypass was attempted. Actual animation, screen-reader announcements, drawer layering, long-page
   scrolling and real-phone/keyboard behaviour remain visual acceptance checks in `docs/deploy.md`.
+
+## 2026-10-25 — Portable Cypress and BDD handover
+
+- Added tests/e2e with pinned Cypress/Cucumber dependencies and a committed lockfile.
+- Added 123 Gherkin scenarios across 22 features: 10 automated definitions, 112 manual cases
+  including three complete journeys, and one planned session-policy requirement.
+- Generated the coverage matrix and manual guide. New-laptop setup is documented in
+  docs/testing/new-laptop.md with Node 22.18+, Docker, fictional accounts and startup commands.
+- Added dedicated local Supabase setup/reset, two fictional schools, eight users, local API/database
+  guards, local Angular configurations and environment-aware family sharing links. Production
+  sharing URL is preserved. Local secrets and generated files are excluded from Git.
+- Added catalogue CI and an optional manually dispatched local browser workflow.
+- Verified TypeScript, Gherkin parsing, automated step bindings, generated guides, preprocessor
+  runtime imports and reset guards. Dependency audit found zero vulnerabilities. Both local and
+  production app builds passed; existing portal size warning remains.
+- Docker is unavailable on this laptop. Full local bootstrap, local RLS execution and Cypress
+  browser scenarios remain unverified; managed browser restrictions also remain. Scenario
+  definitions are not passing execution evidence. No schema or access rules changed.
+- Owner requested committing the current work immediately due to remaining usage limits.

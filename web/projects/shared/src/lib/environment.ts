@@ -10,3 +10,6 @@ export const supabaseEnvironment = {
 
 /** Public widget key; its secret is configured only in Supabase's CAPTCHA settings. */
 export const turnstileSiteKey = '0x4AAAAAAFkocbVeilMu8IeC';
+
+/** Share links use the local app when the local build configuration is selected. */
+export const parentAppUrl = 'https://skoolo-app.lethufzikhali.workers.dev';

@@ -60,6 +60,12 @@ The school's requests, in their words:
 
 ### Next work agreed with the owner
 
+- [ ] **Portable test handover (2026-10-25):** test project, full-system Gherkin catalogue and
+  local setup are built. Follow docs/testing/new-laptop.md on the replacement laptop, run the
+  Docker bootstrap and ten Cypress cases, then automate the three complete journeys. Scenario
+  definitions and manual guides are not school acceptance.
+
+
 - [ ] **2026-10-26: resume staff session enforcement.** Implement the agreed 30-minute idle and
   eight-hour maximum limits, warning before expiry, and the server-side protections in
   `docs/session-security-design.md`. Parent session limits still need a separate decision.

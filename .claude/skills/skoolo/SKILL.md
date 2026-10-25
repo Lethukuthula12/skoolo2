@@ -109,6 +109,15 @@ half of it.
 
 ## What exists (keep this list honest)
 
+- **Portable BDD tests (2026-10-25):** tests/e2e contains a pinned Cypress/Cucumber project,
+  123 scenarios across 22 features (10 automation definitions, 112 manual cases, one planned
+  requirement), generated coverage/manual guides, local Docker Supabase setup/reset and fictional
+  schools. Start at docs/testing/new-laptop.md. Node 22.18+ is required for the test tooling.
+  Docker and full browser execution are unverified on this laptop; do not claim these cases pass
+  from their definitions alone. The E2E workflow validates the catalogue automatically; its browser
+  job is manually dispatched. Local share links target the local parent app.
+
+
 - **Action feedback (2026-10-25):** shared animated viewport notifications cover 24 portal/parent
   action surfaces. Pending work, confirmed success and errors stay visible while scrolling, with
   priority outlets inside modal drawers, reduced motion, accessible status/alert text and parent

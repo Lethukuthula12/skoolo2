@@ -1,0 +1,40 @@
+{
+  "name": "skoolo-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-only Cypress and Cucumber tests and manual scenario catalogue for Skoolo",
+  "engines": { "node": ">=22.18 <23" },
+  "scripts": {
+    "check": "tsc --noEmit && node scripts/catalogue.mjs --check && node --test scripts/local-safety.test.mjs",
+    "catalogue": "node scripts/catalogue.mjs",
+    "doctor": "node scripts/local.mjs doctor",
+    "setup": "node scripts/local.mjs setup",
+    "reset": "node scripts/local.mjs reset",
+    "stop": "node scripts/local.mjs stop",
+    "start": "node scripts/serve.mjs",
+    "test:rls": "node scripts/local.mjs rls",
+    "open": "cypress open",
+    "test": "cypress run",
+    "test:mobile": "cypress run --config viewportWidth=375,viewportHeight=812"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "28.0.1",
+    "@bahmutov/cypress-esbuild-preprocessor": "2.2.8",
+    "@cucumber/gherkin": "42.0.1",
+    "@cucumber/messages": "34.2.1",
+    "@types/node": "22.18.6",
+    "cypress": "15.18.0",
+    "esbuild": "0.25.12",
+    "pg": "8.16.3",
+    "supabase": "2.122.0",
+    "typescript": "5.9.2"
+  },
+  "cypress-cucumber-preprocessor": {
+    "stepDefinitions": ["step-definitions/**/*.ts"],
+    "filterSpecs": true,
+    "omitFiltered": true,
+    "html": { "enabled": true, "output": "reports/cucumber.html" },
+    "json": { "enabled": true, "output": "reports/cucumber.json" },
+    "messages": { "enabled": true, "output": "reports/cucumber.ndjson" }
+  }
+}

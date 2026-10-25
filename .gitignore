@@ -10,6 +10,10 @@ npm-debug.log*
 .env.*
 !.env.example
 web/src/environments/environment.local.ts
+web/projects/shared/src/lib/environment.local.ts
+tests/e2e/.local/
+tests/e2e/reports/
+tests/e2e/cypress.env.json
 
 # Supabase
 supabase/.temp/
